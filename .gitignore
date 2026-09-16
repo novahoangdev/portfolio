@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Angular / build output
+.angular/
+dist/
+coverage/
+
+# Environment / local secrets
+.env
+.env.*
+!.env.example
+
+# Firebase local state (firebase.json remains tracked intentionally)
+.firebase/
+.firebaserc
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editors / OS
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Temporary files
+tmp/
+temp/
+*.swp
+*.swo

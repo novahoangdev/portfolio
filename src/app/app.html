@@ -1,0 +1,188 @@
+@if (!printView) {
+  <header class="site-header" [class.header-hidden]="headerHidden()">
+    <a class="brand" routerLink="/" [attr.data-theme]="theme()" aria-label="Nova Hoang home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg class="macbook-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="mac-body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#334155" />
+              <stop offset="100%" stop-color="#1e293b" />
+            </linearGradient>
+            <linearGradient id="mac-screen-border-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+            <linearGradient id="mac-display-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#090d16" />
+              <stop offset="100%" stop-color="#022c22" />
+            </linearGradient>
+            <linearGradient id="mac-lid-closed-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#475569" />
+              <stop offset="100%" stop-color="#1e293b" />
+            </linearGradient>
+            <radialGradient id="screen-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- Relax Mode Floating Zzz & Stars (Active on hover) -->
+          <g class="mac-relax-group">
+            <text class="mac-zzz z1" x="32" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="5.5" font-weight="800" fill="#2dd4bf">z</text>
+            <text class="mac-zzz z2" x="36.5" y="11.5" font-family="system-ui, -apple-system, sans-serif" font-size="7" font-weight="800" fill="#38bdf8">Z</text>
+            <text class="mac-zzz z3" x="41" y="6.5" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" font-weight="800" fill="#818cf8">Z</text>
+            <circle class="mac-sleep-star star-1" cx="8.5" cy="14" r="1.1" fill="#2dd4bf" />
+            <circle class="mac-sleep-star star-2" cx="5.5" cy="7.5" r="1.4" fill="#38bdf8" />
+          </g>
+
+          <!-- Base / Bottom Chassis Deck -->
+          <g class="mac-base-deck">
+            <!-- Base Bottom Chassis -->
+            <path class="mac-chassis-bottom" d="M 4 36.5 L 44 36.5 C 44 39.2, 41.5 41, 38 41 L 10 41 C 6.5 41, 4 39.2, 4 36.5 Z" fill="url(#mac-body-grad)" stroke="rgba(255,255,255,0.15)" stroke-width="0.8" />
+            <!-- Keyboard Deck Lip -->
+            <path class="mac-keyboard-deck" d="M 5 36 L 43 36 L 44 37 L 4 37 Z" fill="#475569" />
+            <!-- Trackpad -->
+            <rect class="mac-trackpad" x="19.5" y="37.8" width="9" height="2.2" rx="0.6" fill="#1e293b" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" />
+            <!-- Thumb notch -->
+            <rect class="mac-notch" x="22" y="36.2" width="4" height="0.8" rx="0.4" fill="#0f172a" />
+            <!-- Power / Sleep Breathing LED -->
+            <circle class="mac-power-led" cx="41.5" cy="38.5" r="0.75" fill="#2dd4bf" />
+          </g>
+
+          <!-- Laptop Screen Lid (Open State - folds down on hover) -->
+          <g class="mac-lid-group">
+            <!-- Outer Lid Shell / Bezel -->
+            <rect class="mac-screen-bezel" x="7.5" y="9" width="33" height="26.5" rx="3.5" fill="url(#mac-screen-border-grad)" stroke="rgba(255,255,255,0.18)" stroke-width="0.8" />
+            <!-- Camera dot -->
+            <circle class="mac-camera" cx="24" cy="10.8" r="0.65" fill="#38bdf8" />
+            <!-- Inner Screen Display -->
+            <rect class="mac-screen-display" x="9.5" y="12.5" width="29" height="21.5" rx="1.8" fill="url(#mac-display-grad)" />
+            
+            <!-- Ambient screen glow -->
+            <rect class="mac-screen-glow" x="9.5" y="12.5" width="29" height="21.5" rx="1.8" fill="url(#screen-glow)" />
+
+            <!-- Code Editor UI Content -->
+            <!-- Window Traffic Light buttons -->
+            <circle cx="12.2" cy="14.8" r="0.75" fill="#f87171" />
+            <circle cx="14.4" cy="14.8" r="0.75" fill="#fbbf24" />
+            <circle cx="16.6" cy="14.8" r="0.75" fill="#34d399" />
+
+            <!-- Code lines with dev syntax highlights -->
+            <line x1="12.2" y1="18.2" x2="21" y2="18.2" stroke="#38bdf8" stroke-width="1.3" stroke-linecap="round" />
+            <line x1="23" y1="18.2" x2="31" y2="18.2" stroke="#2dd4bf" stroke-width="1.3" stroke-linecap="round" />
+
+            <line x1="14.5" y1="21.4" x2="26" y2="21.4" stroke="#818cf8" stroke-width="1.3" stroke-linecap="round" />
+            <line x1="28" y1="21.4" x2="34" y2="21.4" stroke="#f472b6" stroke-width="1.3" stroke-linecap="round" />
+
+            <line x1="14.5" y1="24.6" x2="22" y2="24.6" stroke="#34d399" stroke-width="1.3" stroke-linecap="round" />
+            <line x1="24" y1="24.6" x2="35" y2="24.6" stroke="#38bdf8" stroke-width="1.3" stroke-linecap="round" />
+
+            <line x1="12.2" y1="27.8" x2="19" y2="27.8" stroke="#94a3b8" stroke-width="1.3" stroke-linecap="round" />
+
+            <!-- Blinking Code Cursor -->
+            <rect class="mac-code-cursor" x="21" y="27" width="1.3" height="2" fill="#2dd4bf" />
+
+            <!-- Screen Hinge bar -->
+            <path class="mac-hinge" d="M 15 34.8 L 33 34.8 L 32 36 L 16 36 Z" fill="#0f172a" />
+          </g>
+
+          <!-- Closed Lid Shell (Visible during Relax / Closed state) -->
+          <g class="mac-closed-lid-group">
+            <path class="mac-closed-lid" d="M 5 33.5 L 43 33.5 C 43 35.2, 40.5 36.8, 37 36.8 L 11 36.8 C 7.5 36.8, 5 35.2, 5 33.5 Z" fill="url(#mac-lid-closed-grad)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8" />
+            <!-- Glowing Monogram / Logo on Closed Lid -->
+            <circle class="mac-closed-logo" cx="24" cy="34.8" r="1.1" fill="#2dd4bf" />
+            <!-- Hinge line -->
+            <line x1="16" y1="33.5" x2="32" y2="33.5" stroke="#0f172a" stroke-width="0.9" />
+          </g>
+        </svg>
+      </span>
+      <span class="brand-copy">
+        <strong>Nova Hoang</strong>
+        <small>Senior Software Engineer</small>
+      </span>
+    </a>
+
+    <nav aria-label="Primary navigation">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Resume</a>
+      <a routerLink="/about" routerLinkActive="active">About</a>
+    </nav>
+
+    <div class="header-actions">
+      <a
+        class="header-cta linkedin-cta"
+        [href]="contact.linkedIn"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Connect on LinkedIn"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="cta-icon">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect x="2" y="9" width="4" height="12" />
+          <circle cx="4" cy="4" r="2" />
+        </svg>
+        <span>LinkedIn</span>
+      </a>
+
+      <button
+        class="theme-toggle"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-label]="theme() === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+        [attr.title]="theme() === 'light' ? 'Switch to dark mode (Laptop sleeps)' : 'Switch to light mode (Laptop wakes up)'"
+      >
+        @if (theme() === 'light') {
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M21 14.4A8.4 8.4 0 0 1 9.6 3 9 9 0 1 0 21 14.4Z" />
+          </svg>
+        } @else {
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
+            />
+          </svg>
+        }
+      </button>
+    </div>
+  </header>
+}
+
+<main [class.print-main]="printView">
+  <router-outlet />
+</main>
+
+@if (!printView) {
+  <footer>
+    <p class="footer-origin">
+      <svg class="vn-flag-icon" viewBox="0 0 30 20" aria-label="Flag of Vietnam" role="img">
+        <rect width="30" height="20" fill="#DA251D" rx="2" />
+        <polygon
+          fill="#FFFF00"
+          points="15,4 16.545,8.755 21.548,8.755 17.501,11.695 19.046,16.45 15,13.51 10.954,16.45 12.499,11.695 8.452,8.755 13.455,8.755"
+        />
+      </svg>
+      From Vietnam with Love
+      ❤️
+    </p>
+
+    <div class="footer-links">
+      <a [href]="contact.github" target="_blank" rel="noopener noreferrer" aria-label="Nova Hoang on GitHub">
+        GitHub
+      </a>
+      <span class="footer-dot">•</span>
+      <a [href]="contact.linkedIn" target="_blank" rel="noopener noreferrer" aria-label="Nova Hoang on LinkedIn">
+        LinkedIn
+      </a>
+      <span class="footer-dot">•</span>
+      <a [href]="contact.x" target="_blank" rel="noopener noreferrer" aria-label="Nova Hoang on X">
+        X
+      </a>
+      <span class="footer-dot">•</span>
+      <a [href]="contact.whatsApp" target="_blank" rel="noopener noreferrer" aria-label="Chat with Nova Hoang on WhatsApp">
+        WhatsApp
+      </a>
+    </div>
+
+    <p>© 2026 Nova Hoang</p>
+  </footer>
+}

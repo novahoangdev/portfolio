@@ -1,0 +1,604 @@
+<!-- Floating Print Toolbar (Screen only, hidden when printing) -->
+<header class="print-toolbar" aria-label="Print controls">
+  <div class="print-toolbar-container">
+    <div class="toolbar-left">
+      <a routerLink="/" class="toolbar-btn back-btn" title="Back to Portfolio">
+        <svg aria-hidden="true" class="btn-icon back-icon" viewBox="0 0 24 24" width="16" height="16">
+          <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        <span>Portfolio</span>
+      </a>
+
+      <div class="market-switch" role="tablist" aria-label="Select CV Market Version">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="market() === 'vietnam'"
+          [class.active]="market() === 'vietnam'"
+          (click)="setMarket('vietnam')"
+        >
+          <span class="tab-indicator"></span>
+          <span class="tab-text">Vietnam CV</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="market() === 'international'"
+          [class.active]="market() === 'international'"
+          (click)="setMarket('international')"
+        >
+          <span class="tab-indicator"></span>
+          <span class="tab-text">International CV</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <a
+        class="toolbar-btn dl-btn"
+        [href]="market() === 'vietnam' ? '/documents/hoang-van-hoa-cv-vietnam.pdf' : '/documents/nova-hoang-cv-international.pdf'"
+        [attr.download]="market() === 'vietnam' ? 'hoang-van-hoa-cv-vietnam.pdf' : 'nova-hoang-cv-international.pdf'"
+        target="_blank"
+        rel="noopener noreferrer"
+        (click)="onDownloadPdf($event)"
+        title="Download ready-to-use static PDF copy"
+      >
+        <svg aria-hidden="true" class="btn-icon dl-icon" viewBox="0 0 24 24" width="16" height="16">
+          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" />
+        </svg>
+        <span>Direct Download</span>
+      </a>
+
+      <button
+        type="button"
+        class="toolbar-btn print-primary-btn"
+        (click)="triggerPrint()"
+        title="Print or export as pristine vector PDF"
+      >
+        <svg aria-hidden="true" class="btn-icon print-icon" viewBox="0 0 24 24" width="17" height="17">
+          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" />
+        </svg>
+        <span>Print / Save as PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="print-tip-wrapper">
+    <div class="print-tip-pill">
+      <span class="tip-icon" aria-hidden="true">💡</span>
+      <span class="tip-content">
+        <strong>Best PDF Quality:</strong> Choose <em>Destination: Save as PDF</em>, enable <em>Background graphics</em>, and set <em>Margins: None</em>.
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- PRINTABLE DOCUMENTS CONTAINER -->
+<main class="print-stage" [style.--doc-scale]="previewScale()">
+  @if (isMobile()) {
+    <div class="mobile-scale-badge" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+      </svg>
+      <span>Scaled to fit screen · Pinch to zoom in</span>
+    </div>
+  }
+
+  <div class="document-viewport">
+    <div class="document-scaler">
+      @if (market() === 'vietnam') {
+        <div class="document vietnam-document">
+    <!-- PAGE 1 -->
+    <article class="page vn-page">
+      <!-- HERO HEADER -->
+      <header class="vn-hero">
+        <div class="portrait-frame">
+          <img src="/images/hoa-hoang.jpg" alt="Portrait of Hoàng Văn Hòa" />
+          <span class="portrait-ring" aria-hidden="true"></span>
+        </div>
+        <div class="vn-heading">
+          <p class="overline">Hello, I’m</p>
+          <h1>{{ profile.vietnameseName }}</h1>
+          <p class="role">{{ profile.headline }}</p>
+          <div class="contact-row">
+            <span>{{ contact.email }}</span>
+            <span class="contact-sep">•</span>
+            <span>{{ contact.phoneDisplay }}</span>
+            <span class="contact-sep">•</span>
+            <span>{{ contact.linkedInDisplay }}</span>
+            <span class="contact-sep">•</span>
+            <span>{{ contact.githubDisplay }}</span>
+            <span class="contact-sep">•</span>
+            <span>{{ contact.location }}</span>
+          </div>
+        </div>
+        <div class="experience-seal" aria-label="Over 7 years of experience">
+          <strong>7+</strong><span>years of<br />experience</span>
+        </div>
+      </header>
+
+      <!-- PAGE 1 BODY: WIDENED LEFT COLUMN (74mm) -->
+      <div class="vn-body">
+        <aside class="vn-sidebar">
+          <section class="vn-sec" aria-labelledby="vn-profile-h">
+            <p class="section-number">01 / Profile</p>
+            <h2 id="vn-profile-h">Building useful products with clarity.</h2>
+            <p>{{ profile.summary }}</p>
+            <p>{{ profile.leadership }}</p>
+          </section>
+
+          <section class="vn-sec" aria-labelledby="vn-skills-h">
+            <p class="section-number">02 / Expertise</p>
+            <h2 id="vn-skills-h">Core Capabilities</h2>
+            @for (group of skillGroups; track group.label) {
+              <div class="skill-group">
+                <h3>{{ group.label }}</h3>
+                <div class="skill-list">
+                  @for (skill of group.skills; track skill) {
+                    <span class="skill-chip">{{ skill }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </section>
+        </aside>
+
+        <main class="vn-main">
+          <section class="vn-sec experience-sec" aria-labelledby="vn-exp-h">
+            <div class="section-title-row">
+              <div>
+                <p class="section-number">03 / Experience</p>
+                <h2 id="vn-exp-h">Career Timeline</h2>
+              </div>
+              <span class="timeline-span">2019 — Today</span>
+            </div>
+
+            <div class="timeline">
+              <!-- SJ Group -->
+              @let sj = experiences[0];
+              <article class="job current">
+                <div class="job-marker"><span></span></div>
+                <div class="job-meta">
+                  <time>{{ sj.dates }}</time>
+                  <span class="company-name">{{ sj.company }}</span>
+                </div>
+                <div class="job-content">
+                  <div class="job-heading">
+                    <h3>{{ sj.title }}</h3>
+                    <span class="current-badge">Current</span>
+                  </div>
+                  <p class="linked-summary">
+                    {{ sj.summaryPrefix }}
+                    <strong>Temasek Polytechnic</strong> and <strong>Changi Airport Group</strong>{{ sj.summarySuffix }}
+                  </p>
+                  <ul class="achievement-grid" aria-label="Key achievements">
+                    @for (achievement of sj.achievements; track achievement.highlight) {
+                      <li>
+                        <strong>{{ achievement.highlight }}</strong>
+                        <span>{{ achievement.detail }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="tech-row">
+                    @for (tech of sj.technologies; track tech) {
+                      <span class="tech-tag">{{ tech }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+
+              <!-- WATA Corp -->
+              @let wata = experiences[1];
+              <article class="job">
+                <div class="job-marker"><span></span></div>
+                <div class="job-meta">
+                  <time>{{ wata.dates }}</time>
+                  <span class="company-name">{{ wata.company }}</span>
+                </div>
+                <div class="job-content">
+                  <div class="job-heading">
+                    <h3>{{ wata.title }}</h3>
+                  </div>
+                  <p class="linked-summary">
+                    {{ wata.summaryPrefix }}
+                    <strong>PoolZoom</strong> and <strong>The Mentor Method</strong>{{ wata.summarySuffix }}
+                  </p>
+                  <ul class="achievement-grid" aria-label="Key achievements">
+                    @for (achievement of wata.achievements; track achievement.highlight) {
+                      <li>
+                        <strong>{{ achievement.highlight }}</strong>
+                        <span>{{ achievement.detail }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="tech-row">
+                    @for (tech of wata.technologies; track tech) {
+                      <span class="tech-tag">{{ tech }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="page-footer">
+        <span>Hoàng Văn Hòa (Nova Hoang) — Curriculum Vitae</span>
+        <span>01 / 02</span>
+      </footer>
+    </article>
+
+    <!-- PAGE 2 -->
+    <article class="page vn-page">
+      <!-- REFINED & ELEGANT PAGE 2 HEADER -->
+      <header class="page-two-banner">
+        <div class="banner-left">
+          <div class="banner-name-row">
+            <h1 class="banner-name">{{ profile.vietnameseName }}</h1>
+            <span class="banner-role-pill">Senior Frontend Developer</span>
+          </div>
+          <p class="banner-subline">{{ profile.headline }}</p>
+        </div>
+
+        <div class="banner-right">
+          <div class="banner-contact-row">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="11" height="11">
+              <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span>{{ contact.email }}</span>
+          </div>
+          <div class="banner-contact-row">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="11" height="11">
+              <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            </svg>
+            <span>{{ contact.phoneDisplay }}</span>
+            <span class="banner-sep-dot">•</span>
+            <span>{{ contact.location }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE 2 BODY: BALANCED 2-COLUMN STRUCTURE -->
+      <div class="vn-body">
+        <aside class="vn-sidebar">
+          <section class="vn-sec" aria-labelledby="vn-edu-h">
+            <p class="section-number">04 / Education</p>
+            <h2 id="vn-edu-h">Qualifications</h2>
+            @for (item of education; track item.qualification) {
+              <div class="education-item">
+                <time>{{ item.dates }}</time>
+                <strong>{{ item.qualification }}</strong>
+                <span>{{ item.institution }}</span>
+              </div>
+            }
+          </section>
+
+          <section class="vn-sec">
+            <p class="section-number">05 / Languages & Collaboration</p>
+            <h2>Global Ready</h2>
+            <div class="collab-item">
+              <strong>English:</strong>
+              <span>Professional Working Proficiency (Cross-border APAC, US & EU collaboration)</span>
+            </div>
+            <div class="collab-item">
+              <strong>Vietnamese:</strong>
+              <span>Native proficiency</span>
+            </div>
+            <div class="collab-item">
+              <strong>Work Modes:</strong>
+              <span>On-site, Hybrid, & Fully Remote</span>
+            </div>
+          </section>
+        </aside>
+
+        <main class="vn-main">
+          <section class="vn-sec experience-sec" aria-labelledby="vn-exp2-h">
+            <div class="section-title-row">
+              <div>
+                <p class="section-number">06 / Experience Continued</p>
+                <h2 id="vn-exp2-h">Career Timeline</h2>
+              </div>
+              <span class="timeline-span">2019 — 2021</span>
+            </div>
+
+            <div class="timeline">
+              <!-- GUMI Vietnam -->
+              @let gumi = experiences[2];
+              <article class="job">
+                <div class="job-marker"><span></span></div>
+                <div class="job-meta">
+                  <time>{{ gumi.dates }}</time>
+                  <span class="company-name">{{ gumi.company }}</span>
+                </div>
+                <div class="job-content">
+                  <div class="job-heading">
+                    <h3>{{ gumi.title }}</h3>
+                  </div>
+                  <p class="linked-summary">
+                    {{ gumi.summaryPrefix }}
+                    <strong>Nikkan Sports</strong>, <strong>AXA Direct Life</strong>, <strong>Gumi Career Support</strong>, <strong>Campus Career</strong>{{ gumi.summarySuffix }}
+                  </p>
+                  <ul class="achievement-grid" aria-label="Key achievements">
+                    @for (achievement of gumi.achievements; track achievement.highlight) {
+                      <li>
+                        <strong>{{ achievement.highlight }}</strong>
+                        <span>{{ achievement.detail }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="tech-row">
+                    @for (tech of gumi.technologies; track tech) {
+                      <span class="tech-tag">{{ tech }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+
+              <!-- YOONG Vietnam -->
+              @let yoong = experiences[3];
+              <article class="job">
+                <div class="job-marker"><span></span></div>
+                <div class="job-meta">
+                  <time>{{ yoong.dates }}</time>
+                  <span class="company-name">{{ yoong.company }}</span>
+                </div>
+                <div class="job-content">
+                  <div class="job-heading">
+                    <h3>{{ yoong.title }}</h3>
+                  </div>
+                  <p class="linked-summary">
+                    {{ yoong.summaryPrefix }}
+                    <strong>Mitsubishi Electric Vietnam</strong> and <strong>PG Works Vietnam</strong>{{ yoong.summarySuffix }}
+                  </p>
+                  <ul class="achievement-grid" aria-label="Key achievements">
+                    @for (achievement of yoong.achievements; track achievement.highlight) {
+                      <li>
+                        <strong>{{ achievement.highlight }}</strong>
+                        <span>{{ achievement.detail }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="tech-row">
+                    @for (tech of yoong.technologies; track tech) {
+                      <span class="tech-tag">{{ tech }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- LEADERSHIP & VALUE BAND AT BOTTOM OF PAGE 2 -->
+      <div class="vn-footer-band">
+        <section class="value-band">
+          <div class="value-band-header">
+            <p class="section-number">07 / Core Strengths</p>
+            <h3>What I bring to teams</h3>
+          </div>
+          <div class="value-cards">
+            <div class="value-card">
+              <h4>Enterprise UI & Architecture</h4>
+              <p>Designing scalable Angular & React design systems, high-performance data grids, and accessible workflows.</p>
+            </div>
+            <div class="value-card">
+              <h4>Engineering Leadership & Velocity</h4>
+              <p>24+ production releases, code review rigor, mentoring engineers, and fast cross-functional delivery.</p>
+            </div>
+            <div class="value-card">
+              <h4>Performance & Optimization</h4>
+              <p>70% latency reductions, route splitting, virtual scrolling, and sub-second enterprise response times.</p>
+            </div>
+            <div class="value-card">
+              <h4>International Collaboration</h4>
+              <p>Seamless communication with global stakeholders across Singapore, Japan, the US, and Europe.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="page-footer">
+        <span>Hoàng Văn Hòa (Nova Hoang) — Curriculum Vitae</span>
+        <span>02 / 02</span>
+      </footer>
+    </article>
+  </div>
+} @else {
+  <!-- INTERNATIONAL FORMAT -->
+  <div class="document international-document">
+    <!-- PAGE 1 -->
+    <article class="page ie-page">
+      <header class="ie-header">
+        <div class="ie-header-top">
+          <div>
+            <p class="ie-overline">Curriculum Vitae</p>
+            <h1>{{ profile.internationalName }}</h1>
+            <p class="ie-headline">{{ profile.headline }}</p>
+          </div>
+        </div>
+        <div class="ie-contact-bar">
+          <span>{{ contact.email }}</span>
+          <span>•</span>
+          <span>{{ contact.phoneDisplay }}</span>
+          <span>•</span>
+          <span>{{ contact.linkedInDisplay }}</span>
+          <span>•</span>
+          <span>{{ contact.githubDisplay }}</span>
+          <span>•</span>
+          <span>{{ contact.websiteDisplay }}</span>
+        </div>
+      </header>
+
+      <div class="ie-status-banner">
+        <p>{{ profile.internationalStatus }}</p>
+      </div>
+
+      <section class="ie-section">
+        <h2 class="ie-section-title">Professional Summary</h2>
+        <p class="ie-summary-text">{{ profile.summary }} {{ profile.leadership }}</p>
+      </section>
+
+      <section class="ie-section">
+        <h2 class="ie-section-title">Core Technical Capabilities</h2>
+        <div class="ie-skills-grid">
+          @for (group of skillGroups; track group.label) {
+            <div class="ie-skill-row">
+              <strong>{{ group.label }}:</strong>
+              <span>{{ group.skills.join(', ') }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="ie-section">
+        <h2 class="ie-section-title">Professional Experience</h2>
+
+        <!-- SJ Group -->
+        @let sj = experiences[0];
+        <article class="ie-job">
+          <div class="ie-job-header">
+            <div>
+              <h3>{{ sj.title }}</h3>
+              <span class="ie-company">{{ sj.company }}</span>
+            </div>
+            <time>{{ sj.dates }}</time>
+          </div>
+          <p class="ie-job-summary">
+            {{ sj.summaryPrefix }}
+            <strong>Temasek Polytechnic</strong> and <strong>Changi Airport Group</strong>{{ sj.summarySuffix }}
+          </p>
+          <ul class="ie-bullets">
+            @for (ach of sj.achievements; track ach.highlight) {
+              <li><strong>{{ ach.highlight }}</strong> {{ ach.detail }}</li>
+            }
+          </ul>
+          <p class="ie-tech-line"><strong>Technologies:</strong> {{ sj.technologies.join(', ') }}</p>
+        </article>
+
+        <!-- WATA Corp -->
+        @let wata = experiences[1];
+        <article class="ie-job">
+          <div class="ie-job-header">
+            <div>
+              <h3>{{ wata.title }}</h3>
+              <span class="ie-company">{{ wata.company }}</span>
+            </div>
+            <time>{{ wata.dates }}</time>
+          </div>
+          <p class="ie-job-summary">
+            {{ wata.summaryPrefix }}
+            <strong>PoolZoom</strong> and <strong>The Mentor Method</strong>{{ wata.summarySuffix }}
+          </p>
+          <ul class="ie-bullets">
+            @for (ach of wata.achievements; track ach.highlight) {
+              <li><strong>{{ ach.highlight }}</strong> {{ ach.detail }}</li>
+            }
+          </ul>
+          <p class="ie-tech-line"><strong>Technologies:</strong> {{ wata.technologies.join(', ') }}</p>
+        </article>
+      </section>
+
+      <footer class="page-footer">
+        <span>Nova Hoang (Hoang Van Hoa) — Curriculum Vitae</span>
+        <span>Page 1 of 2</span>
+      </footer>
+    </article>
+
+    <!-- PAGE 2 -->
+    <article class="page ie-page">
+      <header class="ie-page2-header">
+        <div>
+          <h2>Nova Hoang (Hoang Van Hoa)</h2>
+          <p>Professional Experience (Continued) & Qualifications</p>
+        </div>
+        <div class="ie-contact-sm">
+          <span>{{ contact.email }}</span>
+          <span>•</span>
+          <span>{{ contact.phoneDisplay }}</span>
+        </div>
+      </header>
+
+      <section class="ie-section">
+        <!-- GUMI Vietnam -->
+        @let gumi = experiences[2];
+        <article class="ie-job">
+          <div class="ie-job-header">
+            <div>
+              <h3>{{ gumi.title }}</h3>
+              <span class="ie-company">{{ gumi.company }}</span>
+            </div>
+            <time>{{ gumi.dates }}</time>
+          </div>
+          <p class="ie-job-summary">
+            {{ gumi.summaryPrefix }}
+            <strong>Nikkan Sports</strong>, <strong>AXA Direct Life</strong>, <strong>Gumi Career Support</strong>, <strong>Campus Career</strong>{{ gumi.summarySuffix }}
+          </p>
+          <ul class="ie-bullets">
+            @for (ach of gumi.achievements; track ach.highlight) {
+              <li><strong>{{ ach.highlight }}</strong> {{ ach.detail }}</li>
+            }
+          </ul>
+          <p class="ie-tech-line"><strong>Technologies:</strong> {{ gumi.technologies.join(', ') }}</p>
+        </article>
+
+        <!-- YOONG Vietnam -->
+        @let yoong = experiences[3];
+        <article class="ie-job">
+          <div class="ie-job-header">
+            <div>
+              <h3>{{ yoong.title }}</h3>
+              <span class="ie-company">{{ yoong.company }}</span>
+            </div>
+            <time>{{ yoong.dates }}</time>
+          </div>
+          <p class="ie-job-summary">
+            {{ yoong.summaryPrefix }}
+            <strong>Mitsubishi Electric Vietnam</strong> and <strong>PG Works Vietnam</strong>{{ yoong.summarySuffix }}
+          </p>
+          <ul class="ie-bullets">
+            @for (ach of yoong.achievements; track ach.highlight) {
+              <li><strong>{{ ach.highlight }}</strong> {{ ach.detail }}</li>
+            }
+          </ul>
+          <p class="ie-tech-line"><strong>Technologies:</strong> {{ yoong.technologies.join(', ') }}</p>
+        </article>
+      </section>
+
+      <section class="ie-section">
+        <h2 class="ie-section-title">Education & Qualifications</h2>
+        @for (item of education; track item.qualification) {
+          <div class="ie-edu-row">
+            <div>
+              <strong>{{ item.qualification }}</strong>
+              <p>{{ item.institution }}</p>
+            </div>
+            <time>{{ item.dates }}</time>
+          </div>
+        }
+      </section>
+
+      <section class="ie-section">
+        <h2 class="ie-section-title">Core Competencies & Leadership</h2>
+        <p class="ie-summary-text">
+          Enterprise UI Architecture · Design Systems & Accessibility (a11y) · Complex Data Workflows · Performance Profiling · Code Reviews & Mentorship · Agile Delivery & Sprint Execution · Cross-functional Stakeholder Management
+        </p>
+      </section>
+
+      <div class="ie-closing-banner">
+        <h3>Senior / Lead Frontend & Full-Stack Engineer</h3>
+        <p>Angular · React · TypeScript · NestJS · Enterprise UI</p>
+        <span>Open to international relocation, visa sponsorship & global remote opportunities. Ready for immediate onboarding with distributed engineering teams.</span>
+      </div>
+
+      <footer class="page-footer">
+        <span>Nova Hoang (Hoang Van Hoa) — Curriculum Vitae</span>
+        <span>Page 2 of 2</span>
+      </footer>
+    </article>
+  </div>
+}
+    </div>
+  </div>
+</main>

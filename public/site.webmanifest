@@ -1,0 +1,17 @@
+{
+  "name": "Nova Hoang — Senior Frontend Developer",
+  "short_name": "Nova Hoang",
+  "description": "Portfolio & CV of Nova Hoang (Hoàng Văn Hòa), Senior Frontend Developer specializing in Angular, React, TypeScript, NestJS, and enterprise UI architecture.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#172b36",
+  "theme_color": "#172b36",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

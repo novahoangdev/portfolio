@@ -1,0 +1,237 @@
+<section class="about-hero">
+  <div class="hero-copy">
+    <p class="eyebrow">About / Nova Hoang</p>
+    <h1>Engineering with<br /><em>purpose & empathy.</em></h1>
+    <p class="lede">
+      I’m a senior software engineer who cares equally about strong architecture, useful products,
+      and the people who build them.
+    </p>
+  </div>
+  <div
+    class="hero-portrait"
+    role="button"
+    tabindex="0"
+    (click)="onAvatarClick($event)"
+    (keydown.enter)="onAvatarClick($event)"
+    (keydown.space)="onAvatarClick($event); $event.preventDefault()"
+    aria-label="Portrait of Nova Hoang - click to send heart reactions"
+    title="Click to send heart reactions to Nova Hoang"
+  >
+    <div class="portrait-backdrop"></div>
+    <div class="portrait-img-wrap">
+      <picture>
+        <source
+          srcset="/images/hoa-hoang-512.webp 1x, /images/hoa-hoang.webp 2x"
+          type="image/webp"
+        />
+        <img
+          src="/images/hoa-hoang-512.webp"
+          alt="Nova Hoang, Senior Software Engineer"
+          width="400"
+          height="400"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </picture>
+      
+      <!-- Compact Hover-Only Heart Counter Badge -->
+      @if (heartCount() > 0) {
+        <div class="avatar-mini-counter" aria-hidden="true">
+          <span class="mini-icon">❤️</span>
+          <span class="mini-num">{{ heartCount() }}</span>
+        </div>
+      }
+
+      <!-- Single click floating hearts -->
+      @for (h of floatingHearts(); track h.id) {
+        <span
+          class="floating-heart"
+          [style.left.px]="h.x"
+          [style.top.px]="h.y"
+          [style.font-size.rem]="h.size"
+          [style.animation-duration.ms]="h.duration"
+        >❤️</span>
+      }
+
+      <!-- Celebration Burst Hearts -->
+      @if (showCelebration()) {
+        <div class="burst-container" aria-hidden="true">
+          @for (ch of celebrationHearts(); track ch.id) {
+            <span
+              class="burst-particle"
+              [style.--tx]="ch.tx + 'px'"
+              [style.--ty]="ch.ty + 'px'"
+              [style.--rot]="ch.rot + 'deg'"
+              [style.--scale]="ch.scale"
+              [style.color]="ch.color"
+              [style.animation-delay.ms]="ch.delay"
+            >{{ ch.char }}</span>
+          }
+        </div>
+      }
+    </div>
+    <div class="portrait-note" (click)="$event.stopPropagation()">
+      <span>Currently</span>
+      <strong>Building enterprise products <br> at SJ Group</strong>
+    </div>
+  </div>
+</section>
+
+<!-- Quantitative Impact Metrics Bar -->
+<section class="about-metrics-bar" aria-label="Key professional impact metrics">
+  <div class="metric-card">
+    <div class="metric-val">7+</div>
+    <div class="metric-lbl">Years Experience</div>
+    <div class="metric-sub">Angular, React & Enterprise UI</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-val">24+</div>
+    <div class="metric-lbl">Production Releases</div>
+    <div class="metric-sub">Zero-downtime CI/CD delivery</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-val">230M+</div>
+    <div class="metric-lbl">Records Pipeline</div>
+    <div class="metric-sub">High-throughput data export engine</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-val">70%</div>
+    <div class="metric-lbl">Latency Drop</div>
+    <div class="metric-sub">Redis distributed locks & caching</div>
+  </div>
+</section>
+
+<section class="story-section">
+  <div class="section-label">01 / My story</div>
+  <div class="story-copy">
+    <h2>From interfaces to systems.</h2>
+    <div class="story-columns">
+      <p>
+        My path began with the visual craft of frontend development: turning ideas into interfaces
+        that feel clear, fast, and considered. Over seven years, that focus expanded into full-scale
+        UI architecture, backend services, project delivery strategy, and engineering workflow optimization.
+      </p>
+      <p>
+        Today I work across Angular, React, TypeScript, NestJS, and PostgreSQL. I contribute to UI
+        architecture, scalable services, and streamlined CI/CD & development workflows while mentoring
+        engineers and helping cross-functional squads make confident technical decisions.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="principles-section">
+  <div class="section-label">02 / How I work</div>
+  <div class="principles-grid">
+    <article>
+      <span>01</span>
+      <h3>Make complexity understandable.</h3>
+      <p>
+        I break large product problems into clear systems, strategic delivery milestones, and maintainable
+        code.
+      </p>
+    </article>
+    <article>
+      <span>02</span>
+      <h3>Optimize workflows & scale.</h3>
+      <p>
+        Streamlined development processes, developer velocity, and robust architecture turn good ideas into
+        high-impact products.
+      </p>
+    </article>
+    <article>
+      <span>03</span>
+      <h3>Empower & elevate the team.</h3>
+      <p>
+        I invest in technical mentorship, thorough code reviews, and constructive collaboration to cultivate
+        high-performing squads.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="toolkit-section">
+  <div>
+    <p class="section-label">03 / Toolkit</p>
+    <h2>A broad toolkit.<br />A focused approach.</h2>
+  </div>
+  <div class="toolkit-list">
+    @for (group of skillGroups; track group.label) {
+      <div class="toolkit-row">
+        <strong>{{ group.label }}</strong>
+        <p>{{ group.skills.join(' / ') }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="outside-section">
+  <p class="section-label">04 / Beyond work</p>
+  <blockquote>
+    “Curiosity is the thread connecting good engineering, thoughtful design, and a life well lived.”
+  </blockquote>
+  <p>
+    Away from the keyboard, I enjoy traveling, reading, photography, and creating content. These
+    interests keep me observant, curious, and open to new perspectives.
+  </p>
+</section>
+
+<section class="contact-cta">
+  <p class="cta-eyebrow">Open to Senior / Lead Frontend opportunities</p>
+  <h2>Let’s build something<br /><em>useful together.</em></h2>
+  <p class="cta-location">
+    <span class="location-dot"></span>
+    <span>Based in Vietnam · Open to relocation, remote & hybrid · Sponsorship required</span>
+  </p>
+  <div class="cta-actions">
+    <a [href]="'mailto:' + contact.email" class="cta-btn cta-btn-primary">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+      <span>{{ contact.email }}</span>
+    </a>
+    <a routerLink="/" class="cta-btn cta-btn-secondary">
+      <span>View Interactive Resume</span>
+      <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</section>
+
+<!-- Floating Hire Me Toast on Celebration Milestones -->
+@if (hireToast().visible) {
+  <aside
+    class="hire-toast"
+    role="status"
+    aria-live="polite"
+    (mouseenter)="onToastMouseEnter()"
+    (mouseleave)="onToastMouseLeave()"
+  >
+    <div class="hire-toast-glow" aria-hidden="true"></div>
+    <div class="hire-toast-content">
+      <div class="toast-heart-badge" aria-hidden="true">
+        <span>💖</span>
+      </div>
+      <div class="toast-text">
+        <h4 class="toast-title">{{ hireToast().message }}</h4>
+        <p class="toast-subtext">{{ hireToast().subtext }}</p>
+      </div>
+      <div class="toast-actions">
+        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire">
+          <span>Hire Me</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13">
+            <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </a>
+        <button type="button" class="toast-close-btn" (click)="dismissToast()" aria-label="Close notification">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
+            <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="toast-timer-bar" aria-hidden="true"></div>
+  </aside>
+}
+

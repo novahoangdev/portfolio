@@ -1,0 +1,437 @@
+<section class="intro" aria-labelledby="page-title">
+  <div class="eyebrow"><span></span> Portfolio / Curriculum Vitae</div>
+  <h1 id="page-title">One career.<br /><em>Two perspectives.</em></h1>
+  <p>
+    Discover how I turn complex requirements into reliable, user-friendly products while helping
+    engineering teams deliver with confidence.
+  </p>
+</section>
+
+<section class="cv-shell" aria-label="Curriculum vitae">
+  <div class="cv-toolbar">
+    <div
+      class="market-tabs"
+      role="tablist"
+      aria-label="Choose CV market"
+      (keydown)="handleTabKey($event)"
+    >
+      <button
+        id="tab-vietnam"
+        role="tab"
+        type="button"
+        [class.active]="market() === 'vietnam'"
+        [attr.aria-selected]="market() === 'vietnam'"
+        [attr.tabindex]="market() === 'vietnam' ? 0 : -1"
+        aria-controls="cv-vietnam"
+        (click)="selectMarket('vietnam')"
+      >
+        <span aria-hidden="true">VN</span>
+        Vietnam CV
+      </button>
+      <button
+        id="tab-international"
+        role="tab"
+        type="button"
+        [class.active]="market() === 'international'"
+        [attr.aria-selected]="market() === 'international'"
+        [attr.tabindex]="market() === 'international' ? 0 : -1"
+        aria-controls="cv-international"
+        (click)="selectMarket('international')"
+      >
+        <span aria-hidden="true">INTL</span>
+        International CV
+      </button>
+    </div>
+
+    <div class="toolbar-actions">
+      <a
+        class="action-btn secondary-btn"
+        [routerLink]="market() === 'vietnam' ? '/print/vietnam' : '/print/international'"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open high-resolution print & vector view"
+        aria-label="Open high-resolution print and vector view in a new tab"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
+          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" />
+        </svg>
+        <span>Print View</span>
+      </a>
+
+      <a
+        class="download-button"
+        [href]="
+          market() === 'vietnam'
+            ? '/documents/hoang-van-hoa-cv-vietnam.pdf'
+            : '/documents/nova-hoang-cv-international.pdf'
+        "
+        [attr.download]="
+          market() === 'vietnam'
+            ? 'hoang-van-hoa-cv-vietnam.pdf'
+            : 'nova-hoang-cv-international.pdf'
+        "
+        target="_blank"
+        rel="noopener noreferrer"
+        (click)="onDownloadPdf($event)"
+        title="Download PDF document"
+        aria-label="Download PDF document"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" />
+        </svg>
+        <span>Download PDF</span>
+      </a>
+    </div>
+  </div>
+
+  @if (market() === 'vietnam') {
+    <article id="cv-vietnam" class="vietnam-cv" role="tabpanel" aria-labelledby="tab-vietnam">
+      <header class="vn-hero">
+        <div
+          class="portrait-frame"
+          role="button"
+          tabindex="0"
+          (click)="onAvatarClick($event)"
+          (keydown.enter)="onAvatarClick($event)"
+          (keydown.space)="onAvatarClick($event); $event.preventDefault()"
+          aria-label="Portrait of Hoàng Văn Hòa - click to send heart reactions"
+          title="Hoàng Văn Hòa — Senior Frontend Software Engineer"
+        >
+          <picture>
+            <source
+              srcset="/images/hoa-hoang-256.webp 1x, /images/hoa-hoang-512.webp 2x"
+              type="image/webp"
+            />
+            <img
+              src="/images/hoa-hoang-256.webp"
+              alt="Portrait of Hoàng Văn Hòa"
+              width="256"
+              height="256"
+              fetchpriority="high"
+              decoding="async"
+            />
+          </picture>
+          <span class="portrait-ring" aria-hidden="true"></span>
+
+          <!-- Compact Hover-Only Heart Counter Badge -->
+          @if (heartCount() > 0) {
+            <div class="avatar-mini-counter" aria-hidden="true">
+              <span class="mini-icon">❤️</span>
+              <span class="mini-num">{{ heartCount() }}</span>
+            </div>
+          }
+
+          <!-- Single click floating hearts -->
+          @for (h of floatingHearts(); track h.id) {
+            <span
+              class="floating-heart"
+              [style.left.px]="h.x"
+              [style.top.px]="h.y"
+              [style.font-size.rem]="h.size"
+              [style.animation-duration.ms]="h.duration"
+            >❤️</span>
+          }
+
+          <!-- Celebration Burst Hearts -->
+          @if (showCelebration()) {
+            <div class="burst-container" aria-hidden="true">
+              @for (ch of celebrationHearts(); track ch.id) {
+                <span
+                  class="burst-particle"
+                  [style.--tx]="ch.tx + 'px'"
+                  [style.--ty]="ch.ty + 'px'"
+                  [style.--rot]="ch.rot + 'deg'"
+                  [style.--scale]="ch.scale"
+                  [style.color]="ch.color"
+                  [style.animation-delay.ms]="ch.delay"
+                >{{ ch.char }}</span>
+              }
+            </div>
+          }
+        </div>
+        <div class="vn-heading">
+          <p class="overline">Hello, I’m</p>
+          <h2>{{ profile.vietnameseName }}</h2>
+          <p class="role">{{ profile.headline }}</p>
+          <div class="contact-row">
+            <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+            <span>•</span>
+            <a [href]="'tel:' + contact.phoneHref">{{ contact.phoneDisplay }}</a>
+            <span>•</span>
+            <a [href]="contact.linkedIn" target="_blank" rel="noopener noreferrer">{{ contact.linkedInDisplay }}</a>
+            <span>•</span>
+            <a [href]="contact.github" target="_blank" rel="noopener noreferrer">{{ contact.githubDisplay }}</a>
+            <span>•</span>
+            <span>{{ contact.location }}</span>
+          </div>
+        </div>
+        <div class="experience-seal" role="img" aria-label="Over 7 years of professional experience">
+          <strong>7+</strong><span>years of<br />experience</span>
+        </div>
+      </header>
+
+      <div class="vn-body">
+        <aside>
+          <section aria-labelledby="profile-heading">
+            <p class="section-number">01 / Profile</p>
+            <h3 id="profile-heading">Building useful products with clarity.</h3>
+            <p>{{ profile.summary }}</p>
+            <p>{{ profile.leadership }}</p>
+          </section>
+
+          <section aria-labelledby="skills-heading">
+            <p class="section-number">02 / Expertise</p>
+            <h3 id="skills-heading">Capabilities</h3>
+            @for (group of skillGroups; track group.label) {
+              <div class="skill-group">
+                <h4>{{ group.label }}</h4>
+                <div class="skill-list">
+                  @for (skill of group.skills; track skill) {
+                    <span>{{ skill }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </section>
+
+          <section aria-labelledby="education-heading">
+            <p class="section-number">03 / Education</p>
+            <h3 id="education-heading">Learning</h3>
+            @for (item of education; track item.qualification) {
+              <div class="education-item">
+                <time>{{ item.dates }}</time>
+                <strong>{{ item.qualification }}</strong>
+                <span>{{ item.institution }}</span>
+              </div>
+            }
+          </section>
+        </aside>
+
+        <section class="experience" aria-labelledby="experience-heading">
+          <div class="section-title-row">
+            <div>
+              <p class="section-number">04 / Experience</p>
+              <h3 id="experience-heading">Career timeline</h3>
+            </div>
+            <span>2019 — Today</span>
+          </div>
+
+          <div class="timeline">
+            @for (job of experiences; track job.company; let first = $first) {
+              <article class="job" [class.current]="first">
+                <div class="job-marker"><span></span></div>
+                <div class="job-meta">
+                  <time>{{ job.dates }}</time>
+                  @if (job.companyUrl) {
+                    <a
+                      class="company-link"
+                      [href]="job.companyUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ job.company }}
+                    </a>
+                  } @else {
+                    <span>{{ job.company }}</span>
+                  }
+                </div>
+                <div class="job-content">
+                  <div class="job-heading">
+                    <h4>{{ job.title }}</h4>
+                    @if (first) {
+                      <span class="current-badge">Current</span>
+                    }
+                  </div>
+                  @if (job.projects?.length) {
+                    <p class="linked-summary">
+                      {{ job.summaryPrefix }}
+                      @for (
+                        project of job.projects ?? [];
+                        track project.url;
+                        let index = $index;
+                        let last = $last
+                      ) {
+                        <a [href]="project.url" target="_blank" rel="noopener noreferrer">{{
+                          project.name
+                        }}</a>
+                        @if (!last) {
+                          <span>{{ projectSeparator(index, job.projects?.length ?? 0) }}</span>
+                        }
+                      }
+                      <span>{{ job.summarySuffix }}</span>
+                    </p>
+                  } @else {
+                    <p>{{ job.summary }}</p>
+                  }
+                  <ul class="achievement-grid" aria-label="Key achievements">
+                    @for (achievement of job.achievements; track achievement.highlight) {
+                      <li>
+                        <strong>{{ achievement.highlight }}</strong>
+                        <span>{{ achievement.detail }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="tech-row">
+                    @for (technology of job.technologies; track technology) {
+                      <span>{{ technology }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      </div>
+    </article>
+  } @else {
+    <article id="cv-international" class="international-cv" role="tabpanel" aria-labelledby="tab-international">
+      <header class="ie-header">
+        <div>
+          <p class="overline">Curriculum Vitae</p>
+          <h2>{{ profile.internationalName }}</h2>
+          <p class="ie-role">{{ profile.headline }}</p>
+        </div>
+        <address>
+          <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+          <a [href]="'tel:' + contact.phoneHref">{{ contact.phoneDisplay }}</a>
+          <a [href]="contact.linkedIn" target="_blank" rel="noopener noreferrer">{{ contact.linkedInDisplay }}</a>
+          <a [href]="contact.github" target="_blank" rel="noopener noreferrer">{{ contact.githubDisplay }}</a>
+          <a [href]="contact.website" target="_blank" rel="noopener noreferrer">{{ contact.websiteDisplay }}</a>
+        </address>
+      </header>
+
+      <p class="work-status">{{ profile.internationalStatus }}</p>
+
+      <div class="ie-layout">
+        <aside>
+          <section>
+            <h3>Core skills</h3>
+            @for (group of skillGroups; track group.label) {
+              <div class="ie-skill-group">
+                <strong>{{ group.label }}</strong>
+                <p>{{ group.skills.join(' · ') }}</p>
+              </div>
+            }
+          </section>
+
+          <section>
+            <h3>Education</h3>
+            @for (item of education; track item.qualification) {
+              <div class="ie-education">
+                <strong>{{ item.qualification }}</strong>
+                <span>{{ item.institution }}</span>
+                <time>{{ item.dates }}</time>
+              </div>
+            }
+          </section>
+
+          <section>
+            <h3>Strengths</h3>
+            <p>
+              Technical leadership · Mentorship · Cross-functional collaboration · Problem-solving
+            </p>
+          </section>
+        </aside>
+
+        <div class="ie-main">
+          <section class="ie-summary">
+            <h3>Professional profile</h3>
+            <p>{{ profile.summary }} {{ profile.leadership }}</p>
+          </section>
+
+          <section>
+            <h3>Professional experience</h3>
+            @for (job of experiences; track job.company) {
+              <article class="ie-job">
+                <div class="ie-job-heading">
+                  <div>
+                    <h4>{{ job.title }}</h4>
+                    <p>
+                      @if (job.companyUrl) {
+                        <a [href]="job.companyUrl" target="_blank" rel="noopener noreferrer">{{
+                          job.company
+                        }}</a>
+                      } @else {
+                        {{ job.company }}
+                      }
+                    </p>
+                  </div>
+                  <time>{{ job.dates }}</time>
+                </div>
+                @if (job.projects?.length) {
+                  <p class="linked-summary">
+                    {{ job.summaryPrefix }}
+                    @for (
+                      project of job.projects ?? [];
+                      track project.url;
+                      let index = $index;
+                      let last = $last
+                    ) {
+                      <a [href]="project.url" target="_blank" rel="noopener noreferrer">{{
+                        project.name
+                      }}</a>
+                      @if (!last) {
+                        <span>{{ projectSeparator(index, job.projects?.length ?? 0) }}</span>
+                      }
+                    }
+                    <span>{{ job.summarySuffix }}</span>
+                  </p>
+                } @else {
+                  <p>{{ job.summary }}</p>
+                }
+                <ul class="ie-achievement-list" aria-label="Key achievements">
+                  @for (achievement of job.achievements; track achievement.highlight) {
+                    <li>
+                      <strong>{{ achievement.highlight }}</strong>
+                      <span>{{ achievement.detail }}</span>
+                    </li>
+                  }
+                </ul>
+                <p class="ie-tech">
+                  <strong>Technologies:</strong> {{ job.technologies.join(', ') }}
+                </p>
+              </article>
+            }
+          </section>
+        </div>
+      </div>
+    </article>
+  }
+</section>
+
+<!-- Interactive Celebration Hire Me Toast Banner -->
+@if (hireToast().visible) {
+  <aside
+    class="hire-toast"
+    role="alert"
+    aria-live="polite"
+    (mouseenter)="onToastMouseEnter()"
+    (mouseleave)="onToastMouseLeave()"
+  >
+    <div class="hire-toast-glow" aria-hidden="true"></div>
+    <div class="hire-toast-content">
+      <div class="toast-heart-badge" aria-hidden="true">
+        <span>💖</span>
+      </div>
+      <div class="toast-text">
+        <h4 class="toast-title">{{ hireToast().message }}</h4>
+        <p class="toast-subtext">{{ hireToast().subtext }}</p>
+      </div>
+      <div class="toast-actions">
+        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire">
+          <span>Hire Me</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13">
+            <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </a>
+        <button type="button" class="toast-close-btn" (click)="dismissToast()" aria-label="Close notification">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
+            <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="toast-timer-bar" aria-hidden="true"></div>
+  </aside>
+}
+
