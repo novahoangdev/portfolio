@@ -1,7 +1,11 @@
 {
   "hosting": {
     "public": "dist/portfolio/browser",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
@@ -61,4 +65,3 @@
     ]
   }
 }
-

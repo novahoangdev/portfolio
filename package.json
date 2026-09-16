@@ -9,8 +9,6 @@
     "ng": "ng",
     "dev": "ng serve --host 0.0.0.0 --port 3000",
     "start": "ng serve --host 0.0.0.0 --port 3000",
-    "generate-pdfs": "node scripts/generate-pdfs.mjs",
-    "prebuild": "node scripts/generate-pdfs.mjs",
     "build": "ng build",
     "lint": "tsc --project tsconfig.app.json --noEmit",
     "watch": "ng build --watch --configuration development",
