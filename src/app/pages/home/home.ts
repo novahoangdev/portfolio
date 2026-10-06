@@ -66,6 +66,7 @@ export class Home {
   }
 
   protected onDownloadPdf(event: MouseEvent): void {
+    event.preventDefault();
     const isVn = this.market() === 'vietnam';
     const fileUrl = isVn
       ? '/documents/hoang-van-hoa-cv-vietnam.pdf'
@@ -100,4 +101,3 @@ export class Home {
       });
   }
 }
-

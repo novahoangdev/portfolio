@@ -15,8 +15,9 @@ export const routes: Routes = [
   {
     path: 'print/:market',
     loadComponent: () => import('./pages/print-cv/print-cv').then((component) => component.PrintCv),
-    title: 'CV — Nova Hoang',
+    title: (route) => route.paramMap.get('market') === 'international'
+      ? 'International CV — Nova Hoang'
+      : 'Vietnam CV — Nova Hoang',
   },
   { path: '**', redirectTo: '' },
 ];
-

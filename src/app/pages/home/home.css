@@ -101,7 +101,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--tab-gap);
   padding: var(--tab-padding);
-  transition: border-color 250ms ease;
 }
 
 .market-tabs button,
@@ -114,12 +113,6 @@
   font-weight: 800;
   gap: 0.55rem;
   padding: 0.62rem 1.05rem;
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease,
-    box-shadow 220ms ease,
-    filter 220ms ease;
 }
 
 .market-tabs button {
@@ -185,6 +178,10 @@
   background: var(--accent);
   color: white;
   text-decoration: none;
+}
+
+:host-context([data-theme='dark']) .download-button {
+  color: var(--navy);
 }
 
 .download-button:hover {
@@ -275,7 +272,8 @@
   box-shadow: 0 0 0 3px var(--accent-bright);
 }
 
-.portrait-frame picture {
+.portrait-frame picture,
+.portrait-frame img {
   border-radius: 50%;
   display: block;
   height: 100%;
@@ -286,16 +284,10 @@
 
 .portrait-frame img {
   aspect-ratio: 1 / 1;
-  border-radius: 50%;
   box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.35);
-  display: block;
   filter: saturate(0.88);
-  height: 100%;
   object-fit: cover;
-  position: relative;
   transition: filter 300ms ease, box-shadow 300ms ease;
-  width: 100%;
-  z-index: 2;
 }
 
 .portrait-frame:hover img {
@@ -451,10 +443,8 @@
   z-index: 99999;
 }
 
-:host-context([data-theme="light"]) .hire-toast,
-[data-theme="light"] .hire-toast {
+:host-context([data-theme="light"]) .hire-toast {
   background: #ffffff;
-  border-color: var(--accent);
   box-shadow: 0 12px 36px -6px rgba(23, 43, 54, 0.16), 0 0 20px rgba(47, 126, 124, 0.12);
 }
 
@@ -530,12 +520,6 @@
   gap: 0.3rem;
   padding: 0.42rem 0.78rem;
   text-decoration: none;
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease,
-    box-shadow 220ms ease,
-    filter 220ms ease;
   white-space: nowrap;
 }
 
@@ -556,12 +540,6 @@
   height: 1.75rem;
   justify-content: center;
   padding: 0;
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease,
-    box-shadow 220ms ease,
-    filter 220ms ease;
   width: 1.75rem;
 }
 
@@ -607,14 +585,6 @@
 }
 
 @media (max-width: 640px) {
-  .hire-toast {
-    bottom: 1.25rem;
-    left: 50%;
-    right: auto;
-    width: calc(100vw - 2rem);
-    max-width: 26rem;
-  }
-
   .hire-toast-content {
     flex-direction: column;
     text-align: center;
@@ -864,18 +834,17 @@
   font-weight: 800;
 }
 
-.job-meta span {
+.job-meta span,
+.company-link {
   color: var(--accent);
   font-size: 0.63rem;
   font-weight: 700;
   margin-top: 0.35rem;
 }
 
-.company-link {
-  color: var(--accent);
-  font-size: 0.63rem;
-  font-weight: 700;
-  margin-top: 0.35rem;
+.company-link,
+.linked-summary a,
+.ie-job-heading p a {
   text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
   text-underline-offset: 0.18rem;
 }
@@ -954,8 +923,6 @@
 .linked-summary a {
   color: var(--accent);
   font-weight: 800;
-  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  text-underline-offset: 0.18rem;
 }
 
 .international-cv {
@@ -1082,8 +1049,6 @@
 
 .ie-job-heading p a {
   color: inherit;
-  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  text-underline-offset: 0.18rem;
 }
 
 .ie-job-heading time {
@@ -1180,8 +1145,6 @@
   .market-tabs button,
   .download-button,
   .action-btn {
-    box-sizing: border-box;
-    font-size: 0.72rem;
     gap: 0.4rem;
     justify-content: center;
     padding: 0.65rem 0.5rem;
@@ -1191,7 +1154,6 @@
   }
 
   .market-tabs button span {
-    border-radius: 999px;
     font-size: 0.48rem;
     height: 1.35rem;
     min-width: 1.35rem;

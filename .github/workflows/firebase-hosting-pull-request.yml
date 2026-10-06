@@ -6,17 +6,14 @@ on:
   pull_request:
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
 
 concurrency:
   group: firebase-hosting-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -36,8 +33,41 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm build
+
+      - name: Upload preview build
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosting-build
+          path: dist/portfolio/browser
+          if-no-files-found: error
+          retention-days: 1
+
+  preview:
+    needs: checks
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download preview build
+        uses: actions/download-artifact@v4
+        with:
+          name: hosting-build
+          path: dist/portfolio/browser
 
       - name: Deploy Firebase preview
         uses: FirebaseExtended/action-hosting-deploy@v0

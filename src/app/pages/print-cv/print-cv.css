@@ -962,7 +962,7 @@
   color: #556570;
   display: flex;
   flex-wrap: wrap;
-  font-size: 7.2pt;
+  font-size: 8pt;
   font-weight: 500;
   gap: 1.5mm 3.5mm;
   margin-top: 2mm;
@@ -973,7 +973,7 @@
   border: 1px solid #78bbb5;
   border-radius: 4px;
   color: #2f7e7c;
-  font-size: 7pt;
+  font-size: 8pt;
   font-weight: 700;
   margin: 3mm 0 3.5mm;
   padding: 1.5mm 2.5mm;
@@ -991,7 +991,7 @@
 .ie-section-title {
   border-bottom: 1px solid #d5d1c9;
   color: #172b36;
-  font-size: 8.2pt;
+  font-size: 10pt;
   font-weight: 800;
   letter-spacing: 0.06em;
   margin: 0 0 2mm;
@@ -1001,7 +1001,7 @@
 
 .ie-summary-text {
   color: #4a5c66;
-  font-size: 7.2pt;
+  font-size: 8.5pt;
   line-height: 1.42;
   margin: 0;
 }
@@ -1013,7 +1013,7 @@
 
 .ie-skill-row {
   color: #4a5c66;
-  font-size: 7.1pt;
+  font-size: 8pt;
   line-height: 1.35;
 }
 
@@ -1045,27 +1045,27 @@
 .ie-job-header h3 {
   color: #172b36;
   display: inline-block;
-  font-size: 8.5pt;
+  font-size: 10pt;
   font-weight: 800;
   margin: 0;
 }
 
 .ie-company {
   color: #2f7e7c;
-  font-size: 8.2pt;
+  font-size: 9pt;
   font-weight: 700;
   margin-left: 2mm;
 }
 
 .ie-job-header time {
   color: #65727a;
-  font-size: 7pt;
+  font-size: 8pt;
   font-weight: 600;
 }
 
 .ie-job-summary {
   color: #4a5c66;
-  font-size: 7pt;
+  font-size: 8.5pt;
   line-height: 1.38;
   margin: 0 0 1.2mm;
 }
@@ -1078,7 +1078,7 @@
 
 .ie-bullets li {
   color: #4a5c66;
-  font-size: 7pt;
+  font-size: 8.5pt;
   line-height: 1.35;
   margin-bottom: 1mm;
   padding-left: 3.5mm;
@@ -1102,7 +1102,7 @@
 
 .ie-tech-line {
   color: #2f7e7c;
-  font-size: 6.6pt;
+  font-size: 8pt;
   line-height: 1.3;
   margin: 0;
 }
@@ -1137,7 +1137,7 @@
 .ie-contact-sm {
   color: #65727a;
   display: flex;
-  font-size: 7pt;
+  font-size: 8pt;
   gap: 2.5mm;
 }
 
@@ -1152,18 +1152,18 @@
 
 .ie-edu-row strong {
   color: #172b36;
-  font-size: 7.5pt;
+  font-size: 9pt;
 }
 
 .ie-edu-row p {
   color: #556570;
-  font-size: 6.8pt;
+  font-size: 8pt;
   margin: 0.5mm 0 0;
 }
 
 .ie-edu-row time {
   color: #65727a;
-  font-size: 6.8pt;
+  font-size: 8pt;
   font-weight: 600;
 }
 
@@ -1179,14 +1179,14 @@
 
 .ie-closing-banner h3 {
   color: #172b36;
-  font-size: 8pt;
+  font-size: 10pt;
   font-weight: 800;
   margin: 0 0 0.6mm;
 }
 
 .ie-closing-banner p {
   color: #2f7e7c;
-  font-size: 7pt;
+  font-size: 8.5pt;
   font-weight: 700;
   margin: 0 0 0.8mm;
 }
@@ -1194,7 +1194,7 @@
 .ie-closing-banner span {
   color: #4a5c66;
   display: block;
-  font-size: 6.6pt;
+  font-size: 8pt;
   line-height: 1.35;
 }
 

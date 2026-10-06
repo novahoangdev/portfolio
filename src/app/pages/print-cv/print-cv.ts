@@ -8,7 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { contact, education, experiences, profile, skillGroups } from '../../data/profile';
 
 type Market = 'vietnam' | 'international';
@@ -21,6 +22,7 @@ type Market = 'vietnam' | 'international';
 })
 export class PrintCv {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
   protected readonly contact = contact;
@@ -39,6 +41,9 @@ export class PrintCv {
   protected readonly isMobile = signal<boolean>(false);
 
   constructor() {
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      this.market.set(params.get('market') === 'international' ? 'international' : 'vietnam');
+    });
     afterNextRender(() => {
       this.updateScale();
     });
@@ -70,11 +75,28 @@ export class PrintCv {
   }
 
   protected setMarket(m: Market): void {
-    const market = m;
-    this.market.set(market);
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(null, '', `/print/${market}`);
+    void this.router.navigate(['/print', m], { replaceUrl: true });
+  }
+
+  protected handleTabKey(event: KeyboardEvent): void {
+    let market: Market;
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        market = this.market() === 'vietnam' ? 'international' : 'vietnam';
+        break;
+      case 'Home':
+        market = 'vietnam';
+        break;
+      case 'End':
+        market = 'international';
+        break;
+      default:
+        return;
     }
+    event.preventDefault();
+    this.setMarket(market);
+    document.getElementById(`print-tab-${market}`)?.focus();
   }
 
   protected triggerPrint(): void {
@@ -82,6 +104,7 @@ export class PrintCv {
   }
 
   protected onDownloadPdf(event: MouseEvent): void {
+    event.preventDefault();
     const isVn = this.market() === 'vietnam';
     const fileUrl = isVn
       ? '/documents/hoang-van-hoa-cv-vietnam.pdf'
@@ -121,4 +144,3 @@ export class PrintCv {
     return total === 2 ? ' and ' : ', and ';
   }
 }
-
