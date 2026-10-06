@@ -1,14 +1,15 @@
 <section class="about-hero">
   <div class="hero-copy">
-    <p class="eyebrow">About / Nova Hoang</p>
-    <h1>Engineering with<br /><em>purpose & empathy.</em></h1>
-    <p class="lede">
+    <p class="eyebrow" appReveal>About / Nova Hoang</p>
+    <h1 [appReveal]="70">Engineering with<br /><em>purpose & empathy.</em></h1>
+    <p class="lede" [appReveal]="140">
       I’m a senior software engineer who cares equally about strong architecture, useful products,
       and the people who build them.
     </p>
   </div>
   <div
     class="hero-portrait"
+    [appReveal]="210"
     role="button"
     tabindex="0"
     (click)="onAvatarClick($event)"
@@ -80,29 +81,29 @@
 
 <!-- Quantitative Impact Metrics Bar -->
 <section class="about-metrics-bar" aria-label="Key professional impact metrics">
-  <div class="metric-card">
+  <div class="metric-card" [appReveal]="0">
     <div class="metric-val">7+</div>
     <div class="metric-lbl">Years Experience</div>
     <div class="metric-sub">Angular, React & Enterprise UI</div>
   </div>
-  <div class="metric-card">
+  <div class="metric-card" [appReveal]="55">
     <div class="metric-val">24+</div>
     <div class="metric-lbl">Production Releases</div>
     <div class="metric-sub">Zero-downtime CI/CD delivery</div>
   </div>
-  <div class="metric-card">
+  <div class="metric-card" [appReveal]="110">
     <div class="metric-val">230M+</div>
     <div class="metric-lbl">Records Pipeline</div>
     <div class="metric-sub">High-throughput data export engine</div>
   </div>
-  <div class="metric-card">
+  <div class="metric-card" [appReveal]="165">
     <div class="metric-val">70%</div>
     <div class="metric-lbl">Latency Drop</div>
     <div class="metric-sub">Redis distributed locks & caching</div>
   </div>
 </section>
 
-<section class="story-section">
+<section class="story-section" appReveal>
   <div class="section-label">01 / My story</div>
   <div class="story-copy">
     <h2>From interfaces to systems.</h2>
@@ -122,9 +123,9 @@
 </section>
 
 <section class="principles-section">
-  <div class="section-label">02 / How I work</div>
+  <div class="section-label" appReveal>02 / How I work</div>
   <div class="principles-grid">
-    <article>
+    <article [appReveal]="0">
       <span>01</span>
       <h3>Make complexity understandable.</h3>
       <p>
@@ -132,7 +133,7 @@
         code.
       </p>
     </article>
-    <article>
+    <article [appReveal]="65">
       <span>02</span>
       <h3>Optimize workflows & scale.</h3>
       <p>
@@ -140,7 +141,7 @@
         high-impact products.
       </p>
     </article>
-    <article>
+    <article [appReveal]="130">
       <span>03</span>
       <h3>Empower & elevate the team.</h3>
       <p>
@@ -152,13 +153,13 @@
 </section>
 
 <section class="toolkit-section">
-  <div>
+  <div appReveal>
     <p class="section-label">03 / Toolkit</p>
     <h2>A broad toolkit.<br />A focused approach.</h2>
   </div>
   <div class="toolkit-list">
     @for (group of skillGroups; track group.label) {
-      <div class="toolkit-row">
+      <div class="toolkit-row" appReveal>
         <strong>{{ group.label }}</strong>
         <p>{{ group.skills.join(' / ') }}</p>
       </div>
@@ -166,7 +167,7 @@
   </div>
 </section>
 
-<section class="outside-section">
+<section class="outside-section" appReveal>
   <p class="section-label">04 / Beyond work</p>
   <blockquote>
     “Curiosity is the thread connecting good engineering, thoughtful design, and a life well lived.”
@@ -177,7 +178,7 @@
   </p>
 </section>
 
-<section class="contact-cta">
+<section class="contact-cta" appReveal>
   <p class="cta-eyebrow">Open to Senior / Lead Frontend opportunities</p>
   <h2>Let’s build something<br /><em>useful together.</em></h2>
   <p class="cta-location">
@@ -185,14 +186,14 @@
     <span>Based in Vietnam · Open to relocation, remote & hybrid · Sponsorship required</span>
   </p>
   <div class="cta-actions">
-    <a [href]="'mailto:' + contact.email" class="cta-btn cta-btn-primary">
+    <a [href]="'mailto:' + contact.email" class="cta-btn cta-btn-primary" appButtonHover>
       <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
         <polyline points="22,6 12,13 2,6" />
       </svg>
       <span>{{ contact.email }}</span>
     </a>
-    <a routerLink="/" class="cta-btn cta-btn-secondary">
+    <a routerLink="/" class="cta-btn cta-btn-secondary" appButtonHover>
       <span>View Interactive Resume</span>
       <span aria-hidden="true">↗</span>
     </a>
@@ -218,13 +219,13 @@
         <p class="toast-subtext">{{ hireToast().subtext }}</p>
       </div>
       <div class="toast-actions">
-        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire">
+        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire" appButtonHover>
           <span>Hire Me</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13">
             <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </a>
-        <button type="button" class="toast-close-btn" (click)="dismissToast()" aria-label="Close notification">
+        <button type="button" class="toast-close-btn" appButtonHover (click)="dismissToast()" aria-label="Close notification">
           <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
             <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12" />
           </svg>

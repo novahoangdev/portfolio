@@ -102,14 +102,14 @@
       </span>
     </a>
 
-    <nav aria-label="Primary navigation">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Resume</a>
-      <a routerLink="/about" routerLinkActive="active">About</a>
+    <nav class="sliding-tabs" appTabHover aria-label="Primary navigation">
+      <a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">Resume</a>
+      <a routerLink="/about" routerLinkActive="active" ariaCurrentWhenActive="page">About</a>
     </nav>
 
     <div class="header-actions">
       <a
-        class="header-cta linkedin-cta"
+        class="header-cta linkedin-cta" appButtonHover
         [href]="contact.linkedIn"
         target="_blank"
         rel="noopener noreferrer"
@@ -124,7 +124,7 @@
       </a>
 
       <button
-        class="theme-toggle"
+        class="theme-toggle" appButtonHover
         type="button"
         (click)="toggleTheme()"
         [attr.aria-label]="theme() === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"

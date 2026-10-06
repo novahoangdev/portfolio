@@ -370,16 +370,12 @@ nav {
   border: 1px solid var(--line);
   border-radius: 999px;
   box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
-  display: flex;
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--tab-gap);
   justify-self: center;
-  padding: 0.28rem;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-nav:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 14px -3px rgba(47, 126, 124, 0.18);
+  padding: var(--tab-padding);
+  transition: border-color 250ms ease, box-shadow 250ms ease;
 }
 
 nav a {
@@ -389,24 +385,18 @@ nav a {
   font-weight: 700;
   padding: 0.52rem 1.05rem;
   position: relative;
+  z-index: 1;
+  text-align: center;
   text-decoration: none;
-  transition: all 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: color 220ms ease;
 }
 
 nav a:hover {
   color: var(--ink);
-  transform: translateY(-1px);
-}
-
-nav a:active {
-  transform: scale(0.94);
 }
 
 nav a.active {
-  background: var(--ink);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   color: var(--page);
-  transform: translateY(0);
 }
 
 .header-actions {
@@ -425,7 +415,12 @@ nav a.active {
   gap: 0.4rem;
   padding: 0.48rem 0.85rem;
   text-decoration: none;
-  transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
   white-space: nowrap;
 }
 
@@ -446,15 +441,9 @@ nav a.active {
 }
 
 .linkedin-cta:hover {
-  background: #0a66c2;
-  border-color: #0a66c2;
-  box-shadow: 0 4px 14px -2px rgba(10, 102, 194, 0.4);
-  color: #ffffff;
-  transform: translateY(-2px);
-}
-
-.linkedin-cta:active {
-  transform: scale(0.95);
+  background: var(--surface-strong);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+  color: var(--ink);
 }
 
 .theme-toggle {
@@ -469,18 +458,17 @@ nav a.active {
   height: 2.35rem;
   justify-content: center;
   position: relative;
-  transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
   width: 2.35rem;
 }
 
 .theme-toggle:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 16px -2px rgba(45, 212, 191, 0.45);
-  transform: translateY(-1px) rotate(15deg) scale(1.08);
-}
-
-.theme-toggle:active {
-  transform: scale(0.88) rotate(-20deg);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
 }
 
 .theme-toggle svg {
@@ -607,10 +595,9 @@ footer p {
   }
 
   nav {
-    display: flex;
+    --tab-padding: 0.2rem;
+    --tab-gap: 0.15rem;
     justify-self: center;
-    padding: 0.2rem;
-    gap: 0.15rem;
   }
 
   nav a {

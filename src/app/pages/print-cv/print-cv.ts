@@ -1,3 +1,4 @@
+import { ButtonHover } from '../../directives/button-hover';
 import {
   Component,
   HostListener,
@@ -14,7 +15,7 @@ type Market = 'vietnam' | 'international';
 
 @Component({
   selector: 'app-print-cv',
-  imports: [RouterLink],
+  imports: [ButtonHover, RouterLink],
   templateUrl: './print-cv.html',
   styleUrl: './print-cv.css',
 })

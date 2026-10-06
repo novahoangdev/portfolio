@@ -1,16 +1,17 @@
 <section class="intro" aria-labelledby="page-title">
-  <div class="eyebrow"><span></span> Portfolio / Curriculum Vitae</div>
-  <h1 id="page-title">One career.<br /><em>Two perspectives.</em></h1>
-  <p>
+  <div class="eyebrow" appReveal><span></span> Portfolio / Curriculum Vitae</div>
+  <h1 id="page-title" [appReveal]="70">One career.<br /><em>Two perspectives.</em></h1>
+  <p [appReveal]="140">
     Discover how I turn complex requirements into reliable, user-friendly products while helping
     engineering teams deliver with confidence.
   </p>
 </section>
 
 <section class="cv-shell" aria-label="Curriculum vitae">
-  <div class="cv-toolbar">
+  <div class="cv-toolbar" [appReveal]="210">
     <div
-      class="market-tabs"
+      class="market-tabs sliding-tabs"
+      appTabHover
       role="tablist"
       aria-label="Choose CV market"
       (keydown)="handleTabKey($event)"
@@ -45,7 +46,7 @@
 
     <div class="toolbar-actions">
       <a
-        class="action-btn secondary-btn"
+        class="action-btn secondary-btn" appButtonHover
         [routerLink]="market() === 'vietnam' ? '/print/vietnam' : '/print/international'"
         target="_blank"
         rel="noopener noreferrer"
@@ -59,7 +60,7 @@
       </a>
 
       <a
-        class="download-button"
+        class="download-button" appButtonHover
         [href]="
           market() === 'vietnam'
             ? '/documents/hoang-van-hoa-cv-vietnam.pdf'
@@ -89,6 +90,7 @@
       <header class="vn-hero">
         <div
           class="portrait-frame"
+          appReveal
           role="button"
           tabindex="0"
           (click)="onAvatarClick($event)"
@@ -149,7 +151,7 @@
             </div>
           }
         </div>
-        <div class="vn-heading">
+        <div class="vn-heading" [appReveal]="70">
           <p class="overline">Hello, I’m</p>
           <h2>{{ profile.vietnameseName }}</h2>
           <p class="role">{{ profile.headline }}</p>
@@ -165,21 +167,21 @@
             <span>{{ contact.location }}</span>
           </div>
         </div>
-        <div class="experience-seal" role="img" aria-label="Over 7 years of professional experience">
+        <div class="experience-seal" [appReveal]="140" role="img" aria-label="Over 7 years of professional experience">
           <strong>7+</strong><span>years of<br />experience</span>
         </div>
       </header>
 
       <div class="vn-body">
         <aside>
-          <section aria-labelledby="profile-heading">
+          <section aria-labelledby="profile-heading" appReveal>
             <p class="section-number">01 / Profile</p>
             <h3 id="profile-heading">Building useful products with clarity.</h3>
             <p>{{ profile.summary }}</p>
             <p>{{ profile.leadership }}</p>
           </section>
 
-          <section aria-labelledby="skills-heading">
+          <section aria-labelledby="skills-heading" appReveal>
             <p class="section-number">02 / Expertise</p>
             <h3 id="skills-heading">Capabilities</h3>
             @for (group of skillGroups; track group.label) {
@@ -194,7 +196,7 @@
             }
           </section>
 
-          <section aria-labelledby="education-heading">
+          <section aria-labelledby="education-heading" appReveal>
             <p class="section-number">03 / Education</p>
             <h3 id="education-heading">Learning</h3>
             @for (item of education; track item.qualification) {
@@ -208,7 +210,7 @@
         </aside>
 
         <section class="experience" aria-labelledby="experience-heading">
-          <div class="section-title-row">
+          <div class="section-title-row" [appReveal]="70">
             <div>
               <p class="section-number">04 / Experience</p>
               <h3 id="experience-heading">Career timeline</h3>
@@ -218,7 +220,7 @@
 
           <div class="timeline">
             @for (job of experiences; track job.company; let first = $first) {
-              <article class="job" [class.current]="first">
+              <article appReveal class="job" [class.current]="first">
                 <div class="job-marker"><span></span></div>
                 <div class="job-meta">
                   <time>{{ job.dates }}</time>
@@ -285,7 +287,7 @@
     </article>
   } @else {
     <article id="cv-international" class="international-cv" role="tabpanel" aria-labelledby="tab-international">
-      <header class="ie-header">
+      <header class="ie-header" appReveal>
         <div>
           <p class="overline">Curriculum Vitae</p>
           <h2>{{ profile.internationalName }}</h2>
@@ -300,11 +302,11 @@
         </address>
       </header>
 
-      <p class="work-status">{{ profile.internationalStatus }}</p>
+      <p class="work-status" [appReveal]="70">{{ profile.internationalStatus }}</p>
 
       <div class="ie-layout">
         <aside>
-          <section>
+          <section appReveal>
             <h3>Core skills</h3>
             @for (group of skillGroups; track group.label) {
               <div class="ie-skill-group">
@@ -314,7 +316,7 @@
             }
           </section>
 
-          <section>
+          <section appReveal>
             <h3>Education</h3>
             @for (item of education; track item.qualification) {
               <div class="ie-education">
@@ -325,7 +327,7 @@
             }
           </section>
 
-          <section>
+          <section appReveal>
             <h3>Strengths</h3>
             <p>
               Technical leadership · Mentorship · Cross-functional collaboration · Problem-solving
@@ -334,15 +336,15 @@
         </aside>
 
         <div class="ie-main">
-          <section class="ie-summary">
+          <section class="ie-summary" appReveal>
             <h3>Professional profile</h3>
             <p>{{ profile.summary }} {{ profile.leadership }}</p>
           </section>
 
           <section>
-            <h3>Professional experience</h3>
+            <h3 appReveal>Professional experience</h3>
             @for (job of experiences; track job.company) {
-              <article class="ie-job">
+              <article class="ie-job" appReveal>
                 <div class="ie-job-heading">
                   <div>
                     <h4>{{ job.title }}</h4>
@@ -418,13 +420,13 @@
         <p class="toast-subtext">{{ hireToast().subtext }}</p>
       </div>
       <div class="toast-actions">
-        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire">
+        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire" appButtonHover>
           <span>Hire Me</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13">
             <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </a>
-        <button type="button" class="toast-close-btn" (click)="dismissToast()" aria-label="Close notification">
+        <button type="button" class="toast-close-btn" appButtonHover (click)="dismissToast()" aria-label="Close notification">
           <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
             <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12" />
           </svg>
@@ -434,4 +436,3 @@
     <div class="toast-timer-bar" aria-hidden="true"></div>
   </aside>
 }
-
