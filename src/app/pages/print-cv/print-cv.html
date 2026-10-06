@@ -2,14 +2,14 @@
 <header class="print-toolbar" aria-label="Print controls">
   <div class="print-toolbar-container">
     <div class="toolbar-left">
-      <a routerLink="/" class="toolbar-btn back-btn" title="Back to Portfolio">
+      <a routerLink="/" class="toolbar-btn back-btn" appButtonHover title="Back to Portfolio">
         <svg aria-hidden="true" class="btn-icon back-icon" viewBox="0 0 24 24" width="16" height="16">
           <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span>Portfolio</span>
       </a>
 
-      <div class="market-switch" role="tablist" aria-label="Select CV Market Version">
+      <div class="market-switch sliding-tabs" appTabHover role="tablist" aria-label="Select CV Market Version">
         <button
           type="button"
           role="tab"
@@ -35,7 +35,7 @@
 
     <div class="toolbar-right">
       <a
-        class="toolbar-btn dl-btn"
+        class="toolbar-btn dl-btn" appButtonHover
         [href]="market() === 'vietnam' ? '/documents/hoang-van-hoa-cv-vietnam.pdf' : '/documents/nova-hoang-cv-international.pdf'"
         [attr.download]="market() === 'vietnam' ? 'hoang-van-hoa-cv-vietnam.pdf' : 'nova-hoang-cv-international.pdf'"
         target="_blank"
@@ -51,7 +51,7 @@
 
       <button
         type="button"
-        class="toolbar-btn print-primary-btn"
+        class="toolbar-btn print-primary-btn" appButtonHover
         (click)="triggerPrint()"
         title="Print or export as pristine vector PDF"
       >

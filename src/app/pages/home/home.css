@@ -93,17 +93,15 @@
 }
 
 .market-tabs {
+  --tab-gap: 0.35rem;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 999px;
-  display: flex;
-  gap: 0.35rem;
-  padding: 0.28rem;
-  transition: all 250ms ease;
-}
-
-.market-tabs:hover {
-  border-color: var(--accent);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tab-gap);
+  padding: var(--tab-padding);
+  transition: border-color 250ms ease;
 }
 
 .market-tabs button,
@@ -116,7 +114,12 @@
   font-weight: 800;
   gap: 0.55rem;
   padding: 0.62rem 1.05rem;
-  transition: all 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
 }
 
 .market-tabs button {
@@ -124,16 +127,14 @@
   border: 1px solid transparent;
   color: var(--muted);
   cursor: pointer;
+  justify-content: center;
   position: relative;
+  z-index: 1;
+  transition: color 220ms ease;
 }
 
 .market-tabs button:hover {
   color: var(--ink);
-  transform: translateY(-1px);
-}
-
-.market-tabs button:active {
-  transform: scale(0.95);
 }
 
 .market-tabs button span {
@@ -148,21 +149,17 @@
   letter-spacing: 0.02em;
   min-width: 1.55rem;
   padding: 0 0.35rem;
-  transition: all 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
 }
 
 .market-tabs button.active {
-  background: var(--ink);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   color: var(--page);
-  transform: translateY(0);
 }
 
 .market-tabs button.active span {
   background: var(--accent);
   box-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
   color: white;
-  transform: scale(1.05);
 }
 
 .secondary-btn {
@@ -175,14 +172,8 @@
 
 .secondary-btn:hover {
   background: var(--paper);
-  border-color: var(--accent);
-  box-shadow: 0 4px 14px -3px rgba(47, 126, 124, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
   color: var(--accent);
-  transform: translateY(-2px);
-}
-
-.secondary-btn:active {
-  transform: scale(0.96);
 }
 
 .secondary-btn svg {
@@ -197,13 +188,8 @@
 }
 
 .download-button:hover {
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   filter: brightness(1.05);
-  transform: translateY(-2px);
-}
-
-.download-button:active {
-  transform: scale(0.96);
 }
 
 .download-button svg {
@@ -236,6 +222,7 @@
 }
 
 .vn-hero {
+  --reveal-distance: 0px;
   align-items: center;
   background: var(--navy);
   color: #f7f5ef;
@@ -543,19 +530,19 @@
   gap: 0.3rem;
   padding: 0.42rem 0.78rem;
   text-decoration: none;
-  transition: all 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
   white-space: nowrap;
 }
 
 .toast-btn-hire:hover {
   background: var(--accent-bright);
-  box-shadow: 0 5px 16px -2px rgba(120, 187, 181, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
   color: var(--navy);
-  transform: translateY(-1.5px) scale(1.03);
-}
-
-.toast-btn-hire:active {
-  transform: scale(0.96);
 }
 
 .toast-close-btn {
@@ -569,15 +556,18 @@
   height: 1.75rem;
   justify-content: center;
   padding: 0;
-  transition: all 200ms ease;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
   width: 1.75rem;
 }
 
 .toast-close-btn:hover {
   background: var(--accent-soft);
-  border-color: var(--accent);
   color: var(--ink);
-  transform: scale(1.08);
 }
 
 .toast-timer-bar {
@@ -1176,9 +1166,7 @@
   }
 
   .market-tabs {
-    display: grid;
-    gap: 0.5rem;
-    grid-template-columns: 1fr 1fr;
+    --tab-gap: 0.5rem;
     width: 100%;
   }
 

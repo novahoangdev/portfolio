@@ -28,33 +28,24 @@ Personal portfolio and interactive CV built with Angular. The project presents m
 
 ## Requirements
 
-- Node.js version defined in `.nvmrc`
-- pnpm version defined in `package.json`
+- Node.js **22.22.3** (`.nvmrc`)
+- pnpm **12.4.1** (`package.json`)
 
 ## Getting Started
-
-Clone the repository and install dependencies:
 
 ```bash
 git clone <repository-url>
 cd portfolio
 
+nvm install
 nvm use
 corepack enable
-pnpm install
-```
-
-Start the local development server:
-
-```bash
+corepack prepare pnpm@12.4.1 --activate
+pnpm install --frozen-lockfile
 pnpm start
 ```
 
-The application is available at:
-
-```text
-http://localhost:3000
-```
+Open http://localhost:3000.
 
 ## Available Commands
 

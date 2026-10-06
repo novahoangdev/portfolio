@@ -1,5 +1,7 @@
+import { ButtonHover } from '../../directives/button-hover';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Reveal } from '../../directives/reveal';
 import { contact, education, experiences, profile, skillGroups } from '../../data/profile';
 import { HeartReactionService } from '../../services/heart-reaction';
 
@@ -7,7 +9,7 @@ type Market = 'vietnam' | 'international';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [ButtonHover, RouterLink, Reveal],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

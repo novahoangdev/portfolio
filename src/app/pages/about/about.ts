@@ -1,11 +1,13 @@
+import { ButtonHover } from '../../directives/button-hover';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Reveal } from '../../directives/reveal';
 import { contact, profile, skillGroups } from '../../data/profile';
 import { HeartReactionService } from '../../services/heart-reaction';
 
 @Component({
   selector: 'app-about',
-  imports: [RouterLink],
+  imports: [ButtonHover, RouterLink, Reveal],
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
