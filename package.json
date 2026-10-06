@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^22.22.3 || ^24.15.0 || ^26.0.0"
   },
   "scripts": {
     "ng": "ng",
     "dev": "ng serve --host 0.0.0.0 --port 3000",
     "start": "ng serve --host 0.0.0.0 --port 3000",
-    "build": "ng build",
+    "build": "ng build && node scripts/generate-route-metadata.mjs",
     "lint": "tsc --project tsconfig.app.json --noEmit",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false"

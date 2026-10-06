@@ -1,0 +1,22 @@
+{
+  "/": {
+    "title": "Resume — Nova Hoang",
+    "description": "Senior Software Engineer with 7+ years of experience crafting enterprise web applications using Angular, React, TypeScript, NestJS, and microservices architecture.",
+    "robots": "index, follow, max-image-preview:large"
+  },
+  "/about": {
+    "title": "About — Nova Hoang",
+    "description": "Meet Nova Hoang (Hoàng Văn Hòa), a Senior Software Engineer interested in frontend engineering, UI architecture, design systems, and mentoring developers.",
+    "robots": "index, follow, max-image-preview:large"
+  },
+  "/print/vietnam": {
+    "title": "Vietnam CV — Nova Hoang",
+    "description": "Print the Vietnam curriculum vitae of Hoàng Văn Hòa (Nova Hoang).",
+    "robots": "noindex, follow"
+  },
+  "/print/international": {
+    "title": "International CV — Nova Hoang",
+    "description": "Print the international curriculum vitae of Nova Hoang (Hoang Van Hoa).",
+    "robots": "noindex, follow"
+  }
+}

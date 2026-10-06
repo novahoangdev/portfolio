@@ -55,8 +55,10 @@ export const profile = {
     'Senior Software Engineer with over seven years of experience building high-performance, enterprise-grade web applications. I connect robust technical architecture with thoughtful user experiences, with deep expertise in Angular, TypeScript, React, and Node.js ecosystems.',
   leadership:
     'Beyond hands-on engineering and architecture, I actively drive project delivery strategies, streamline engineering workflows, and mentor engineers to build high-performing teams and scalable digital products.',
+  internationalSummary:
+    'Senior Software Engineer with 7+ years building enterprise web applications with Angular, TypeScript, React, and Node.js. Combine frontend architecture and user experience design with project delivery, workflow improvement, and engineering mentorship.',
   internationalStatus:
-    'Based in Vietnam · Open to international relocation, remote & hybrid · Visa sponsorship welcome',
+    'Based in Vietnam · Open to relocation, remote & hybrid · Employment permit sponsorship required',
 } as const;
 
 export const skillGroups = [
@@ -224,7 +226,7 @@ export const experiences: readonly Experience[] = [
       {
         highlight: 'Cognitive Brain-Training Gamification (AXA Direct Life & Active Brain CLUB):',
         detail:
-          ' Integrated interactive daily cognitive mini-games (Notore) into AXA\'s digital customer care ecosystem ("Emma by AXA"), targeting 6 core cognitive functions (memory, focus, speed, inhibition) for middle-aged and senior policyholders via Active Brain CLUB platform connectivity.',
+          ' Integrated interactive daily cognitive mini-games (Notore) into AXA\'s digital customer care ecosystem ("Emma by AXA"), targeting six core cognitive functions, including memory, focus, speed, and inhibition, for middle-aged and senior policyholders via Active Brain CLUB platform connectivity.',
       },
       {
         highlight: 'Enterprise Career & Student Portals (Gumi Career Support & Campus Career):',

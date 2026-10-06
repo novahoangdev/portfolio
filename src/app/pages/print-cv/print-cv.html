@@ -9,11 +9,14 @@
         <span>Portfolio</span>
       </a>
 
-      <div class="market-switch sliding-tabs" appTabHover role="tablist" aria-label="Select CV Market Version">
+      <div class="market-switch sliding-tabs" appTabHover role="tablist" aria-label="Select CV Market Version" (keydown)="handleTabKey($event)">
         <button
+          id="print-tab-vietnam"
           type="button"
           role="tab"
           [attr.aria-selected]="market() === 'vietnam'"
+          [attr.tabindex]="market() === 'vietnam' ? 0 : -1"
+          aria-controls="print-cv-vietnam"
           [class.active]="market() === 'vietnam'"
           (click)="setMarket('vietnam')"
         >
@@ -21,9 +24,12 @@
           <span class="tab-text">Vietnam CV</span>
         </button>
         <button
+          id="print-tab-international"
           type="button"
           role="tab"
           [attr.aria-selected]="market() === 'international'"
+          [attr.tabindex]="market() === 'international' ? 0 : -1"
+          aria-controls="print-cv-international"
           [class.active]="market() === 'international'"
           (click)="setMarket('international')"
         >
@@ -87,7 +93,7 @@
   <div class="document-viewport">
     <div class="document-scaler">
       @if (market() === 'vietnam') {
-        <div class="document vietnam-document">
+        <div class="document vietnam-document" id="print-cv-vietnam" role="tabpanel" aria-labelledby="print-tab-vietnam" tabindex="0">
     <!-- PAGE 1 -->
     <article class="page vn-page">
       <!-- HERO HEADER -->
@@ -407,7 +413,7 @@
   </div>
 } @else {
   <!-- INTERNATIONAL FORMAT -->
-  <div class="document international-document">
+  <div class="document international-document" id="print-cv-international" role="tabpanel" aria-labelledby="print-tab-international" tabindex="0">
     <!-- PAGE 1 -->
     <article class="page ie-page">
       <header class="ie-header">
@@ -437,7 +443,7 @@
 
       <section class="ie-section">
         <h2 class="ie-section-title">Professional Summary</h2>
-        <p class="ie-summary-text">{{ profile.summary }} {{ profile.leadership }}</p>
+        <p class="ie-summary-text">{{ profile.internationalSummary }}</p>
       </section>
 
       <section class="ie-section">
@@ -589,7 +595,7 @@
       <div class="ie-closing-banner">
         <h3>Senior / Lead Frontend & Full-Stack Engineer</h3>
         <p>Angular · React · TypeScript · NestJS · Enterprise UI</p>
-        <span>Open to international relocation, visa sponsorship & global remote opportunities. Ready for immediate onboarding with distributed engineering teams.</span>
+        <span>{{ profile.internationalStatus }}</span>
       </div>
 
       <footer class="page-footer">

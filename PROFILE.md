@@ -38,6 +38,8 @@ Senior Software Engineer with over seven years of experience building high-perfo
 
 Beyond hands-on engineering and architecture, I actively drive project delivery strategies, streamline engineering workflows, and mentor engineers to build high-performing teams and scalable digital products.
 
+**International CV summary:** Senior Software Engineer with 7+ years building enterprise web applications with Angular, TypeScript, React, and Node.js. Combine frontend architecture and user experience design with project delivery, workflow improvement, and engineering mentorship.
+
 ## Core Expertise & Skill Groups
 
 ### Frontend
@@ -131,7 +133,7 @@ Beyond hands-on engineering and architecture, I actively drive project delivery 
   - Ajinomoto (Corporate Learning Portal)
 - **Key Achievements**:
   - **Project Scaffolding & Multi-Tenant Media CMS (Nikkan Sports)**: Initialized project architecture from scratch for a high-traffic Japanese sports news publishing system; engineered dynamic sub-domain rendering, dynamic form generators per sub-company, custom WYSIWYG article editors with drag-and-drop layouts, and granular RBAC workflows.
-  - **Cognitive Brain-Training Gamification (AXA Direct Life & Active Brain CLUB)**: Integrated interactive daily cognitive mini-games (Notore) into AXA's digital customer care ecosystem ("Emma by AXA"), targeting 6 core cognitive functions (memory, focus, speed, inhibition) for middle-aged and senior policyholders via Active Brain CLUB platform connectivity.
+  - **Cognitive Brain-Training Gamification (AXA Direct Life & Active Brain CLUB)**: Integrated interactive daily cognitive mini-games (Notore) into AXA's digital customer care ecosystem ("Emma by AXA"), targeting six core cognitive functions, including memory, focus, speed, and inhibition, for middle-aged and senior policyholders via Active Brain CLUB platform connectivity.
   - **Enterprise Career & Student Portals (Gumi Career Support & Campus Career)**: Built career development and job-hunting portals for Tsukuba University students and Campus Career, featuring responsive interview preparation roadmaps, company matching algorithms, and streamlined recruiter-student communication channels.
   - **Internal Corporate Learning Management (Ajinomoto)**: Developed internal employee training and onboarding workflows with progress tracking, interactive assessment modules, and offline capability powered by Angular PWA.
 - **Technologies**: Angular, React, TypeScript, JavaScript, Firebase, NativeScript, Ant Design, SCSS, REST APIs.
@@ -180,4 +182,3 @@ Beyond hands-on engineering and architecture, I actively drive project delivery 
 - **Vietnam CV (`/print/vietnam`)**: Visual editorial 2-page CV layout, includes profile photo (`hoa-hoang.jpg`), displays Vietnamese name and English alternate name.
 - **International CV (`/print/international`)**: Clean, ATS-optimized 2-page CV layout, excludes photo, includes relocation and sponsorship status statement.
 - **Public Links**: Unified GitHub (`github.com/novahoangdev`), LinkedIn (`linkedin.com/in/novahoangdev`), X (`x.com/novahoangdev`), Website (`novahoangdev.web.app`), and WhatsApp/Phone across all web views and CV print pages.
-

@@ -183,7 +183,7 @@
   <h2>Let’s build something<br /><em>useful together.</em></h2>
   <p class="cta-location">
     <span class="location-dot"></span>
-    <span>Based in Vietnam · Open to relocation, remote & hybrid · Sponsorship required</span>
+    <span>{{ profile.internationalStatus }}</span>
   </p>
   <div class="cta-actions">
     <a [href]="'mailto:' + contact.email" class="cta-btn cta-btn-primary" appButtonHover>
@@ -235,4 +235,3 @@
     <div class="toast-timer-bar" aria-hidden="true"></div>
   </aside>
 }
-

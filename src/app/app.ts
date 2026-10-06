@@ -2,6 +2,9 @@ import { ButtonHover } from './directives/button-hover';
 import { Component, HostListener, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { contact } from './data/profile';
+import { DOCUMENT } from '@angular/common';
+import { Meta } from '@angular/platform-browser';
+import pages from './data/page-metadata.json';
 
 type Theme = 'light' | 'dark';
 
@@ -13,6 +16,8 @@ type Theme = 'light' | 'dark';
 })
 export class App {
   private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
+  private readonly meta = inject(Meta);
   protected readonly contact = contact;
   protected readonly theme = signal<Theme>(this.initialTheme());
   protected readonly headerHidden = signal<boolean>(false);
@@ -24,16 +29,35 @@ export class App {
     effect(() => {
       const theme = this.theme();
       document.documentElement.dataset['theme'] = theme;
-      localStorage.setItem('portfolio-theme', theme);
+      try {
+        localStorage.setItem('portfolio-theme', theme);
+      } catch {
+        // Theme switching still works when browser storage is unavailable.
+      }
     });
 
     // Reset header state on navigation
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
+        this.updateMetadata(event.urlAfterRedirects);
         this.headerHidden.set(false);
         this.lastScrollY = 0;
       }
     });
+  }
+
+  private updateMetadata(url: string): void {
+    const path = url.split(/[?#]/)[0].replace(/\/$/, '') || '/';
+    const page = pages[path as keyof typeof pages] ?? pages['/'];
+    const canonical = `https://novahoangdev.web.app${path}`;
+    this.document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical);
+    this.meta.updateTag({ name: 'description', content: page.description });
+    this.meta.updateTag({ name: 'robots', content: page.robots });
+    this.meta.updateTag({ property: 'og:url', content: canonical });
+    this.meta.updateTag({ property: 'og:title', content: page.title });
+    this.meta.updateTag({ property: 'og:description', content: page.description });
+    this.meta.updateTag({ name: 'twitter:title', content: page.title });
+    this.meta.updateTag({ name: 'twitter:description', content: page.description });
   }
 
   @HostListener('window:scroll', [])
@@ -75,9 +99,13 @@ export class App {
   }
 
   private initialTheme(): Theme {
-    const saved = localStorage.getItem('portfolio-theme');
-    if (saved === 'light' || saved === 'dark') {
-      return saved;
+    try {
+      const saved = localStorage.getItem('portfolio-theme');
+      if (saved === 'light' || saved === 'dark') {
+        return saved;
+      }
+    } catch {
+      // Fall back to the default theme when browser storage is unavailable.
     }
     return 'light';
   }
