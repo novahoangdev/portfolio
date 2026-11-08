@@ -1,12 +1,7 @@
 {
   "/": {
-    "title": "Resume — Nova Hoang",
-    "description": "Senior Software Engineer with 7+ years of experience crafting enterprise web applications using Angular, React, TypeScript, NestJS, and microservices architecture.",
-    "robots": "index, follow, max-image-preview:large"
-  },
-  "/about": {
-    "title": "About — Nova Hoang",
-    "description": "Meet Nova Hoang (Hoàng Văn Hòa), a Senior Software Engineer interested in frontend engineering, UI architecture, design systems, and mentoring developers.",
+    "title": "Nova Hoang (Hoàng Văn Hòa) — Senior Frontend Developer",
+    "description": "CV and projects of Nova Hoang (Hoàng Văn Hòa), a Senior Software Engineer with 7+ years building enterprise web apps in Angular, React, TypeScript and NestJS.",
     "robots": "index, follow, max-image-preview:large"
   },
   "/print/vietnam": {

@@ -1,0 +1,321 @@
+:host {
+  display: block;
+}
+
+.projects-section {
+  margin: 0 auto;
+  max-width: 88rem;
+  padding: clamp(4rem, 8vw, 7rem) clamp(1.1rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem);
+  scroll-margin-top: 5rem;
+}
+
+.projects-heading {
+  align-items: end;
+  display: grid;
+  gap: 2rem 4rem;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.section-label {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4.8rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+  margin: 1.2rem 0 0;
+}
+
+em {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.projects-lede {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.85;
+  margin: 0;
+  max-width: 34rem;
+}
+
+.projects-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.project-card:hover {
+  background: var(--surface-strong);
+  border-color: var(--accent);
+  box-shadow: 0 18px 38px -10px rgba(45, 212, 191, 0.22);
+  transform: translateY(-6px);
+}
+
+.project-media {
+  aspect-ratio: 4 / 3;
+  background: var(--navy);
+  border-bottom: 1px solid var(--line);
+}
+
+.project-media video,
+.project-media img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.project-media {
+  margin: 0;
+  position: relative;
+}
+
+.project-media figcaption {
+  background: rgba(12, 23, 29, 0.72);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  bottom: 0.75rem;
+  color: #f5f2ea;
+  font-size: 0.62rem;
+  font-weight: 800;
+  left: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.65rem;
+  position: absolute;
+  text-transform: uppercase;
+}
+
+/* Featured project: a full-width showcase strip (e.g. web + iOS demos) over the text. */
+.project-card.featured {
+  grid-column: 1 / -1;
+}
+
+.project-card.featured .project-media-set {
+  --showcase-h: clamp(14rem, 34vw, 32rem);
+  align-items: center;
+  background: var(--navy);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  justify-content: center;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.project-card.featured .project-media {
+  border: 0;
+  border-radius: 0.75rem;
+  height: var(--showcase-h);
+  overflow: hidden;
+}
+
+.project-media.wide {
+  aspect-ratio: 16 / 10;
+}
+
+.project-media.portrait {
+  aspect-ratio: 9 / 16;
+}
+
+.project-card.featured .project-body {
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.project-card.featured h3 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.project-card.featured .project-body > p {
+  font-size: 0.9rem;
+  max-width: 52rem;
+}
+
+.project-card.featured .project-links {
+  margin-top: 0.5rem;
+}
+
+.project-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: clamp(1.25rem, 2.4vw, 1.75rem);
+}
+
+.project-heading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.status-badge {
+  background: var(--accent-soft);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.project-body > p {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.8;
+  margin: 0.75rem 0 1.1rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.project-tags li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 0.22rem 0.6rem;
+}
+
+.project-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: auto;
+}
+
+.project-links a,
+.projects-more a {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+}
+
+.project-links a:hover,
+.project-links a:focus-visible,
+.projects-more a:hover,
+.projects-more a:focus-visible {
+  text-decoration: underline;
+}
+
+.project-links a span[aria-hidden],
+.projects-more a span[aria-hidden] {
+  margin-left: 0.2rem;
+}
+
+.projects-more {
+  margin: 2rem 0 0;
+  text-align: center;
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* Tablet: one row per featured project, preview beside the text. */
+@media (max-width: 960px) and (min-width: 641px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card:not(.featured) {
+    flex-direction: row;
+  }
+
+  .project-card:not(.featured) .project-media-set {
+    display: flex;
+    flex: 0 0 44%;
+  }
+
+  .project-card:not(.featured) .project-media {
+    aspect-ratio: auto;
+    min-height: 15rem;
+    border-bottom: 0;
+    border-right: 1px solid var(--line);
+    flex: 1;
+  }
+}
+
+@media (max-width: 800px) {
+  .projects-heading {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card.featured .project-media-set {
+    flex-direction: column;
+  }
+
+  .project-card.featured .project-media.wide {
+    height: auto;
+    width: 100%;
+  }
+
+  .project-card.featured .project-media.portrait {
+    height: 26rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card,
+  .project-card:hover {
+    transform: none;
+  }
+}

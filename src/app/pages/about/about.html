@@ -1,102 +1,27 @@
-<section class="about-hero">
+<section id="about" class="about-hero" aria-labelledby="about-title">
   <div class="hero-copy">
     <p class="eyebrow" appReveal>About / Nova Hoang</p>
-    <h1 [appReveal]="70">Engineering with<br /><em>purpose & empathy.</em></h1>
+    <h2 id="about-title" [appReveal]="70">Engineering with<br /><em>purpose & empathy.</em></h2>
     <p class="lede" [appReveal]="140">
       I’m a senior software engineer who cares equally about strong architecture, useful products,
       and the people who build them.
     </p>
-  </div>
-  <div
-    class="hero-portrait"
-    [appReveal]="210"
-    role="button"
-    tabindex="0"
-    (click)="onAvatarClick($event)"
-    (keydown.enter)="onAvatarClick($event)"
-    (keydown.space)="onAvatarClick($event); $event.preventDefault()"
-    aria-label="Portrait of Nova Hoang - click to send heart reactions"
-    title="Click to send heart reactions to Nova Hoang"
-  >
-    <div class="portrait-backdrop"></div>
-    <div class="portrait-img-wrap">
-      <picture>
-        <source
-          srcset="/images/hoa-hoang-512.webp 1x, /images/hoa-hoang.webp 2x"
-          type="image/webp"
-        />
-        <img
-          src="/images/hoa-hoang-512.webp"
-          alt="Nova Hoang, Senior Software Engineer"
-          width="400"
-          height="400"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        />
-      </picture>
-      
-      <!-- Compact Hover-Only Heart Counter Badge -->
-      @if (heartCount() > 0) {
-        <div class="avatar-mini-counter" aria-hidden="true">
-          <span class="mini-icon">❤️</span>
-          <span class="mini-num">{{ heartCount() }}</span>
-        </div>
-      }
-
-      <!-- Single click floating hearts -->
-      @for (h of floatingHearts(); track h.id) {
-        <span
-          class="floating-heart"
-          [style.left.px]="h.x"
-          [style.top.px]="h.y"
-          [style.font-size.rem]="h.size"
-          [style.animation-duration.ms]="h.duration"
-        >❤️</span>
-      }
-
-      <!-- Celebration Burst Hearts -->
-      @if (showCelebration()) {
-        <div class="burst-container" aria-hidden="true">
-          @for (ch of celebrationHearts(); track ch.id) {
-            <span
-              class="burst-particle"
-              [style.--tx]="ch.tx + 'px'"
-              [style.--ty]="ch.ty + 'px'"
-              [style.--rot]="ch.rot + 'deg'"
-              [style.--scale]="ch.scale"
-              [style.color]="ch.color"
-              [style.animation-delay.ms]="ch.delay"
-            >{{ ch.char }}</span>
-          }
-        </div>
-      }
-    </div>
-    <div class="portrait-note" (click)="$event.stopPropagation()">
-      <span>Currently</span>
-      <strong>Building enterprise products <br> at SJ Group</strong>
-    </div>
   </div>
 </section>
 
 <!-- Quantitative Impact Metrics Bar -->
 <section class="about-metrics-bar" aria-label="Key professional impact metrics">
   <div class="metric-card" [appReveal]="0">
-    <div class="metric-val">7+</div>
-    <div class="metric-lbl">Years Experience</div>
-    <div class="metric-sub">Angular, React & Enterprise UI</div>
-  </div>
-  <div class="metric-card" [appReveal]="55">
     <div class="metric-val">24+</div>
     <div class="metric-lbl">Production Releases</div>
     <div class="metric-sub">Zero-downtime CI/CD delivery</div>
   </div>
-  <div class="metric-card" [appReveal]="110">
+  <div class="metric-card" [appReveal]="55">
     <div class="metric-val">230M+</div>
     <div class="metric-lbl">Records Pipeline</div>
     <div class="metric-sub">High-throughput data export engine</div>
   </div>
-  <div class="metric-card" [appReveal]="165">
+  <div class="metric-card" [appReveal]="110">
     <div class="metric-val">70%</div>
     <div class="metric-lbl">Latency Drop</div>
     <div class="metric-sub">Redis distributed locks & caching</div>
@@ -104,7 +29,7 @@
 </section>
 
 <section class="story-section" appReveal>
-  <div class="section-label">01 / My story</div>
+  <div class="section-label">06 / My story</div>
   <div class="story-copy">
     <h2>From interfaces to systems.</h2>
     <div class="story-columns">
@@ -123,7 +48,7 @@
 </section>
 
 <section class="principles-section">
-  <div class="section-label" appReveal>02 / How I work</div>
+  <div class="section-label" appReveal>07 / How I work</div>
   <div class="principles-grid">
     <article [appReveal]="0">
       <span>01</span>
@@ -152,23 +77,8 @@
   </div>
 </section>
 
-<section class="toolkit-section">
-  <div appReveal>
-    <p class="section-label">03 / Toolkit</p>
-    <h2>A broad toolkit.<br />A focused approach.</h2>
-  </div>
-  <div class="toolkit-list">
-    @for (group of skillGroups; track group.label) {
-      <div class="toolkit-row" appReveal>
-        <strong>{{ group.label }}</strong>
-        <p>{{ group.skills.join(' / ') }}</p>
-      </div>
-    }
-  </div>
-</section>
-
 <section class="outside-section" appReveal>
-  <p class="section-label">04 / Beyond work</p>
+  <p class="section-label">08 / Beyond work</p>
   <blockquote>
     “Curiosity is the thread connecting good engineering, thoughtful design, and a life well lived.”
   </blockquote>
@@ -193,45 +103,9 @@
       </svg>
       <span>{{ contact.email }}</span>
     </a>
-    <a routerLink="/" class="cta-btn cta-btn-secondary" appButtonHover>
-      <span>View Interactive Resume</span>
-      <span aria-hidden="true">↗</span>
-    </a>
+    <button type="button" class="cta-btn cta-btn-secondary" appButtonHover (click)="scrollToResume()">
+      <span>Back to Resume</span>
+      <span aria-hidden="true">↑</span>
+    </button>
   </div>
 </section>
-
-<!-- Floating Hire Me Toast on Celebration Milestones -->
-@if (hireToast().visible) {
-  <aside
-    class="hire-toast"
-    role="status"
-    aria-live="polite"
-    (mouseenter)="onToastMouseEnter()"
-    (mouseleave)="onToastMouseLeave()"
-  >
-    <div class="hire-toast-glow" aria-hidden="true"></div>
-    <div class="hire-toast-content">
-      <div class="toast-heart-badge" aria-hidden="true">
-        <span>💖</span>
-      </div>
-      <div class="toast-text">
-        <h4 class="toast-title">{{ hireToast().message }}</h4>
-        <p class="toast-subtext">{{ hireToast().subtext }}</p>
-      </div>
-      <div class="toast-actions">
-        <a [href]="'mailto:' + contact.email + '?subject=Interested%20in%20hiring%20Nova%20Hoang'" class="toast-btn-hire" appButtonHover>
-          <span>Hire Me</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13">
-            <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
-        <button type="button" class="toast-close-btn" appButtonHover (click)="dismissToast()" aria-label="Close notification">
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
-            <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div class="toast-timer-bar" aria-hidden="true"></div>
-  </aside>
-}

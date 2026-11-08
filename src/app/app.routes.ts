@@ -5,13 +5,10 @@ export const routes: Routes = [
   {
     path: '',
     component: Home,
-    title: 'Resume — Nova Hoang',
+    title: 'Nova Hoang (Hoàng Văn Hòa) — Senior Frontend Developer',
   },
-  {
-    path: 'about',
-    loadComponent: () => import('./pages/about/about').then((component) => component.About),
-    title: 'About — Nova Hoang',
-  },
+  // About now lives below the CV on the home page.
+  { path: 'about', redirectTo: '' },
   {
     path: 'print/:market',
     loadComponent: () => import('./pages/print-cv/print-cv').then((component) => component.PrintCv),

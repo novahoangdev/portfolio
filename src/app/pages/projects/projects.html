@@ -1,0 +1,88 @@
+<section id="projects" class="projects-section" aria-labelledby="projects-title">
+  <header class="projects-heading">
+    <div appReveal>
+      <p class="section-label">05 / Side projects</p>
+      <h2 id="projects-title">Built for fun,<br /><em>crafted with care.</em></h2>
+    </div>
+    <p class="projects-lede" [appReveal]="70">
+      Outside client work, I build my own products and creative experiments — a photo-to-painting
+      studio, shaders and real-time lighting on iPhone with React Native, a 3D WebGL workspace — plus
+      tools that shape how I work.
+    </p>
+  </header>
+
+  <div class="projects-grid">
+    @for (project of projects; track project.name; let index = $index) {
+      <article class="project-card" [class.featured]="project.featured" [appReveal]="project.featured ? 0 : ((index - 1) % 3) * 70">
+        <div class="project-media-set">
+          @for (media of mediaOf(project); track media.image) {
+            <figure class="project-media" [class.portrait]="media.shape === 'portrait'" [class.wide]="media.shape === 'wide'">
+              @if (media.video) {
+                <video
+                  appPlayInView
+                  [src]="media.video"
+                  [poster]="media.image"
+                  [attr.aria-label]="media.alt"
+                  [attr.width]="media.shape === 'portrait' ? 432 : media.shape === 'wide' ? 960 : 640"
+                  [attr.height]="media.shape === 'portrait' ? 768 : media.shape === 'wide' ? 600 : 480"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  disablepictureinpicture
+                ></video>
+              } @else {
+                <img
+                  [src]="media.image"
+                  [alt]="media.alt"
+                  width="640"
+                  height="480"
+                  loading="lazy"
+                  decoding="async"
+                />
+              }
+              @if (media.label) {
+                <figcaption>{{ media.label }}</figcaption>
+              }
+            </figure>
+          }
+        </div>
+        <div class="project-body">
+          <div class="project-heading">
+            <h3>{{ project.name }}</h3>
+            @if (project.status) {
+              <span class="status-badge">{{ project.status }}</span>
+            }
+          </div>
+          <p>{{ project.summary }}</p>
+          <ul class="project-tags" aria-label="Technologies">
+            @for (technology of project.technologies; track technology) {
+              <li>{{ technology }}</li>
+            }
+          </ul>
+          <div class="project-links">
+            @if (project.liveUrl) {
+              <a [href]="project.liveUrl" target="_blank" rel="noopener noreferrer">
+                Live site <span class="sr-only">of {{ project.name }}</span><span aria-hidden="true">↗</span>
+              </a>
+            }
+            @if (project.demoUrl) {
+              <a [href]="project.demoUrl" target="_blank" rel="noopener noreferrer">
+                Watch demo <span class="sr-only">of {{ project.name }}</span><span aria-hidden="true">↗</span>
+              </a>
+            }
+            @if (project.repoUrl) {
+              <a [href]="project.repoUrl" target="_blank" rel="noopener noreferrer">
+                GitHub <span class="sr-only">repository of {{ project.name }}</span><span aria-hidden="true">↗</span>
+              </a>
+            }
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+
+  <p class="projects-more" appReveal>
+    <a [href]="githubUrl" target="_blank" rel="noopener noreferrer">More on GitHub <span aria-hidden="true">↗</span></a>
+  </p>
+</section>
