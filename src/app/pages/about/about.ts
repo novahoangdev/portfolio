@@ -1,19 +1,22 @@
+import { AutoplayVideo } from '../../directives/autoplay-video';
 import { ButtonHover } from '../../directives/button-hover';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Reveal } from '../../directives/reveal';
 import { contact, profile, skillGroups } from '../../data/profile';
+import { sideProjects } from '../../data/projects';
 import { HeartReactionService } from '../../services/heart-reaction';
 
 @Component({
   selector: 'app-about',
-  imports: [ButtonHover, RouterLink, Reveal],
+  imports: [AutoplayVideo, ButtonHover, RouterLink, Reveal],
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
 export class About {
   protected readonly contact = contact;
   protected readonly profile = profile;
+  protected readonly sideProjects = sideProjects;
   protected readonly skillGroups = skillGroups;
   protected readonly heartService = inject(HeartReactionService);
 
