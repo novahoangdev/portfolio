@@ -167,8 +167,59 @@
   </div>
 </section>
 
+<section class="projects-section" id="side-projects" aria-labelledby="projects-heading">
+  <div class="projects-head" appReveal>
+    <p class="section-label">04 / Side projects</p>
+    <h2 id="projects-heading">Built for curiosity.<br /><em>Shared in the open.</em></h2>
+    <p>
+      Creative-coding demos, 3D experiments and the tooling behind my AI-assisted workflow. Each card plays a
+      short recording of the real thing.
+    </p>
+  </div>
+  <div class="projects-grid">
+    @for (project of sideProjects; track project.slug; let i = $index) {
+      <article class="project-card" [appReveal]="(i % 3) * 70">
+        <div class="project-media">
+          <video
+            appAutoplayVideo
+            [src]="'/projects/' + project.slug + '.mp4'"
+            [poster]="'/projects/' + project.slug + '.jpg'"
+            [muted]="true"
+            muted
+            loop
+            playsinline
+            preload="none"
+            width="960"
+            height="720"
+            aria-hidden="true"
+          ></video>
+        </div>
+        <div class="project-body">
+          <h3>{{ project.title }}</h3>
+          <p>{{ project.description }}</p>
+          <ul class="project-tags" aria-label="Technologies">
+            @for (tag of project.tags; track tag) {
+              <li>{{ tag }}</li>
+            }
+          </ul>
+          <div class="project-links">
+            <a [href]="project.repo" target="_blank" rel="noopener noreferrer" appButtonHover>
+              <span>Source</span><span aria-hidden="true">↗</span>
+            </a>
+            @if (project.live) {
+              <a [href]="project.live" target="_blank" rel="noopener noreferrer" appButtonHover>
+                <span>Live</span><span aria-hidden="true">↗</span>
+              </a>
+            }
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
 <section class="outside-section" appReveal>
-  <p class="section-label">04 / Beyond work</p>
+  <p class="section-label">05 / Beyond work</p>
   <blockquote>
     “Curiosity is the thread connecting good engineering, thoughtful design, and a life well lived.”
   </blockquote>
