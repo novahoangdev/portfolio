@@ -113,8 +113,12 @@
     <span class="horizon-glow"></span>
   </div>
   <div class="stars" data-depth="1.015" aria-hidden="true">
-    @for (s of stars; track $index) {
-      <i [style.left.%]="s.x" [style.top.%]="s.y" [style.--s]="s.size + 'px'" [style.animation-delay.s]="s.delay"></i>
+    @for (g of starGroups; track $index) {
+      <span class="star-group" [style.animation-delay.s]="g.delay">
+        @for (s of g.stars; track $index) {
+          <i [style.left.%]="s.x" [style.top.%]="s.y" [style.--s]="s.size + 'px'"></i>
+        }
+      </span>
     }
   </div>
   <div class="moon" data-depth="1.03" aria-hidden="true"><span></span></div>

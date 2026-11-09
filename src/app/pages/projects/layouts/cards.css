@@ -304,16 +304,38 @@
 }
 
 .foil-layer {
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 0.9cqw, rgba(255, 255, 255, 0.14) 0.9cqw 1.25cqw),
-    linear-gradient(115deg, #ff6fb1, #ffd36b, #7cf5c4, #65c3ff, #b38cff, #ff6fb1, #ffd36b, #7cf5c4);
-  background-position: 0 0, var(--mx, 50%) var(--my, 50%);
-  background-size: 100% 100%, 320% 320%;
   inset: 0;
   mix-blend-mode: color-dodge;
   opacity: 0.16;
+  overflow: hidden;
   transition: opacity 450ms ease;
   z-index: 1;
+}
+
+/*
+ * Rainbow (bottom) + stripes (top). The rainbow is a 320% layer moved with transform —
+ * the same as background-position at (--mx, --my) on a 320% background, since
+ * translate(-p × 2.2/3.2 of its own size) == background offset of p × (100% − 320%) —
+ * so the idle shimmer runs on the compositor instead of repainting the card.
+ */
+.foil-layer::before,
+.foil-layer::after {
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.foil-layer::before {
+  background: linear-gradient(115deg, #ff6fb1, #ffd36b, #7cf5c4, #65c3ff, #b38cff, #ff6fb1, #ffd36b, #7cf5c4);
+  height: 320%;
+  transform: translate(calc(var(--mx, 50%) * -0.6875), calc(var(--my, 50%) * -0.6875));
+  width: 320%;
+}
+
+.foil-layer::after {
+  background: repeating-linear-gradient(-45deg, transparent 0 0.9cqw, rgba(255, 255, 255, 0.14) 0.9cqw 1.25cqw);
+  inset: 0;
 }
 
 .name-bar {
@@ -568,6 +590,9 @@
   mask-size: 260% 260%;
   opacity: 0.3;
   z-index: 3;
+}
+
+.is-rare .foil-layer::before {
   animation: shimmer 7s ease-in-out infinite alternate;
 }
 
@@ -602,8 +627,12 @@
 
 .is-rare.is-hover .foil-layer,
 .is-rare.is-selected .foil-layer {
-  animation: none;
   opacity: 0.5;
+}
+
+.is-rare.is-hover .foil-layer::before,
+.is-rare.is-selected .foil-layer::before {
+  animation: none;
 }
 
 /* ---------- Card back ---------- */
@@ -766,7 +795,7 @@
   pointer-events: none;
 }
 
-.is-mobile .slot.is-front .foil-layer {
+.is-mobile .slot.is-front .foil-layer::before {
   animation: shimmer 6s ease-in-out infinite alternate;
 }
 
@@ -778,6 +807,10 @@
 
 .is-mobile .mat-dim {
   display: none;
+}
+
+.mat.is-offscreen .foil-layer::before {
+  animation-play-state: paused;
 }
 
 /* ---------- Keyframes ---------- */
@@ -824,13 +857,14 @@
   }
 }
 
+/* background-position 10% 20% → 90% 80% on the 320% rainbow, as a transform. */
 @keyframes shimmer {
   from {
-    background-position: 0 0, 10% 20%;
+    transform: translate(-6.875%, -13.75%);
   }
 
   to {
-    background-position: 0 0, 90% 80%;
+    transform: translate(-61.875%, -55%);
   }
 }
 
@@ -861,8 +895,8 @@
   .stack-bar,
   .hand-hint,
   .slot.is-selected .card,
-  .is-rare .foil-layer,
-  .is-mobile .slot.is-front .foil-layer {
+  .is-rare .foil-layer::before,
+  .is-mobile .slot.is-front .foil-layer::before {
     animation: none;
   }
 

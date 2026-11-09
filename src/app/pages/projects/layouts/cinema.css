@@ -125,7 +125,9 @@
 }
 
 .cinema.is-paused .story-hit,
-.cinema.is-paused .fill.is-active {
+.cinema.is-paused .fill.is-active,
+.cinema.is-offscreen .ambient,
+.cinema.is-offscreen .grain {
   animation-play-state: paused;
 }
 
@@ -165,12 +167,33 @@
 
 @keyframes blind {
   from {
-    filter: brightness(0.3);
     transform: rotateY(var(--from)) scaleY(1.04);
   }
   to {
-    filter: brightness(1);
     transform: none;
+  }
+}
+
+/* Shade that lifts as the slice turns: same as animating brightness(0.3 → 1), but opacity-only. */
+.slice::after {
+  animation-delay: inherit;
+  animation-duration: inherit;
+  animation-fill-mode: both;
+  animation-name: blind-shade;
+  animation-timing-function: var(--glide);
+  background: #000;
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+@keyframes blind-shade {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -245,8 +268,8 @@
 
 .zone-arrow {
   align-items: center;
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.1);
+  /* Tinted glass, no backdrop-filter: re-blurring the playing film every frame is costly. */
+  background: rgba(38, 40, 44, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   color: #fff;
@@ -410,8 +433,7 @@
 
 .paused-pill {
   align-items: center;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(38, 40, 44, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   display: inline-flex;
@@ -447,8 +469,7 @@
 
 .pause-btn {
   align-items: center;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(38, 40, 44, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 50%;
   color: #fff;
@@ -468,7 +489,7 @@
 }
 
 .pause-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(62, 64, 68, 0.6);
   transform: scale(1.06);
 }
 
@@ -526,8 +547,7 @@
 }
 
 .kind {
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(38, 40, 44, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   font-size: 0.6rem;
@@ -622,8 +642,7 @@
 
 .open {
   align-items: center;
-  backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(38, 40, 44, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
   color: #fff;
@@ -667,7 +686,7 @@
 }
 
 .open:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(62, 64, 68, 0.7);
   border-color: rgba(255, 255, 255, 0.4);
 }
 

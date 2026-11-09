@@ -98,6 +98,8 @@ interface Tray {
   readonly ripples: Ripple[];
   /** Agitation (rocking the tray) until this time. */
   rockUntil: number;
+  /** Last repaint; a still tray only needs its slow lamp reflection refreshed now and then. */
+  drawn: number;
   w: number;
   h: number;
 }
@@ -177,7 +179,7 @@ export class ProjectsDarkroom {
 
       const trays: Tray[] = Array.from(room.querySelectorAll<HTMLElement>('.tray')).map((el) => {
         const canvas = el.querySelector('canvas')!;
-        return { el, canvas, ctx: canvas.getContext('2d'), ripples: [], rockUntil: 0, w: 0, h: 0 };
+        return { el, canvas, ctx: canvas.getContext('2d'), ripples: [], rockUntil: 0, drawn: -Infinity, w: 0, h: 0 };
       });
 
       this.hangs = printEls.map((el, index) => ({
@@ -345,7 +347,8 @@ export class ProjectsDarkroom {
             for (let i = 0; i < n - 1; i++) {
               const dx = x[i + 1]! - x[i]!;
               const dy = y[i + 1]! - y[i]!;
-              const d = Math.hypot(dx, dy);
+              // sqrt, not hypot: this is the hot loop (hundreds of thousands of calls while the lines settle).
+              const d = Math.sqrt(dx * dx + dy * dy);
               if (d <= rope.seg) continue;
               const wa = i === 0 || (pinned?.rope === rope && pinned.node === i) ? 0 : 1 / (1 + load[i]!);
               const wb =
@@ -445,11 +448,15 @@ export class ProjectsDarkroom {
       };
 
       // ---------- trays: liquid with ripples ----------
-      const drawTrays = (now: number) => {
+      const drawTrays = (now: number, force = false) => {
         TRAYS.forEach((def, k) => {
           const tray = trays[k];
           const ctx = tray?.ctx;
           if (!tray || !ctx || !tray.w) return;
+          // Still liquid: the reflection drifts a couple of px a second, ~8 repaints a second is plenty.
+          const still = !tray.ripples.length && tray.rockUntil <= now;
+          if (still && !force && now - tray.drawn < 120) return;
+          tray.drawn = now;
           const { w, h } = tray;
           const rock = tray.rockUntil > now ? Math.sin(now * 0.0062) * Math.min(1, (tray.rockUntil - now) / 600) : 0;
           ctx.clearRect(0, 0, w, h);
@@ -627,6 +634,8 @@ export class ProjectsDarkroom {
         h.lastVx = h.lastVy = 0;
         activeDevelops = Math.max(0, activeDevelops - 1);
         setPhoto(h, 1);
+        // Developed: drop the (now neutral) inline filter so the playing video isn't re-filtered every frame.
+        h.photo.style.filter = '';
         setState(h.index, 'developed');
         bump(h.index);
         this.announce.set(`${projects[h.index]?.name ?? ''} developed. Press again to open it.`);
@@ -805,11 +814,13 @@ export class ProjectsDarkroom {
         if (room.clientWidth === lastWidth) return;
         lastWidth = room.clientWidth;
         layout();
-        drawTrays(view.performance.now());
+        drawTrays(view.performance.now(), true);
       });
       ro.observe(room);
       layout();
-      drawTrays(view.performance.now());
+      drawTrays(view.performance.now(), true);
+      // The observer's first callback reports this same width: don't settle the lines a second time.
+      lastWidth = room.clientWidth;
 
       cleanup = () => {
         sleep();

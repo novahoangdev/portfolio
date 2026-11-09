@@ -65,25 +65,29 @@
     color-mix(in srgb, var(--ink) 24%, transparent) 1.05px,
     transparent 1.6px
   );
-  inset: 0;
+  /* Oversized by more than one grid step: panning only translates this layer (no repaint). */
+  inset: -64px;
   pointer-events: none;
   position: absolute;
+  will-change: transform;
 }
 
-/* Paper grain */
+/*
+ * Paper grain: black noise, so normal blending matches the old multiply exactly without
+ * making the board composite through a blend layer.
+ */
 .cv-vignette {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   inset: 0;
-  mix-blend-mode: multiply;
   opacity: 0.16;
   pointer-events: none;
   position: absolute;
   z-index: 1;
 }
 
+/* Black grain screened onto a dark board was a no-op. */
 :host-context(html[data-theme='dark']) .cv-vignette {
-  mix-blend-mode: screen;
-  opacity: 0.05;
+  display: none;
 }
 
 .cv-world,
@@ -206,10 +210,6 @@
   background: var(--surface-strong);
   border: 0;
   border-radius: 7px;
-  box-shadow:
-    0 1px 0 rgba(var(--paper-shadow), 0.04),
-    0 2px 6px rgba(var(--paper-shadow), 0.08),
-    0 calc(16px * var(--depth)) calc(40px * var(--depth)) -14px rgba(var(--paper-shadow), 0.42);
   color: var(--ink);
   cursor: zoom-in;
   display: block;
@@ -226,6 +226,45 @@
     box-shadow 700ms var(--glide),
     opacity 500ms ease;
   width: 100%;
+}
+
+/*
+ * Resting and lifted shadows live on two pseudo-elements that cross-fade (opacity runs on the
+ * compositor); transitioning box-shadow itself repainted the card on every frame of a hover.
+ */
+.cv-card::before,
+.cv-card::after {
+  border-radius: inherit;
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 700ms var(--glide);
+  z-index: -1;
+}
+
+.cv-card::before {
+  box-shadow:
+    0 1px 0 rgba(var(--paper-shadow), 0.04),
+    0 2px 6px rgba(var(--paper-shadow), 0.08),
+    0 calc(16px * var(--depth)) calc(40px * var(--depth)) -14px rgba(var(--paper-shadow), 0.42);
+}
+
+.cv-card::after {
+  box-shadow:
+    0 1px 0 rgba(var(--paper-shadow), 0.04),
+    0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 40px 70px -24px rgba(var(--paper-shadow), 0.5),
+    0 24px 60px -30px var(--accent);
+  opacity: 0;
+}
+
+.cv-card-item.is-hot .cv-card::before {
+  opacity: 0;
+}
+
+.cv-card-item.is-hot .cv-card::after {
+  opacity: 1;
 }
 
 .cv:not(.is-in) .cv-card {
@@ -254,11 +293,6 @@
 }
 
 .cv-card-item.is-hot .cv-card {
-  box-shadow:
-    0 1px 0 rgba(var(--paper-shadow), 0.04),
-    0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 40px 70px -24px rgba(var(--paper-shadow), 0.5),
-    0 24px 60px -30px var(--accent);
   transform: translate(-50%, -50%) translateY(-10px) rotate(calc(var(--r) * 0.2)) scale(1.03);
 }
 
@@ -273,6 +307,12 @@
     0 0 0 7px var(--accent),
     0 40px 70px -24px rgba(var(--paper-shadow), 0.5);
   outline: none;
+}
+
+/* The focus ring replaces the paper shadows. */
+.cv-card:focus-visible::before,
+.cv-card:focus-visible::after {
+  opacity: 0;
 }
 
 .cv-frame {
@@ -584,7 +624,6 @@
   font-weight: 800;
   left: 0;
   letter-spacing: 0.2em;
-  mix-blend-mode: multiply;
   opacity: 0.62;
   padding: 7px 12px 6px;
   position: absolute;
@@ -596,7 +635,6 @@
 :host-context(html[data-theme='dark']) .cv-stamp {
   border-color: color-mix(in srgb, var(--accent) 80%, white);
   color: color-mix(in srgb, var(--accent) 80%, white);
-  mix-blend-mode: normal;
   opacity: 0.5;
 }
 
@@ -731,8 +769,8 @@
 /* ---------- Chrome: hint, controls, minimap ---------- */
 
 .cv-hint {
-  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
-  backdrop-filter: blur(10px);
+  /* Denser tint instead of backdrop blur: re-blurring panning cards and video is costly. */
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
@@ -764,8 +802,7 @@
 
 .cv-controls {
   align-items: center;
-  background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   border: 1px solid var(--line);
   border-radius: 999px;
   bottom: 1rem;
@@ -843,8 +880,7 @@
 }
 
 .cv-minimap {
-  background: color-mix(in srgb, var(--surface-strong) 86%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--surface-strong) 95%, transparent);
   border: 1px solid var(--line);
   border-radius: 0.85rem;
   bottom: 1rem;
@@ -971,6 +1007,8 @@
   }
 
   .cv-card,
+  .cv-card::before,
+  .cv-card::after,
   .cv-cursor,
   .cv-hint,
   .cv-thread-label {

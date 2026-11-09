@@ -336,14 +336,10 @@ input {
   }
 }
 
-/* Side projects: view transitions (tile reflow on filter, tile -> case morph). */
+/* Side projects: view transitions. */
 ::view-transition-group(*) {
   animation-duration: 560ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-::view-transition-group(case-media) {
-  animation-duration: 700ms;
 }
 
 ::view-transition-old(root),
@@ -351,7 +347,121 @@ input {
   animation-duration: 320ms;
 }
 
+/* Tile -> case: the media flies into place and keeps its crop (no stretching). */
+::view-transition-group(case-media) {
+  animation-duration: 620ms;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.1, 1);
+  /* The media lives inside the (also named) card; without this the card paints over it. */
+  z-index: 2;
+}
+
+/* Rounded like the corner of the case it lands in. */
+::view-transition-image-pair(case-media) {
+  border-radius: 1.75rem 0 0 1.75rem;
+  overflow: clip;
+}
+
+@media (max-width: 860px) {
+  ::view-transition-image-pair(case-media) {
+    border-radius: 1.75rem 1.75rem 0 0;
+  }
+}
+
+::view-transition-old(case-media),
+::view-transition-new(case-media) {
+  height: 100%;
+  object-fit: cover;
+}
+
+::view-transition-old(case-media) {
+  animation: vt-fade-out 260ms ease-out both;
+}
+
+::view-transition-new(case-media) {
+  animation: vt-fade-in 220ms ease-out both;
+}
+
+/* The card rises in under the flying media, and sinks away on close. */
+::view-transition-new(case-card):only-child {
+  animation: vt-case-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+::view-transition-old(case-card):only-child {
+  animation: vt-case-out 240ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+/* Prev / Next inside the case: the card resizes smoothly, its content cross-fades. */
+::view-transition-group(case-card) {
+  animation-duration: 480ms;
+}
+
+/* Layout switch: only the projects block moves; the rest of the page holds still. */
+html.vt-layout::view-transition-old(root),
+html.vt-layout::view-transition-new(root) {
+  animation: none;
+}
+
+html.vt-layout::view-transition-group(projects-layout) {
+  animation: none;
+}
+
+html.vt-layout::view-transition-old(projects-layout) {
+  animation: vt-layout-out 200ms ease-in both;
+}
+
+html.vt-layout::view-transition-new(projects-layout) {
+  animation: vt-layout-in 520ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-case-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.965);
+  }
+}
+
+@keyframes vt-case-out {
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.975);
+  }
+}
+
+@keyframes vt-layout-out {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes vt-layout-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+}
+
 /* Keep the page still while a project case is open. */
 html.case-open {
   overflow: hidden;
+  /* No page reflow when the scrollbar goes away (classic scrollbars). */
+  scrollbar-gutter: stable;
+}
+
+/* Hold the layout's own loops still behind the dimmed, blurred backdrop. */
+html.case-open app-projects .layout *,
+html.case-open app-projects .marquee-track {
+  animation-play-state: paused !important;
 }

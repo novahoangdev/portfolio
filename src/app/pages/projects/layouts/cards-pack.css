@@ -44,11 +44,38 @@
   --tear: 0;
   cursor: pointer;
   display: block;
-  filter: drop-shadow(0 26px 22px rgba(0, 0, 0, 0.42));
   height: 100%;
   pointer-events: auto;
   position: relative;
   width: 100%;
+}
+
+/*
+ * Cast shadow: static box-shadows behind the top and the body (inset past the crimp teeth)
+ * that follow their motion. A drop-shadow filter over the bobbing pack re-blurred every frame.
+ */
+.pack::before,
+.pack::after {
+  box-shadow: 0 26px 22px rgba(0, 0, 0, 0.42);
+  content: '';
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.pack::before {
+  height: calc(17% - 7px);
+  top: 7px;
+  transform: translateY(calc(var(--tear) * -14px)) rotate(calc(var(--tear) * 9deg));
+  transform-origin: 100% 100%;
+  transition: transform 520ms var(--spring), opacity 400ms ease;
+}
+
+.pack::after {
+  bottom: 7px;
+  top: 17%;
+  transition: transform 520ms var(--glide), opacity 400ms ease;
 }
 
 .foil {
@@ -81,8 +108,10 @@
 }
 
 .foil::after {
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 48%, transparent 56%) 0 0 / 300% 100%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 48%, transparent 56%);
   mix-blend-mode: overlay;
+  right: auto;
+  width: 300%;
   animation: glint 5s ease-in-out infinite alternate;
 }
 
@@ -151,7 +180,17 @@
   margin-bottom: 7%;
   padding: 7%;
   place-items: center;
+  position: relative;
   width: 46%;
+}
+
+/* Only the accent ring turns (the core used to counter-rotate to stay still). */
+.pack-emblem::before {
+  background: var(--emblem);
+  border-radius: 50%;
+  content: '';
+  inset: 0;
+  position: absolute;
   animation: emblem-turn 30s linear infinite;
 }
 
@@ -164,8 +203,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
   width: 100%;
-  animation: emblem-turn 30s linear infinite reverse;
 }
 
 .emblem-star {
@@ -314,6 +353,7 @@
 }
 
 .pack.is-tearing .pack-top,
+.pack.is-tearing::before,
 .pack.is-tearing .tear-gap {
   transition-duration: 60ms;
   transition-timing-function: linear;
@@ -324,7 +364,8 @@
   animation: pack-shake 500ms ease-in-out;
 }
 
-:host(.is-torn) .pack-top {
+:host(.is-torn) .pack-top,
+:host(.is-torn) .pack::before {
   opacity: 0;
   transform: translate(48%, -190%) rotate(-34deg);
   transition: transform 750ms var(--glide), opacity 500ms 200ms ease;
@@ -336,7 +377,8 @@
   transition: opacity 200ms ease;
 }
 
-:host(.is-torn) .pack-body {
+:host(.is-torn) .pack-body,
+:host(.is-torn) .pack::after {
   opacity: 0;
   transform: translateY(60%) scale(0.94);
   transition: transform 900ms 250ms cubic-bezier(0.55, 0, 0.75, 0.2), opacity 600ms 500ms ease;
@@ -364,6 +406,14 @@
   animation: burst 1000ms var(--glide) forwards;
 }
 
+:host-context(.is-offscreen) .pack-float,
+:host-context(.is-offscreen) .pack-shadow,
+:host-context(.is-offscreen) .pack-emblem::before,
+:host-context(.is-offscreen) .foil::after,
+:host-context(.is-offscreen) .tear-arrow {
+  animation-play-state: paused;
+}
+
 @keyframes pack-bob {
   from {
     transform: translateY(-8px) rotateY(-16deg) rotateZ(-1.6deg);
@@ -386,13 +436,14 @@
   }
 }
 
+/* Same sweep as background-position 100% → 0% on a 300%-wide layer, but compositor-only. */
 @keyframes glint {
   from {
-    background-position: 100% 0;
+    transform: translateX(-66.667%);
   }
 
   to {
-    background-position: 0% 0;
+    transform: none;
   }
 }
 
@@ -462,14 +513,14 @@
   :host,
   .pack-float,
   .pack-shadow,
-  .pack-emblem,
-  .emblem-core,
+  .pack-emblem::before,
   .foil::after,
   .tear-arrow {
     animation: none;
   }
 
   .pack-top,
+  .pack::before,
   .pack-tilt {
     transition-duration: 1ms;
   }

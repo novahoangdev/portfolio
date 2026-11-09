@@ -91,6 +91,15 @@ interface Node {
   fy: number;
   el: HTMLElement | null;
   shadow: HTMLElement | null;
+  /** Per-frame targets: only these get written, and only when the value changes. */
+  wrap: HTMLElement | null;
+  shadowShape: HTMLElement | null;
+  shade: HTMLElement | null;
+  tag: HTMLElement | null;
+  /** Smoothed counter-rotation of the tag, and the last strings written. */
+  tagRot: number;
+  tagUntil: number;
+  last: { tf: string; stf: string; scale: string; shade: string; tag: string };
 }
 
 const hash = (i: number, salt = 0) => {
@@ -187,6 +196,13 @@ export class ProjectsCalder {
         fy: 0,
         el: leaf >= 0 ? (leafEls[leaf] ?? null) : null,
         shadow: leaf >= 0 ? (shadowEls[leaf] ?? null) : null,
+        wrap: leaf >= 0 ? (leafEls[leaf]?.querySelector<HTMLElement>('.shape-wrap') ?? null) : null,
+        shadowShape: leaf >= 0 ? (shadowEls[leaf]?.querySelector<HTMLElement>('.shadow-shape') ?? null) : null,
+        shade: leaf >= 0 ? (leafEls[leaf]?.querySelector<HTMLElement>('.shape-shade') ?? null) : null,
+        tag: leaf >= 0 ? (leafEls[leaf]?.querySelector<HTMLElement>('.tag') ?? null) : null,
+        tagRot: 0,
+        tagUntil: 0,
+        last: { tf: '', stf: '', scale: '', shade: '', tag: '' },
       });
 
       /**
@@ -464,21 +480,40 @@ export class ProjectsCalder {
         }
         wires.setAttribute('d', d);
         wireShadow.setAttribute('d', ds);
+        // Only transforms (and one opacity var on a leaf-less span) change per frame, each written
+        // straight to the element it moves and only when its string changes: no inherited custom
+        // properties, so a frame restyles a handful of elements instead of every leaf subtree.
+        const active = this.active();
+        const now = view.performance.now();
         for (const l of leaves) {
           if (!l.el || !l.shadow) continue;
           const sx = Math.max(0.3, Math.cos(l.worldYaw));
           const persp = 1 + clamp(l.z, -300, 300) / 2400;
           const rot = l.swing + (hash(l.leaf, 4) - 0.5) * 0.12;
-          const tf = `rotate(${rot.toFixed(4)}rad)`;
-          l.el.style.transform = `translate3d(${f(l.hx - l.w / 2)}px, ${f(l.hy)}px, 0) ${tf}`;
-          l.el.style.setProperty('--sx', (sx * persp).toFixed(3));
-          l.el.style.setProperty('--sy', persp.toFixed(3));
-          l.el.style.setProperty('--shade', Math.sin(l.worldYaw).toFixed(3));
-          l.el.style.setProperty('--counter', `${(-rot).toFixed(4)}rad`);
+          const r = `rotate(${rot.toFixed(4)}rad)`;
+          const last = l.last;
+          const tf = `translate3d(${f(l.hx - l.w / 2)}px, ${f(l.hy)}px, 0) ${r}`;
+          if (tf !== last.tf) l.el.style.transform = last.tf = tf;
           const o = shadowOffset(l.cx, l.cy, l.z);
-          l.shadow.style.transform = `translate3d(${f(l.hx - l.w / 2 + o.x)}px, ${f(l.hy + o.y)}px, 0) ${tf}`;
-          l.shadow.style.setProperty('--sx', (sx * persp).toFixed(3));
-          l.shadow.style.setProperty('--sy', persp.toFixed(3));
+          const stf = `translate3d(${f(l.hx - l.w / 2 + o.x)}px, ${f(l.hy + o.y)}px, 0) ${r}`;
+          if (stf !== last.stf) l.shadow.style.transform = last.stf = stf;
+          const scale = `scale(${(sx * persp).toFixed(3)}, ${persp.toFixed(3)})`;
+          if (scale !== last.scale) {
+            last.scale = scale;
+            if (l.wrap) l.wrap.style.transform = scale;
+            if (l.shadowShape) l.shadowShape.style.transform = scale;
+          }
+          // The side shade is a faint gradient: 0.02 steps are invisible and spare most repaints.
+          const shade = (Math.round(Math.sin(l.worldYaw) * 50) / 50).toFixed(2);
+          if (shade !== last.shade && l.shade) l.shade.style.setProperty('--shade', (last.shade = shade));
+          // The tag hangs plumb under its shape, lagging a little behind the swing.
+          // Hidden tags are left alone until they show (and while they fade out).
+          if (l.leaf === active) l.tagUntil = now + 400;
+          if (l.tag && this.hoverable && (now < l.tagUntil || !last.tag)) {
+            l.tagRot = last.tag ? l.tagRot + (-rot - l.tagRot) * 0.12 : -rot;
+            const tag = `${l.tagRot.toFixed(4)}rad`;
+            if (tag !== last.tag) l.tag.style.rotate = last.tag = tag;
+          }
         }
       };
 

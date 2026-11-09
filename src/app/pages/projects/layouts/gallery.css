@@ -4,6 +4,13 @@
   initial-value: #78bbb5;
 }
 
+/* Only the stage's own clip reads it: not inheriting keeps per-frame updates off the 3D subtree. */
+@property --door {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 :host {
   --glide: cubic-bezier(0.16, 1, 0.3, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -270,6 +277,7 @@
 
 .stage {
   --u: 800px;
+  --bay: 800px;
   background: #05090b;
   clip-path: inset(calc(var(--door) * 7%) calc(var(--door) * 9%) round calc(var(--door) * 2.4rem));
   height: calc(100dvh - 4.5rem);
@@ -277,6 +285,10 @@
   overflow: clip;
   position: sticky;
   top: 4.5rem;
+}
+
+.stage.is-open {
+  clip-path: none;
 }
 
 .viewport {
@@ -297,10 +309,6 @@
   will-change: transform;
 }
 
-.bay {
-  transform-style: preserve-3d;
-}
-
 .plane {
   backface-visibility: hidden;
   left: 0;
@@ -310,7 +318,13 @@
 
 .wall {
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0 2px, rgba(255, 255, 255, 0.025) 2px 3px, transparent 3px),
+    /* A panel seam at the start of every bay (a wall segment spans several bays). */
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.45) 0 2px,
+      rgba(255, 255, 255, 0.025) 2px 3px,
+      transparent 3px var(--bay)
+    ),
     linear-gradient(
       to bottom,
       transparent 11.6%,
@@ -335,7 +349,16 @@
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.65), transparent 14%, transparent 86%, rgba(0, 0, 0, 0.65)),
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px calc(var(--u) * 0.11)),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px calc(var(--u) * 0.47)),
+    /* Board joints restart at every bay: 0, 0.47u and 0.94u into each one. */
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.25) 0 1px,
+      transparent 1px min(var(--u) * 0.47, var(--bay)),
+      rgba(0, 0, 0, 0.25) min(var(--u) * 0.47, var(--bay)) min(var(--u) * 0.47 + 1px, var(--bay)),
+      transparent min(var(--u) * 0.47 + 1px, var(--bay)) min(var(--u) * 0.94, var(--bay)),
+      rgba(0, 0, 0, 0.25) min(var(--u) * 0.94, var(--bay)) min(var(--u) * 0.94 + 1px, var(--bay)),
+      transparent min(var(--u) * 0.94 + 1px, var(--bay)) var(--bay)
+    ),
     rgba(10, 16, 19, 0.72);
 }
 
@@ -476,13 +499,21 @@
   transform: translate(-50%, -50%);
 }
 
-.exhibit .frame .art {
-  filter: brightness(0.62) saturate(0.8);
-  transition: filter 1100ms var(--glide);
+/*
+ * Unlit pieces sit in shadow. A dark veil instead of a CSS filter: a filter on a box holding
+ * video turns every piece into an extra render pass, redrawn on every camera frame.
+ */
+.exhibit .frame .art::after {
+  background: rgba(6, 10, 12, 0.4);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 1100ms var(--glide);
 }
 
-.exhibit.is-on .frame .art {
-  filter: none;
+.exhibit.is-on .frame .art::after {
+  opacity: 0;
 }
 
 .wash {
@@ -682,6 +713,10 @@
   right: max(1.5rem, calc((100vw - 88rem) / 2 + 4rem));
   text-transform: uppercase;
   bottom: calc(clamp(1.2rem, 3vw, 2.2rem) + 1.4rem);
+}
+
+.hud-hint.is-gone {
+  animation-play-state: paused;
 }
 
 @keyframes hint-bob {

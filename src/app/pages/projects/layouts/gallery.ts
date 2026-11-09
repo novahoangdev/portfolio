@@ -23,6 +23,8 @@ interface Pose {
   readonly yaw: number;
 }
 
+/** Long planes per shell surface (each spans whole bays). */
+const SEGMENTS = 4;
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 /** Smootherstep with a dwell at both ends, so the walk pauses in front of each piece. */
@@ -57,7 +59,19 @@ export class ProjectsGallery {
   protected readonly station = signal(-1);
   /** Pieces in the vertical sequence whose light has switched on. */
   protected readonly lit = signal<ReadonlySet<number>>(new Set());
-  protected readonly bays = computed(() => Array.from({ length: this.projects().length + 3 }, (_, i) => i));
+  /**
+   * The hall shell is n + 3 bays long. Each floor / ceiling / wall is drawn as a few long
+   * segments of whole bays (the per-bay seams are repeating gradients), since every extra 3D
+   * plane costs the compositor on every frame.
+   */
+  protected readonly segments = computed(() => {
+    const bays = this.projects().length + 3;
+    const count = Math.min(SEGMENTS, bays);
+    return Array.from({ length: count }, (_, i) => {
+      const from = Math.round((bays * i) / count);
+      return { from, bays: Math.round((bays * (i + 1)) / count) - from };
+    });
+  });
 
   private readonly document = inject(DOCUMENT);
   private readonly hall = viewChild<ElementRef<HTMLElement>>('hall');
@@ -118,9 +132,12 @@ export class ProjectsGallery {
   private setupHall(hall: HTMLElement, view: Window): () => void {
     const stage = hall.querySelector<HTMLElement>('.stage')!;
     const viewport = hall.querySelector<HTMLElement>('.viewport')!;
-    const world = hall.querySelector<HTMLElement>('.world')!;
-    // Shell, artworks and light shafts are separate 3D contexts sharing one camera.
+    // Shell layers, artworks and light shafts are separate 3D contexts sharing one camera.
     const worlds = [...hall.querySelectorAll<HTMLElement>('.world')];
+    const floors = hall.querySelectorAll('.floor');
+    const ceilings = hall.querySelectorAll('.ceiling');
+    const wallsL = hall.querySelectorAll('.wall-l');
+    const wallsR = hall.querySelectorAll('.wall-r');
     const light = hall.querySelector<HTMLElement>('.world.light');
     const fill = hall.querySelector<HTMLElement>('.hud-fill');
     const hint = hall.querySelector<HTMLElement>('.hud-hint');
@@ -137,6 +154,8 @@ export class ProjectsGallery {
     let frame = 0;
     let last = 0;
     let stickyTop = 72;
+    let door = -1;
+    let hintOn = true;
 
     const place = (el: Element | null, w: number, h: number, x: number, y: number, z: number, rot = '') => {
       if (!(el instanceof HTMLElement)) return;
@@ -167,17 +186,19 @@ export class ProjectsGallery {
       const bays = n + 3;
       const bay = length / bays;
 
-      // Hall shell, built from bays so no single plane gets enormous.
-      world.querySelectorAll('.bay').forEach((el, j) => {
-        const zc = zStart - bay * (j + 0.5);
-        place(el.querySelector('.floor'), X * 2, bay + 1, 0, F, zc, 'rotateX(90deg)');
-        place(el.querySelector('.ceiling'), X * 2, bay + 1, 0, C, zc, 'rotateX(-90deg)');
-        place(el.querySelector('.wall-l'), bay + 1, F - C, -X, (F + C) / 2, zc, 'rotateY(90deg)');
-        place(el.querySelector('.wall-r'), bay + 1, F - C, X, (F + C) / 2, zc, 'rotateY(-90deg)');
+      // Hall shell: segments of whole bays, so no single plane gets enormous.
+      stage.style.setProperty('--bay', `${bay.toFixed(2)}px`);
+      this.segments().forEach((seg, j) => {
+        const zc = zStart - bay * (seg.from + seg.bays / 2);
+        const span = bay * seg.bays + 1;
+        place(floors[j] ?? null, X * 2, span, 0, F, zc, 'rotateX(90deg)');
+        place(ceilings[j] ?? null, X * 2, span, 0, C, zc, 'rotateX(-90deg)');
+        place(wallsL[j] ?? null, span, F - C, -X, (F + C) / 2, zc, 'rotateY(90deg)');
+        place(wallsR[j] ?? null, span, F - C, X, (F + C) / 2, zc, 'rotateY(-90deg)');
       });
-      place(world.querySelector('.end-wall'), X * 2, F - C, 0, (F + C) / 2, zEnd);
-      place(world.querySelector('.intro'), u * 0.8, u * 0.5, X - 2, -u * 0.1, -u * 1.0, 'rotateY(-90deg)');
-      place(world.querySelector('.runner'), u * 0.5, length - u * 0.6, 0, F - 1, (zStart + zEnd) / 2 - u * 0.3, 'rotateX(90deg)');
+      place(hall.querySelector('.end-wall'), X * 2, F - C, 0, (F + C) / 2, zEnd);
+      place(hall.querySelector('.intro'), u * 0.8, u * 0.5, X - 2, -u * 0.1, -u * 1.0, 'rotateY(-90deg)');
+      place(hall.querySelector('.runner'), u * 0.5, length - u * 0.6, 0, F - 1, (zStart + zEnd) / 2 - u * 0.3, 'rotateX(90deg)');
 
       stations = [{ x: 0, z: u * 0.45, yaw: 0 }];
       hall.querySelectorAll<HTMLElement>('.exhibit').forEach((el, k) => {
@@ -185,12 +206,12 @@ export class ProjectsGallery {
         const z = -(Z0 + k * S);
         const turn = side < 0 ? 'rotateY(90deg)' : 'rotateY(-90deg)';
         el.style.transform = `translate3d(${(side * (X - 6)).toFixed(1)}px, ${yc.toFixed(1)}px, ${z.toFixed(1)}px) ${turn}`;
-        const reflection = world.querySelector(`.reflection[data-k="${k}"]`);
+        const reflection = hall.querySelector(`.reflection[data-k="${k}"]`);
         if (reflection instanceof HTMLElement) {
           reflection.style.transform = `translate3d(${(side * (X - 2)).toFixed(1)}px, ${(2 * F - yc).toFixed(1)}px, ${z.toFixed(1)}px) ${turn} scaleY(-1)`;
         }
-        place(world.querySelector(`.pool[data-k="${k}"]`), u * 0.75, u * 1.05, side * (X - u * 0.22), F - 1, z, 'rotateX(90deg)');
-        place(world.querySelector(`.lamp[data-k="${k}"]`), u * 0.1, u * 0.1, side * (X - u * 0.32), C + 1, z, 'rotateX(-90deg)');
+        place(hall.querySelector(`.pool[data-k="${k}"]`), u * 0.75, u * 1.05, side * (X - u * 0.22), F - 1, z, 'rotateX(90deg)');
+        place(hall.querySelector(`.lamp[data-k="${k}"]`), u * 0.1, u * 0.1, side * (X - u * 0.32), C + 1, z, 'rotateX(-90deg)');
         place(light?.querySelector(`.shaft[data-k="${k}"]`) ?? null, u * 0.62, F - C, side * (X - u * 0.31), (F + C) / 2, z, side > 0 ? '' : 'scaleX(-1)');
 
         const x = -side * step;
@@ -236,14 +257,28 @@ export class ProjectsGallery {
         `rotateY(${(p.yaw + lookX).toFixed(3)}deg) translate3d(${(-p.x).toFixed(2)}px, ${(-p.bob).toFixed(2)}px, ${(-p.z).toFixed(2)}px)`;
       for (const w of worlds) w.style.transform = camera;
       if (fill) fill.style.transform = `scaleX(${clamp((current + 1) / (n + 1), 0, 1).toFixed(4)})`;
-      if (hint) hint.style.opacity = String(clamp(1 - progress * 8, 0, 1));
+      if (hint) {
+        const opacity = clamp(1 - progress * 8, 0, 1);
+        hint.style.opacity = String(opacity);
+        // A hidden hint stops bobbing: its animation would redraw the whole hall every frame.
+        const shown = opacity > 0;
+        if (shown !== hintOn) {
+          hintOn = shown;
+          hint.classList.toggle('is-gone', !shown);
+        }
+      }
 
       // The doorway: the hall opens up from a rounded portal as it slides in.
       const vh = view.innerHeight;
       const enter = clamp((rect.top - stickyTop) / (vh * 0.9), 0, 1);
       const leave = clamp((vh - rect.bottom) / (vh * 0.9), 0, 1);
-      const door = Math.max(enter, leave);
-      stage.style.setProperty('--door', door.toFixed(4));
+      const nextDoor = Math.round(Math.max(enter, leave) * 1e4) / 1e4;
+      if (nextDoor !== door) {
+        door = nextDoor;
+        stage.style.setProperty('--door', String(door));
+        // A fully open door needs no clip: skip the clip mask while walking the hall.
+        stage.classList.toggle('is-open', door === 0);
+      }
 
       const nearest = Math.round(current);
       const station = clamp(nearest, -1, n);

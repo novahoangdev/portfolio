@@ -26,7 +26,9 @@
   @for (p of projects(); track p.name; let i = $index) {
     <div class="shadow" aria-hidden="true">
       <span class="shadow-thread"></span>
-      <span class="shadow-shape" [style.clip-path]="clipOf(i)"></span>
+      <span class="shadow-shape">
+        <span class="shadow-blur"><span class="shadow-cut" [style.clip-path]="clipOf(i)"></span></span>
+      </span>
     </div>
   }
 

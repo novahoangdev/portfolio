@@ -84,6 +84,9 @@ export class ProjectsVinyl {
   private spin: Animation | null = null;
   private spinFrame = 0;
   private timers: number[] = [];
+  /** Last values written per sleeve ([tilt, lift, shade]) and to the world (yaw): skip unchanged writes. */
+  private written: string[][] = [];
+  private writtenYaw = '';
 
   constructor() {
     let cleanup = () => {};
@@ -299,7 +302,8 @@ export class ProjectsVinyl {
   /** Step every sleeve's spring (or snap, when `snap`) and write it to CSS. Returns whether anything moves. */
   private render(snap: boolean): boolean {
     let busy = false;
-    this.world().nativeElement.style.setProperty('--yaw', `${this.yaw.toFixed(2)}deg`);
+    const yaw = `${this.yaw.toFixed(2)}deg`;
+    if (yaw !== this.writtenYaw) this.world().nativeElement.style.setProperty('--vinyl-yaw', (this.writtenYaw = yaw));
     this.sleeves().forEach(({ nativeElement: el }, i) => {
       const spring = this.springs[i];
       if (!spring) return;
@@ -322,9 +326,11 @@ export class ProjectsVinyl {
           busy = true;
         }
       }
-      el.style.setProperty('--tilt', `${spring.tilt.toFixed(2)}deg`);
-      el.style.setProperty('--lift', spring.lift.toFixed(4));
-      el.style.setProperty('--shade', shade.toFixed(3));
+      const last = (this.written[i] ??= ['', '', '']);
+      const values = [`${spring.tilt.toFixed(2)}deg`, spring.lift.toFixed(4), shade.toFixed(3)];
+      if (values[0] !== last[0]) el.style.setProperty('--vinyl-tilt', (last[0] = values[0]));
+      if (values[1] !== last[1]) el.style.setProperty('--vinyl-lift', (last[1] = values[1]));
+      if (values[2] !== last[2]) el.style.setProperty('--shade', (last[2] = values[2]));
     });
     return busy;
   }

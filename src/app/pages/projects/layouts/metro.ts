@@ -532,7 +532,7 @@ export class ProjectsMetro {
   private readonly root = viewChild.required<ElementRef<HTMLElement>>('root');
   private readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
   private readonly cam = viewChild<ElementRef<HTMLElement>>('cam');
-  private readonly train = viewChild<ElementRef<SVGGElement>>('train');
+  private readonly train = viewChild<ElementRef<HTMLElement>>('train');
   private readonly reduced = prefersReducedMotion(this.document.defaultView);
 
   private queued: number | null = null;
@@ -766,7 +766,7 @@ export class ProjectsMetro {
     const train = this.train()?.nativeElement;
     if (!train) return;
     const { x, y } = this.trainPos;
-    train.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${this.trainAngle.toFixed(2)})`);
+    train.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${this.trainAngle.toFixed(2)}deg)`;
     const color = this.net().lines[this.trainLine]?.color;
     if (color) train.style.setProperty('--c', color);
   }

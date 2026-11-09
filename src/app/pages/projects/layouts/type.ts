@@ -408,6 +408,18 @@ export class ProjectsType {
       return { x: clamp(progress * span - DWELL, 0, n - 1), rect };
     };
 
+    // Inline styles last written per element: the loop skips unchanged values, so a frame
+    // where only the pointer moves does not invalidate style on the films, rail or scrim.
+    const written = new WeakMap<HTMLElement, Map<string, string>>();
+    const put = (el: HTMLElement | null | undefined, prop: string, value: string) => {
+      if (!el) return;
+      let props = written.get(el);
+      if (!props) written.set(el, (props = new Map()));
+      if (props.get(prop) === value) return;
+      props.set(prop, value);
+      el.style.setProperty(prop, value);
+    };
+
     const phase = (pos: number) => {
       const j = Math.min(Math.floor(pos), n - 1);
       const f = pos - j;
@@ -459,24 +471,22 @@ export class ProjectsType {
         lastSlides = key;
         slides.forEach((el, i) => {
           const on = i === ph.base || i === ph.over;
-          el.style.visibility = on ? 'visible' : 'hidden';
-          el.style.zIndex = i === ph.over ? '1' : '0';
-          if (i !== ph.over) el.style.clipPath = '';
+          put(el, 'visibility', on ? 'visible' : 'hidden');
+          put(el, 'z-index', i === ph.over ? '1' : '0');
+          if (i !== ph.over) put(el, 'clip-path', '');
         });
       }
       if (ph.over >= 0) {
         const inset = ((1 - ph.wipe) * 100).toFixed(3);
-        slides[ph.over].style.clipPath = `inset(${inset}% 0 0 0)`;
-        slides[ph.base].style.setProperty('--slide-y', `${(-ph.wipe * 8).toFixed(2)}%`);
+        put(slides[ph.over], 'clip-path', `inset(${inset}% 0 0 0)`);
+        put(slides[ph.base], '--slide-y', `${(-ph.wipe * 8).toFixed(2)}%`);
       } else {
-        slides[ph.base].style.setProperty('--slide-y', '0%');
+        put(slides[ph.base], '--slide-y', '0%');
       }
-      if (wipeEdge) {
-        wipeEdge.style.opacity = ph.over >= 0 && ph.wipe > 0.001 && ph.wipe < 0.999 ? '1' : '0';
-        wipeEdge.style.transform = `translateY(${((1 - ph.wipe) * h).toFixed(1)}px)`;
-        if (ph.over >= 0) wipeEdge.style.setProperty('--c', projects[ph.over].accent);
-      }
-      slides[shown]?.style.setProperty('--media-zoom', (1.16 - 0.14 * e).toFixed(4));
+      put(wipeEdge, 'opacity', ph.over >= 0 && ph.wipe > 0.001 && ph.wipe < 0.999 ? '1' : '0');
+      put(wipeEdge, 'transform', `translateY(${((1 - ph.wipe) * h).toFixed(1)}px)`);
+      if (ph.over >= 0) put(wipeEdge, '--c', projects[ph.over].accent);
+      put(slides[shown], '--media-zoom', (1.16 - 0.14 * e).toFixed(4));
 
       const inView = t.rect.bottom > 0 && t.rect.top < view.innerHeight;
       if (inView) {
@@ -498,14 +508,12 @@ export class ProjectsType {
         }
       }
 
-      if (scrim) scrim.style.opacity = clamp((e - 0.6) / 0.4, 0, 1).toFixed(3);
+      put(scrim, 'opacity', clamp((e - 0.6) / 0.4, 0, 1).toFixed(3));
       const prog = n > 1 ? x / (n - 1) : 1;
-      if (fill) fill.style.transform = `scaleY(${prog.toFixed(4)})`;
-      if (knob) knob.style.transform = `translateY(calc(${(prog * 100).toFixed(3)}cqh - 50%))`;
-      if (badge) {
-        badge.style.transform = `translate3d(${mx.toFixed(1)}px, ${my.toFixed(1)}px, 0) scale(${(0.4 + hover * 0.6).toFixed(3)})`;
-        badge.style.opacity = hover.toFixed(3);
-      }
+      put(fill, 'transform', `scaleY(${prog.toFixed(4)})`);
+      put(knob, 'transform', `translateY(calc(${(prog * 100).toFixed(3)}cqh - 50%))`);
+      put(badge, 'transform', `translate3d(${mx.toFixed(1)}px, ${my.toFixed(1)}px, 0) scale(${(0.4 + hover * 0.6).toFixed(3)})`);
+      put(badge, 'opacity', hover.toFixed(3));
 
       // Click-to-open: once the dive is complete, hand the film to the case dialog.
       if (tDive === 1 && dive > 0.97 && !emitted) {

@@ -11,8 +11,8 @@
     </p>
   </header>
 
-  <div class="switcher" [appReveal]="120">
-    <div class="switch">
+  <div #switcher class="switcher" [appReveal]="120">
+    <div class="switch" [class.is-loading]="pendingLayout()">
       <button type="button" class="cycle" (click)="cycleLayout(-1)" aria-label="Previous layout">←</button>
       <button
         type="button"
@@ -46,6 +46,8 @@
               [attr.aria-checked]="layout() === option.id"
               [style.--i]="i"
               (click)="chooseLayout(option.id)"
+              (pointerenter)="prefetch(option.id)"
+              (focus)="prefetch(option.id)"
             >
               <span class="lab-name">{{ option.label }}</span>
               <span class="lab-hint">{{ option.hint }}</span>
@@ -56,179 +58,10 @@
     </div>
   }
 
-  <div class="layout">
-    @switch (layout()) {
-      @case ('wall') {
-        <app-projects-wall [projects]="projects" (openCase)="open($event)" />
-      }
-      @case ('orbit') {
-        @defer {
-          <app-projects-orbit [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('deck') {
-        @defer {
-          <app-projects-deck [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('strip') {
-        @defer {
-          <app-projects-strip [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('index') {
-        @defer {
-          <app-projects-index [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('gallery') {
-        @defer {
-          <app-projects-gallery [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('flashlight') {
-        @defer {
-          <app-projects-flashlight [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('desk') {
-        @defer {
-          <app-projects-desk [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('pit') {
-        @defer {
-          <app-projects-pit [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('tv') {
-        @defer {
-          <app-projects-tv [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('vinyl') {
-        @defer {
-          <app-projects-vinyl [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('canvas') {
-        @defer {
-          <app-projects-canvas [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('magazine') {
-        @defer {
-          <app-projects-magazine [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('ide') {
-        @defer {
-          <app-projects-ide [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('cinema') {
-        @defer {
-          <app-projects-cinema [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('metro') {
-        @defer {
-          <app-projects-metro [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('stars') {
-        @defer {
-          <app-projects-stars [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('darkroom') {
-        @defer {
-          <app-projects-darkroom [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('retro') {
-        @defer {
-          <app-projects-retro [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('type') {
-        @defer {
-          <app-projects-type [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('cards') {
-        @defer {
-          <app-projects-cards [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('kaleido') {
-        @defer {
-          <app-projects-kaleido [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('calder') {
-        @defer {
-          <app-projects-calder [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('gacha') {
-        @defer {
-          <app-projects-gacha [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
-      @case ('tower') {
-        @defer {
-          <app-projects-tower [projects]="projects" (openCase)="open($event)" />
-        } @placeholder (minimum 200ms) {
-          <div class="layout-loading" aria-hidden="true"></div>
-        }
-      }
+  <div class="layout" [attr.aria-busy]="pendingLayout() ? 'true' : null">
+    <ng-container #outlet />
+    @if (!mounted()) {
+      <div class="layout-loading" aria-hidden="true"></div>
     }
   </div>
 

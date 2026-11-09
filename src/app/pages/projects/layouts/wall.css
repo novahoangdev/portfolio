@@ -85,6 +85,11 @@
   min-width: 0;
 }
 
+/* Tiles reflow with a view transition only while the filter changes. */
+:host-context(.vt-filter) .wall-item {
+  view-transition-name: var(--vt-name);
+}
+
 .tile {
   --rx: 0deg;
   --ry: 0deg;
@@ -156,9 +161,9 @@
 }
 
 .tile-shine {
-  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 42%);
+  /* Plain overlay: a blend mode over a playing video re-composites every frame. */
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 42%);
   inset: 0;
-  mix-blend-mode: soft-light;
   opacity: 0;
   pointer-events: none;
   position: absolute;
@@ -193,8 +198,8 @@
 }
 
 .tile-kinds span {
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.12);
+  /* Tinted glass without backdrop-filter: re-blurring a playing video is costly. */
+  background: rgba(12, 23, 29, 0.38);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   font-size: 0.58rem;
@@ -210,8 +215,7 @@
 
 .tile-arrow {
   align-items: center;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(12, 23, 29, 0.38);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 50%;
   display: inline-flex;

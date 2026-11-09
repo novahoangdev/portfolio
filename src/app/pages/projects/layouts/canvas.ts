@@ -349,6 +349,7 @@ export class ProjectsCanvas {
       /* ---------- Render (one rAF per dirty frame) ---------- */
 
       let scheduled = 0;
+      let dotsGap = 0;
       let lastPlayCheck = 0;
       let onScreen = false;
       const screenOf = (x: number, y: number, f: number) => ({
@@ -393,12 +394,19 @@ export class ProjectsCanvas {
           const p = screenOf(it.x, it.y, it.f);
           it.el.style.transform = `translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, 0) scale(${s.toFixed(4)})`;
         }
-        // Dot grid sits deepest, so it drifts slowest.
+        // Dot grid sits deepest, so it drifts slowest. Panning only moves the (oversized) layer by
+        // the offset within one grid step; the grid is repainted only when the zoom changes it.
         const gf = 0.82;
         let gap = 30 * cam.z * gf;
         while (gap < 15) gap *= 2;
-        dots.style.backgroundSize = `${gap}px ${gap}px`;
-        dots.style.backgroundPosition = `${W / 2 - cam.x * cam.z * gf}px ${H / 2 - cam.y * cam.z * gf}px`;
+        if (gap !== dotsGap) {
+          dotsGap = gap;
+          dots.style.backgroundSize = `${gap}px ${gap}px`;
+        }
+        const wrap = (v: number) => (((v + 64) % gap) + gap) % gap;
+        const ox = wrap(W / 2 - cam.x * cam.z * gf);
+        const oy = wrap(H / 2 - cam.y * cam.z * gf);
+        dots.style.transform = `translate3d(${ox.toFixed(2)}px, ${oy.toFixed(2)}px, 0)`;
 
         threads.forEach((t, k) => {
           const a = pinOf(cards[t.a]);

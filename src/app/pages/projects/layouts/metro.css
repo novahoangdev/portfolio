@@ -68,6 +68,17 @@
 .map-svg {
   display: block;
   overflow: visible;
+  position: relative;
+}
+
+/* Own layer: the ripple repaints only the river, never the network drawn above it. */
+.map-river {
+  display: block;
+  left: 0;
+  overflow: visible;
+  position: absolute;
+  top: 0;
+  will-change: transform;
 }
 
 .river {
@@ -79,7 +90,8 @@
 }
 
 .river-edge {
-  animation: ripple 14s linear infinite;
+  /* ~20 updates a second is indistinguishable for a drift this slow, at a third of the repaints. */
+  animation: ripple 14s steps(280) infinite;
   fill: none;
   stroke: var(--river-ripple);
   stroke-dasharray: 3 16;
@@ -236,10 +248,16 @@
   font-weight: 800;
 }
 
-/* "You are here" */
+/* "You are here" (HTML over the sheet: the pulse is a compositor-only animation) */
 .here {
+  height: 0;
+  left: 0;
   opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
   transition: opacity 300ms ease;
+  width: 0;
 }
 
 .is-ready:not(.is-moving) .here {
@@ -249,11 +267,14 @@
 
 .here-pulse {
   animation: here 2.4s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
-  fill: none;
-  stroke: color-mix(in oklab, var(--accent) 80%, var(--map-ink));
-  stroke-width: 2.5;
-  transform-box: fill-box;
-  transform-origin: center;
+  border: 2.5px solid color-mix(in oklab, var(--accent) 80%, var(--map-ink));
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 30.5px;
+  left: -15.25px;
+  position: absolute;
+  top: -15.25px;
+  width: 30.5px;
 }
 
 .here-pulse.is-late {
@@ -271,11 +292,28 @@
   }
 }
 
-/* The train */
+/* The train: its own small layer, moved with a transform each frame. */
 .train {
-  filter: drop-shadow(0 3px 3px rgba(var(--map-shadow), 0.35));
+  height: 0;
+  left: 0;
   opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform-origin: 0 0;
   transition: opacity 500ms ease;
+  width: 0;
+  will-change: transform;
+}
+
+.train-svg {
+  display: block;
+  /* Painted into the train's layer once, not re-filtered as it moves. */
+  filter: drop-shadow(0 3px 3px rgba(var(--map-shadow), 0.35));
+  left: -30px;
+  overflow: visible;
+  position: absolute;
+  top: -20px;
 }
 
 .is-ready .train {
@@ -333,8 +371,8 @@
 
 .cartouche,
 .legend {
-  backdrop-filter: blur(6px);
-  background: color-mix(in srgb, var(--map-paper) 82%, transparent);
+  /* A denser tint instead of a backdrop blur: reads the same over the paper, no per-frame blur pass. */
+  background: color-mix(in srgb, var(--map-paper) 90%, transparent);
   border: 1px solid color-mix(in srgb, var(--map-ink) 14%, transparent);
   color: var(--map-ink);
   position: absolute;
@@ -542,6 +580,11 @@
   animation: ticker 18s linear infinite;
   display: inline-block;
   padding-left: 100%;
+}
+
+/* Nothing loops while the map is off-screen. */
+.metro:not(.is-inview) :is(.river-edge, .here-pulse, .ticker-text) {
+  animation-play-state: paused;
 }
 
 @keyframes ticker {

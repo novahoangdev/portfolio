@@ -9,6 +9,7 @@
   aria-roledescription="carousel"
   aria-label="Project stories — arrow keys or space to skip, Enter to open"
   [class.is-paused]="paused()"
+  [class.is-offscreen]="!onScreen()"
   [class.is-reduced]="reduced"
   [style.--cine-accent]="target.accent"
   [style.--story-s]="storySeconds + 's'"

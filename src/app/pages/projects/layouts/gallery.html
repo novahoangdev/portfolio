@@ -37,30 +37,47 @@
   <div class="hall" #hall [style.--n]="projects().length" [class.is-end]="station() >= projects().length">
     <div class="stage">
       <div class="viewport">
-        <div class="world">
-          @for (b of bays(); track b) {
-            <div class="bay" aria-hidden="true">
-              <div class="plane floor"></div>
-              <div class="plane ceiling"></div>
-              <div class="plane wall wall-l"></div>
-              <div class="plane wall wall-r"></div>
+        <!--
+          The hall shell is split into separate 3D contexts that share one camera. From inside the
+          corridor no surface can hide another, so nothing here needs depth sorting: they simply
+          stack in this order — reflections (seen through the glossy floor), floor, ceiling, walls.
+          One shared context made the compositor split and sort ~70 intersecting planes every frame.
+        -->
+        <div class="world under" aria-hidden="true">
+          @for (p of projects(); track p.name; let k = $index) {
+            <div class="plane reflection" [attr.data-k]="k" [class.is-wide]="p.media.shape === 'wide'" [class.is-ebony]="k % 2 === 1">
+              <img [src]="p.media.image" alt="" loading="lazy" decoding="async" />
             </div>
           }
-          <div class="plane runner" aria-hidden="true"></div>
+        </div>
+        <div class="world" aria-hidden="true">
+          @for (s of segments(); track $index) {
+            <div class="plane floor"></div>
+          }
+          <div class="plane runner"></div>
+          @for (p of projects(); track p.name; let k = $index) {
+            <div class="plane pool" [attr.data-k]="k" [class.is-on]="active() === k"></div>
+          }
+        </div>
+        <div class="world" aria-hidden="true">
+          @for (s of segments(); track $index) {
+            <div class="plane ceiling"></div>
+          }
+          @for (p of projects(); track p.name; let k = $index) {
+            <div class="plane lamp" [attr.data-k]="k" [class.is-on]="active() === k"></div>
+          }
+        </div>
+        <div class="world">
+          @for (s of segments(); track $index) {
+            <div class="plane wall wall-l" aria-hidden="true"></div>
+            <div class="plane wall wall-r" aria-hidden="true"></div>
+          }
 
           <div class="plane intro" aria-hidden="true">
             <span class="intro-kicker">Exhibition</span>
             <span class="intro-title">Side projects</span>
             <span class="intro-sub">{{ pad(projects().length) }} works on view · scroll to walk</span>
           </div>
-
-          @for (p of projects(); track p.name; let k = $index) {
-            <div class="plane reflection" aria-hidden="true" [attr.data-k]="k" [class.is-wide]="p.media.shape === 'wide'" [class.is-ebony]="k % 2 === 1">
-              <img [src]="p.media.image" alt="" loading="lazy" decoding="async" />
-            </div>
-            <div class="plane pool" aria-hidden="true" [attr.data-k]="k" [class.is-on]="active() === k"></div>
-            <div class="plane lamp" aria-hidden="true" [attr.data-k]="k" [class.is-on]="active() === k"></div>
-          }
 
           <div class="plane end-wall">
             <span class="end-wash" aria-hidden="true"></span>

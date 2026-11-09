@@ -257,8 +257,13 @@ h2 {
   color: color-mix(in srgb, var(--page) 70%, transparent);
 }
 
-.layout {
+/* Named only while the layout switches: a named element paints above the case dialog. */
+:host-context(.vt-layout) .layout {
   view-transition-name: projects-layout;
+}
+
+.switch.is-loading .current-name {
+  animation: pulse 0.9s ease-in-out infinite;
 }
 
 .layout-loading {
@@ -351,11 +356,12 @@ h2 {
 }
 
 .case::backdrop {
-  backdrop-filter: blur(12px) saturate(0.8);
+  backdrop-filter: blur(10px) saturate(0.8);
   background: rgba(8, 14, 18, 0.62);
 }
 
 .case-inner {
+  view-transition-name: case-card;
   background: var(--page);
   border: 1px solid var(--line);
   border-radius: 1.75rem;
@@ -555,8 +561,9 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  /* Block, not grid: a capped-height grid squeezes the media row under the text. */
   .case-inner {
-    grid-template-columns: 1fr;
+    display: block;
     overflow-y: auto;
   }
 

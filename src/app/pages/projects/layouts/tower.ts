@@ -37,8 +37,11 @@ interface Star {
   readonly x: number;
   readonly y: number;
   readonly size: number;
-  readonly delay: number;
 }
+
+/** Stars twinkle in a few out-of-phase groups (one composited layer each, not one per star). */
+const STAR_PHASES = 5;
+const TWINKLE_CYCLE = 6.8;
 
 /** Small deterministic PRNG so the skyline is the same on every visit. */
 function rng(seed: number): () => number {
@@ -111,9 +114,17 @@ export class ProjectsTower {
   protected readonly far = skyline(11, 22, 14, 34, 0.25);
   protected readonly mid = skyline(23, 13, 22, 52, 0.6);
   protected readonly close = skyline(37, 7, 40, 82, 0.9);
-  protected readonly stars: readonly Star[] = (() => {
+  protected readonly starGroups: readonly { readonly delay: number; readonly stars: readonly Star[] }[] = (() => {
     const r = rng(5);
-    return Array.from({ length: 70 }, () => ({ x: r() * 100, y: r() * 62, size: 1 + r() * 1.8, delay: r() * 6 }));
+    const stars = Array.from({ length: 70 }, () => {
+      const star = { x: r() * 100, y: r() * 62, size: 1 + r() * 1.8 };
+      r(); // (was a per-star delay; keeps the same sky)
+      return star;
+    });
+    return Array.from({ length: STAR_PHASES }, (_, g) => ({
+      delay: -(g * TWINKLE_CYCLE) / STAR_PHASES,
+      stars: stars.filter((_, i) => i % STAR_PHASES === g),
+    }));
   })();
   protected readonly floorNo = computed(() => {
     const n = this.projects().length;
@@ -347,6 +358,8 @@ export class ProjectsTower {
 
     const io = new IntersectionObserver(([entry]) => {
       inView = !!entry?.isIntersecting;
+      // Off screen: pause the sky's ambient loops (stars, clouds, plane, beacons).
+      stage.classList.toggle('is-off', !inView);
       setPlaying();
     });
     io.observe(run);

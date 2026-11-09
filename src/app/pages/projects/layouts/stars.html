@@ -11,6 +11,7 @@
   (keydown)="onKey($event)"
   (click)="onSkyClick($event)"
 >
+  <canvas class="sky-canvas" #back aria-hidden="true"></canvas>
   <canvas class="sky-canvas" #canvas aria-hidden="true"></canvas>
 
   <div class="sky-hud" aria-hidden="true">

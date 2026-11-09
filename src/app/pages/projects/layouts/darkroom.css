@@ -96,6 +96,8 @@
   pointer-events: none;
   position: absolute;
   width: 100%;
+  /* Own layer: the swaying lines repaint every frame; without this they drag the whole wall into each repaint. */
+  will-change: transform;
   z-index: 4;
 }
 
@@ -258,27 +260,39 @@
 
 /* Fresh from the fixer: wet sheen sweeping across, fading as it dries. */
 .sheen {
-  background: linear-gradient(112deg, transparent 32%, rgba(255, 255, 255, 0.55) 46%, rgba(255, 255, 255, 0.1) 54%, transparent 64%);
-  background-size: 260% 100%;
   inset: 0;
   mix-blend-mode: screen;
   opacity: 0;
+  overflow: hidden;
   pointer-events: none;
   position: absolute;
 }
 
+/* The sweep is a translated strip (compositor) rather than an animated background-position (repaint per frame).
+   Same geometry: a 260%-wide gradient travelling from background-position 130% to -30%. */
+.sheen::before {
+  background: linear-gradient(112deg, transparent 32%, rgba(255, 255, 255, 0.55) 46%, rgba(255, 255, 255, 0.1) 54%, transparent 64%);
+  content: '';
+  inset: 0 auto 0 0;
+  position: absolute;
+  transform: translateX(-80%);
+  width: 260%;
+}
+
 .is-wet .sheen {
-  animation:
-    sheen-sweep 2.6s linear infinite,
-    sheen-dry 7s ease-in forwards;
+  animation: sheen-dry 7s ease-in forwards;
+}
+
+.is-wet .sheen::before {
+  animation: sheen-sweep 2.6s linear infinite;
 }
 
 @keyframes sheen-sweep {
   from {
-    background-position: 130% 0;
+    transform: translateX(-80%);
   }
   to {
-    background-position: -30% 0;
+    transform: translateX(18.4615%);
   }
 }
 
@@ -293,29 +307,61 @@
 
 /* Under the liquid: a tint with drifting caustics. */
 .bath {
-  background:
-    radial-gradient(40% 30% at 30% 40%, rgba(255, 240, 220, 0.22), transparent 70%),
-    radial-gradient(35% 25% at 70% 65%, rgba(255, 240, 220, 0.16), transparent 70%),
-    rgba(70, 48, 30, 0.28);
-  background-size: 200% 200%;
+  background: rgba(70, 48, 30, 0.28);
   inset: 0;
   opacity: 0;
+  overflow: hidden;
   pointer-events: none;
   position: absolute;
   transition: opacity 260ms ease;
 }
 
+/* Two caustic blobs on 200%-sized strips that translate (compositor) instead of animating background-position. */
+.bath::before,
+.bath::after {
+  content: '';
+  height: 200%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 200%;
+}
+
+.bath::before {
+  background: radial-gradient(40% 30% at 30% 40%, rgba(255, 240, 220, 0.22), transparent 70%);
+}
+
+.bath::after {
+  background: radial-gradient(35% 25% at 70% 65%, rgba(255, 240, 220, 0.16), transparent 70%);
+}
+
 .is-bath .bath {
-  animation: caustics 2.2s ease-in-out infinite alternate;
   opacity: 1;
 }
 
-@keyframes caustics {
+.is-bath .bath::before {
+  animation: caustics-a 2.2s ease-in-out infinite alternate;
+}
+
+.is-bath .bath::after {
+  animation: caustics-b 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes caustics-a {
   from {
-    background-position: 0 0, 100% 100%, 0 0;
+    transform: translate(0, 0);
   }
   to {
-    background-position: 100% 60%, 0 30%, 0 0;
+    transform: translate(-50%, -30%);
+  }
+}
+
+@keyframes caustics-b {
+  from {
+    transform: translate(-50%, -50%);
+  }
+  to {
+    transform: translate(0, -15%);
   }
 }
 
