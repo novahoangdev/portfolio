@@ -164,6 +164,22 @@ export const sideProjects: readonly SideProject[] = [
     status: 'Fan art',
   },
   {
+    name: 'Mac Dev Setup',
+    tagline: 'One Brewfile and a step-by-step guide for vibe coding on a Mac.',
+    kinds: ['tools'],
+    accent: '#3fb98f',
+    summary:
+      'An Apple Silicon Mac setup for vibe coding with many AI agents: one Brewfile, a bilingual step-by-step guide, and scripts to back up and restore macOS settings.',
+    technologies: ['Homebrew', 'Shell', 'Claude Code', 'Firebase Hosting'],
+    repoUrl: `${github}/mac-dev-setup`,
+    liveUrl: 'https://setup-dev-mac.web.app',
+    media: {
+      video: '/images/projects/mac-dev-setup.mp4',
+      image: '/images/projects/mac-dev-setup.webp',
+      alt: 'Mac Dev Setup guide site: quick-start steps, Zsh config and AI agent sections for Apple Silicon Macs',
+    },
+  },
+  {
     name: 'Dev Workspace',
     tagline: 'Rules, skills and safety rails for AI-assisted coding.',
     kinds: ['tools'],
