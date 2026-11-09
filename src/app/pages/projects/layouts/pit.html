@@ -1,0 +1,84 @@
+@let current = projects()[shown()];
+<div class="pit-wrap" [style.--accent]="current.accent">
+  <div
+    #pit
+    class="pit"
+    role="group"
+    aria-label="Ball pit — each bubble is a project. Tab to a bubble, Enter to open it."
+    [class.is-shaking]="shaking()"
+    [class.is-reduced]="reduced()"
+    (animationend)="shaking.set(false)"
+  >
+    <div class="pit-glow" aria-hidden="true"></div>
+    <div class="pit-floor" aria-hidden="true"></div>
+
+    @for (project of projects(); track project.name; let i = $index) {
+      <button
+        #bubble
+        type="button"
+        class="bubble"
+        [attr.data-project]="i"
+        [class.is-active]="active() === i"
+        [class.is-featured]="project.featured"
+        [class.is-playing]="playing(i)"
+        [style.--accent]="project.accent"
+        [style.z-index]="active() === i ? 5 : 1"
+        [attr.aria-label]="'Open ' + project.name + ' — ' + project.tagline"
+        (click)="onClick(i, bubble)"
+        (focus)="onFocus(i)"
+        (blur)="onBlur()"
+      >
+        <span class="shell">
+          <span class="lens">
+            <app-project-media [project]="project" [play]="playing(i) ? 'on' : 'off'" />
+            <span class="shade" aria-hidden="true"></span>
+          </span>
+          <span class="film" aria-hidden="true"></span>
+          <span class="spec" aria-hidden="true"></span>
+          <svg class="label" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <path [attr.id]="'pit-arc-' + i" d="M 27.4 85.3 A 74 74 0 1 0 172.6 85.3" />
+            </defs>
+            <text>
+              <textPath [attr.href]="'#pit-arc-' + i" startOffset="50%" text-anchor="middle">{{ project.name }}</textPath>
+            </text>
+          </svg>
+        </span>
+      </button>
+    }
+  </div>
+
+  <div class="pit-bar">
+    @for (shownIndex of [shown()]; track shownIndex) {
+      <div class="pit-info">
+        <p class="info-meta">
+          <span class="info-count">{{ pad(shownIndex + 1) }} / {{ pad(projects().length) }}</span>
+          @for (kind of current.kinds; track kind) {
+            <span class="info-kind">{{ kindLabel(kind) }}</span>
+          }
+          @if (current.status) {
+            <span class="info-kind is-status">{{ current.status }}</span>
+          }
+        </p>
+        <p class="info-title">{{ current.name }}</p>
+        <p class="info-tagline">{{ current.tagline }}</p>
+      </div>
+    }
+    <div class="pit-actions">
+      @if (!reduced()) {
+        <button type="button" class="pit-btn" (click)="shake()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="8" cy="15" r="4" />
+            <circle cx="16.5" cy="9" r="3" />
+            <circle cx="17" cy="18" r="2" />
+            <path d="M3 6.5c1.2-1.6 2.6-2.4 4.2-2.6M4.8 9c.6-.9 1.4-1.4 2.3-1.6" />
+          </svg>
+          Shake
+        </button>
+      }
+      <button type="button" class="pit-btn is-solid" (click)="openShown()">
+        Open {{ current.name }} <span aria-hidden="true">↗</span>
+      </button>
+    </div>
+  </div>
+</div>

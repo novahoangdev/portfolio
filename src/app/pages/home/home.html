@@ -7,7 +7,7 @@
   </p>
 </section>
 
-<section class="cv-shell" aria-label="Curriculum vitae">
+<section id="cv" class="cv-shell" aria-label="Curriculum vitae">
   <div class="cv-toolbar" [appReveal]="210">
     <div
       class="market-tabs sliding-tabs"
@@ -400,6 +400,10 @@
     </article>
   }
 </section>
+
+<app-projects />
+
+<app-about />
 
 <!-- Interactive Celebration Hire Me Toast Banner -->
 @if (hireToast().visible) {

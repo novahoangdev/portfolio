@@ -1,0 +1,115 @@
+<div class="desk-wrap">
+  <div
+    #desk
+    class="desk"
+    role="group"
+    aria-label="Polaroid desk — drag the prints around, press F to flip one, Enter to open it"
+    [class.is-landed]="landed()"
+  >
+    <div class="desk-light" aria-hidden="true"></div>
+    <div class="desk-stain" aria-hidden="true"></div>
+    <div class="desk-pencil" aria-hidden="true"></div>
+
+    @for (project of projects(); track project.name; let i = $index) {
+      @let flipped = isFlipped(i);
+      <div
+        class="print"
+        [attr.data-project]="i"
+        [class.is-featured]="project.featured"
+        [class.is-flipped]="flipped"
+        [class.is-front]="front() === i"
+        [class.is-playing]="playing(i)"
+        [style.--accent]="project.accent"
+        [style.--i]="i"
+        [style.--len]="project.name.length"
+        [style.--tape-r]="tapeAngle(i) + 'deg'"
+        (pointerenter)="hovered.set(i)"
+        (pointerleave)="hovered.set(null)"
+        (keydown)="onKey(i, $event)"
+      >
+        <div class="lift">
+          <div class="tilt">
+            <div class="flipper">
+              <button
+                type="button"
+                class="face front"
+                [attr.aria-label]="'Open ' + project.name + ' — ' + project.tagline"
+                [attr.tabindex]="flipped ? -1 : 0"
+                (click)="onFrontClick(i, $event)"
+                (focus)="onFocus(i)"
+                (blur)="focused.set(null)"
+              >
+                <span class="photo">
+                  <app-project-media [project]="project" [play]="playing(i) ? 'on' : 'off'" />
+                  <span class="sheen" aria-hidden="true"></span>
+                  <span class="stamp" aria-hidden="true">'{{ pad(i + 1) }}</span>
+                </span>
+                <span class="caption" aria-hidden="true">{{ project.name }}</span>
+              </button>
+
+              <div class="face back" [attr.inert]="flipped ? null : ''" [attr.aria-hidden]="flipped ? null : 'true'">
+                <p class="note-no">No. {{ pad(i + 1) }} — {{ project.name }}</p>
+                <p class="note-tagline">{{ project.tagline }}</p>
+                <p class="note-kinds">
+                  @for (kind of project.kinds; track kind) {
+                    <span>#{{ kindLabel(kind) }}</span>
+                  }
+                  @if (project.status) {
+                    <span class="note-status">{{ project.status }}</span>
+                  }
+                </p>
+                <p class="note-tech">{{ project.technologies.join(' · ') }}</p>
+                <button
+                  type="button"
+                  class="note-open"
+                  (click)="open(i)"
+                  (focus)="onFocus(i)"
+                  (blur)="focused.set(null)"
+                >
+                  Open case <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          @if (tapeStyle(i) === 'top') {
+            <span class="tape tape-top" aria-hidden="true"></span>
+          } @else {
+            <span class="tape tape-left" aria-hidden="true"></span>
+            <span class="tape tape-right" aria-hidden="true"></span>
+          }
+          <button
+            type="button"
+            class="flip"
+            [attr.aria-label]="(flipped ? 'Turn ' + project.name + ' face up' : 'Flip ' + project.name + ' to read the notes')"
+            [attr.aria-pressed]="flipped"
+            (click)="toggleFlip(i, true)"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.6M20 4v4.6h-4.6M20 12a8 8 0 0 1-13.7 5.6L4 15.4M4 20v-4.6h4.6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="desk-bar">
+    <p class="desk-hint">
+      <span class="hint-pointer">Drag to toss · double-click to flip · click to open</span>
+      <span class="hint-touch">Drag to toss · double-tap to flip · tap to open</span>
+      <span class="hint-keys">Arrows nudge · F flips · Enter opens</span>
+    </p>
+    <div class="desk-actions">
+      <button type="button" class="desk-btn" [class.is-on]="tidy()" (click)="tidyUp()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></svg>
+        Tidy up
+      </button>
+      <button type="button" class="desk-btn" [class.is-on]="!tidy()" (click)="scatter()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7l5-2 2 5-5 2zM14 4l5 1-1 5-5-1zM6 15l5 1-1 5-5-1zM15 13l4 3-3 4-4-3z" />
+        </svg>
+        Scatter
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 import { ButtonHover } from './directives/button-hover';
 import { Component, HostListener, effect, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { contact } from './data/profile';
 import { DOCUMENT } from '@angular/common';
 import { Meta } from '@angular/platform-browser';
@@ -10,7 +10,7 @@ type Theme = 'light' | 'dark';
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonHover, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [ButtonHover, RouterOutlet, RouterLink],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

@@ -1,0 +1,152 @@
+@let list = projects();
+@let card = shown() !== null ? list[shown()!] : null;
+@let tray = drawn() !== null ? list[drawn()!] : null;
+
+<div class="arcade" #root [attr.data-phase]="phase()" [style.--cr]="capR() * 100 + '%'">
+  <div class="machine-col">
+    <div class="spot" aria-hidden="true"></div>
+    <div class="machine">
+      <div class="lid" aria-hidden="true"><span class="knob"></span></div>
+
+      <div class="globe" #globe aria-hidden="true" (pointerdown)="poke()">
+        @for (p of list; track p.name; let i = $index) {
+          <div class="ball" [class.is-gone]="!inGlobe().has(i)" [style.--pa]="p.accent">
+            <span class="ball-spin">
+              <img [src]="p.media.image" alt="" loading="lazy" decoding="async" draggable="false" />
+              <span class="ball-top"></span>
+            </span>
+            <span class="ball-shine"></span>
+          </div>
+        }
+        <span class="glass"></span>
+      </div>
+
+      <div class="collar" aria-hidden="true"></div>
+
+      <div class="body">
+        <p class="plate" aria-hidden="true">
+          <span class="plate-name">Nova<em>capsules</em></span>
+          <span class="plate-sub">1 turn · 1 project</span>
+        </p>
+        <div class="coin" aria-hidden="true"><span class="coin-slit"></span><span class="coin-label">free</span></div>
+        <span class="sticker" aria-hidden="true"><b>{{ list.length }}</b><small>inside</small></span>
+
+        <button
+          #crank
+          type="button"
+          class="crank"
+          [class.is-busy]="phase() === 'turning' || phase() === 'dropping'"
+          aria-label="Turn the crank to get a capsule"
+          (click)="onCrankClick($event)"
+        >
+          <span class="crank-ring" aria-hidden="true"></span>
+          <span class="crank-disc" #disc aria-hidden="true">
+            <span class="crank-bar"></span>
+            <span class="crank-hub"></span>
+          </span>
+        </button>
+
+        <div class="chute">
+          <span class="chute-back" aria-hidden="true"></span>
+          @if (tray) {
+            <button
+              type="button"
+              class="drop"
+              [class.is-open]="phase() === 'open'"
+              [style.--pa]="tray.accent"
+              [attr.aria-label]="capsuleLabel(drawn())"
+              [disabled]="phase() !== 'waiting'"
+              (click)="pop($event)"
+            >
+              <span class="half half-top" aria-hidden="true"></span>
+              <span class="half half-bot" aria-hidden="true"><img [src]="tray.media.image" alt="" draggable="false" /></span>
+              <span class="drop-shine" aria-hidden="true"></span>
+            </button>
+          }
+          <span class="flap" aria-hidden="true"></span>
+          <span class="lip" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="base" aria-hidden="true"></div>
+    </div>
+    <p class="counter" aria-hidden="true">
+      @if (jammed()) {
+        <span class="counter-warn">Open the capsule first ↓</span>
+      } @else if (phase() === 'waiting') {
+        Your capsule is in the tray — pop it open
+      } @else {
+        {{ inGlobe().size }} of {{ list.length }} capsules in the globe
+      }
+    </p>
+  </div>
+
+  <div class="prize">
+    @if (card) {
+      <article class="card" [attr.data-project]="shown()" [style.--pa]="card.accent" [class.is-dim]="phase() === 'turning' || phase() === 'dropping'">
+        <button type="button" class="card-media" [class.is-wide]="card.media.shape === 'wide'" [attr.aria-label]="'Open case: ' + card.name" (click)="openShown()">
+          <app-project-media [project]="card" [play]="phase() === 'open' || phase() === 'waiting' ? 'on' : 'off'" />
+          <span class="card-hint" aria-hidden="true">Open case ↗</span>
+        </button>
+        <div class="card-text">
+          <p class="card-kicker">
+            <span class="card-dot" aria-hidden="true"></span>Capsule {{ pad(shown()! + 1) }}/{{ pad(list.length) }}
+            @if (card.status) {
+              <span class="card-status">{{ card.status }}</span>
+            }
+          </p>
+          <h3 class="card-name">{{ card.name }}</h3>
+          <p class="card-tag">{{ card.tagline }}</p>
+          <p class="card-kinds">
+            @for (k of card.kinds; track k) {
+              <span>{{ kindLabel(k) }}</span>
+            }
+          </p>
+          <div class="card-actions">
+            <button type="button" class="btn btn-open" (click)="openShown()">Open case <span aria-hidden="true">↗</span></button>
+            <button type="button" class="btn btn-again" [disabled]="phase() === 'turning' || phase() === 'dropping'" (click)="again($event)">
+              Again <span aria-hidden="true">↻</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    } @else {
+      <div class="empty">
+        <p class="empty-kicker">Capsule machine</p>
+        <p class="empty-title">What's inside?</p>
+        <p class="empty-copy">
+          Turn the crank — drag it round, or just press it — and a capsule rolls into the tray. Pop it open to
+          meet one of {{ list.length }} side projects.
+        </p>
+        <p class="empty-arrow" aria-hidden="true"><span>←</span> crank</p>
+      </div>
+    }
+  </div>
+
+  <aside class="shelf" aria-label="Your collection">
+    <p class="shelf-title">Collection <span>{{ found().size }}/{{ list.length }}</span></p>
+    <div class="shelf-grid">
+      @for (p of list; track p.name; let i = $index) {
+        @if (found().has(i)) {
+          <button
+            type="button"
+            class="slot is-found"
+            [attr.data-project]="i"
+            [class.is-current]="shown() === i"
+            [style.--pa]="p.accent"
+            [attr.aria-label]="'Show ' + p.name"
+            [title]="p.name"
+            (click)="show(i, $event)"
+          >
+            <span class="mini" aria-hidden="true"><img [src]="p.media.image" alt="" loading="lazy" draggable="false" /><i></i></span>
+            <span class="slot-num" aria-hidden="true">{{ pad(i + 1) }}</span>
+          </button>
+        } @else {
+          <span class="slot" aria-hidden="true"><span class="mini mini-unknown">?</span><span class="slot-num">{{ pad(i + 1) }}</span></span>
+        }
+      }
+    </div>
+  </aside>
+
+  <div class="fx" #fx aria-hidden="true"></div>
+  <p class="sr-only" aria-live="polite">{{ announce() }}</p>
+</div>

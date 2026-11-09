@@ -1,0 +1,109 @@
+<section
+  #stage
+  class="gallery"
+  [class.is-reduced]="reduced"
+  [class.is-touch]="!hoverable"
+  aria-label="A hanging mobile of side projects"
+  (click)="onStageClick($event)"
+>
+  <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      @for (s of shapes; track s.id) {
+        <clipPath [attr.id]="'calder-' + s.id" clipPathUnits="objectBoundingBox">
+          <path [attr.d]="s.d" />
+        </clipPath>
+      }
+    </defs>
+  </svg>
+
+  <div class="wall" aria-hidden="true">
+    <span class="spot"></span>
+    <span class="baseboard"></span>
+  </div>
+
+  <span class="hook" aria-hidden="true"></span>
+
+  @for (p of projects(); track p.name; let i = $index) {
+    <div class="shadow" aria-hidden="true">
+      <span class="shadow-thread"></span>
+      <span class="shadow-shape" [style.clip-path]="clipOf(i)"></span>
+    </div>
+  }
+
+  <svg class="wires" aria-hidden="true" preserveAspectRatio="none">
+    <path class="wire-shadow" />
+    <path class="wire" />
+  </svg>
+
+  @for (p of projects(); track p.name; let i = $index) {
+    <div
+      #leaf
+      class="leaf"
+      [attr.data-project]="i"
+      [class.is-active]="active() === i"
+      [style.--accent]="p.accent"
+    >
+      <span class="leaf-thread" aria-hidden="true"></span>
+      <div class="shape-wrap">
+        <button
+          type="button"
+          class="shape"
+          [style.clip-path]="clipOf(i)"
+          [attr.aria-label]="p.name + ': ' + p.tagline"
+          (click)="activate(i, leaf)"
+          (pointerenter)="hoverable && hovered.set(i)"
+          (pointerleave)="onLeave(i)"
+          (focus)="focused.set(i)"
+          (blur)="onBlur(i)"
+        >
+          <span class="shape-paint"></span>
+          <span class="shape-window" [style.clip-path]="clipOf(i)">
+            <app-project-media [project]="p" [play]="active() === i && inView() ? 'on' : 'off'" />
+            <span class="shape-tone"></span>
+          </span>
+          <span class="shape-shade"></span>
+        </button>
+        <svg class="ring" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path [attr.d]="shapeOf(i).d" vector-effect="non-scaling-stroke" />
+        </svg>
+      </div>
+      <div class="tag" aria-hidden="true">
+        <span class="tag-thread" aria-hidden="true"></span>
+        <span class="tag-card">
+          <span class="tag-no">No. {{ pad(i + 1) }}</span>
+          <span class="tag-name">{{ p.name }}</span>
+          <span class="tag-line">{{ p.tagline }}</span>
+        </span>
+      </div>
+    </div>
+  }
+
+  @if (!hoverable) {
+    @let sel = selected();
+    <div class="caption" [class.at-top]="captionTop()" aria-live="polite">
+      @if (sel !== null) {
+        @let p = projects()[sel]!;
+        <span class="caption-card" [style.--accent]="p.accent">
+          <span class="tag-no">No. {{ pad(sel + 1) }}</span>
+          <span class="tag-name">{{ p.name }}</span>
+          <span class="tag-line">{{ p.tagline }}</span>
+          <button type="button" class="caption-open" (click)="openSelected()">
+            Open project <span aria-hidden="true">→</span>
+          </button>
+        </span>
+      }
+    </div>
+  }
+
+  <p class="plaque" [class.is-hidden]="!hoverable && selected() !== null">
+    <span class="plaque-title">Mobile for {{ projects().length }} side projects</span>
+    <span class="plaque-medium">Painted sheet, steel wire, moving pictures</span>
+    <span class="plaque-hint">{{
+      hoverable
+        ? reduced
+          ? 'Hover a shape to look closer; click to open'
+          : 'Move through it to make wind · drag a shape · click to open'
+        : 'Tap a shape to look closer, tap again to open'
+    }}</span>
+  </p>
+</section>

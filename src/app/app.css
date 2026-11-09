@@ -3,6 +3,7 @@
   flex-direction: column;
   min-height: 100dvh;
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   width: 100%;
 }
@@ -15,7 +16,7 @@
   background: color-mix(in srgb, var(--page) 86%, transparent);
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 1.5rem;
   left: 0;
   padding: calc(0.75rem + var(--safe-top)) clamp(1.1rem, 4vw, 4rem) 0.75rem;
@@ -363,42 +364,6 @@
   margin-top: 0.25rem;
 }
 
-nav {
-  align-items: center;
-  background: var(--surface);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--tab-gap);
-  justify-self: center;
-  padding: var(--tab-padding);
-  transition: border-color 250ms ease, box-shadow 250ms ease;
-}
-
-nav a {
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.52rem 1.05rem;
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  text-decoration: none;
-  transition: color 220ms ease;
-}
-
-nav a:hover {
-  color: var(--ink);
-}
-
-nav a.active {
-  color: var(--page);
-}
-
 .header-actions {
   align-items: center;
   display: flex;
@@ -565,7 +530,7 @@ footer p {
 
 @media (max-width: 840px) {
   .site-header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     gap: 0.75rem;
   }
 }
@@ -585,28 +550,13 @@ footer p {
 
 @media (max-width: 600px) {
   .site-header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     gap: 0.45rem;
     padding: calc(0.55rem + var(--safe-top)) 0.75rem 0.55rem;
   }
 
   .brand-copy {
     display: none;
-  }
-
-  nav {
-    --tab-padding: 0.2rem;
-    --tab-gap: 0.15rem;
-    justify-self: center;
-  }
-
-  nav a {
-    font-size: 0.72rem;
-    min-height: 2.25rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.42rem 0.85rem;
   }
 
   .header-cta span {

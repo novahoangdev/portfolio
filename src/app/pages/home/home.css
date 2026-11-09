@@ -72,6 +72,7 @@
 
 .cv-shell {
   margin: 0 auto;
+  scroll-margin-top: 5rem;
   max-width: 88rem;
   padding: 0 clamp(1.1rem, 4vw, 4rem) 3rem;
 }

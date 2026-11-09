@@ -1,0 +1,368 @@
+@let list = projects();
+
+<!-- Pixel icon: a file tinted with the project's accent, plus a little kind badge. -->
+<ng-template #glyph let-p>
+  <svg class="glyph" viewBox="0 0 24 24" shape-rendering="crispEdges" aria-hidden="true">
+    <path fill="#1d1b2c" d="M4 1h11l6 6v16H4z" />
+    <path fill="#f6f4fb" d="M5 2h9v6h6v14H5z" />
+    <path fill="#b8b3cc" d="M15 2h1v1h1v1h1v1h1v1h1v1h-5z" />
+    @if (!p) {
+      <rect fill="#6c7bd9" x="5" y="2" width="9" height="3" />
+      <rect fill="#9a95b4" x="7" y="9" width="10" height="1" />
+      <rect fill="#9a95b4" x="7" y="11" width="11" height="1" />
+      <rect fill="#9a95b4" x="7" y="13" width="8" height="1" />
+      <rect fill="#9a95b4" x="7" y="15" width="10" height="1" />
+      <rect fill="#9a95b4" x="7" y="17" width="6" height="1" />
+    } @else if (p.media.video) {
+      <rect style="fill: var(--pa)" x="6" y="9" width="13" height="10" />
+      <path fill="#fff" fill-opacity=".85" d="M7 10h1v1H7zM10 10h1v1h-1zM13 10h1v1h-1zM16 10h1v1h-1zM7 17h1v1H7zM10 17h1v1h-1zM13 17h1v1h-1zM16 17h1v1h-1z" />
+      <path fill="#fff" d="M11 12h1v1h1v1h1v1h-1v1h-1v1h-1z" />
+    } @else {
+      <rect style="fill: var(--pa)" x="6" y="9" width="13" height="10" />
+      <rect fill="#fff6c8" x="15" y="10" width="2" height="2" />
+      <path style="fill: color-mix(in srgb, var(--pa) 45%, #1d1b2c)" d="M6 19v-3h2v-1h1v-1h2v1h1v1h2v-1h1v-1h1v1h1v1h2v3z" />
+    }
+    @if (p) {
+      <g transform="translate(0 14)">
+        <rect fill="#1d1b2c" x="0" y="0" width="10" height="10" />
+        <rect fill="#f6f4fb" x="1" y="1" width="8" height="8" />
+        <g transform="translate(1 1)">
+          @switch (p.kinds[0]) {
+            @case ('web') {
+              <path fill="#3b7de0" d="M2 0h4v1h1v1h1v4H7v1H6v1H2V7H1V6H0V2h1V1h1z" />
+              <path fill="#fff" fill-opacity=".7" d="M3 0h1v8H3zM0 3h8v1H0z" />
+            }
+            @case ('ios') {
+              <rect fill="#1d1b2c" x="2" y="0" width="4" height="8" />
+              <rect style="fill: var(--pa)" x="3" y="1" width="2" height="5" />
+            }
+            @case ('3d') {
+              <path style="fill: color-mix(in srgb, var(--pa) 55%, #fff)" d="M3 0h2v1h2v2H5v1H3V3H1V1h2z" />
+              <path style="fill: var(--pa)" d="M1 3h2v1h1v4H3V7H1z" />
+              <path style="fill: color-mix(in srgb, var(--pa) 60%, #000)" d="M5 4V3h2v4H5v1H4V4z" />
+            }
+            @default {
+              <rect fill="#1d1b2c" x="0" y="1" width="8" height="6" />
+              <path fill="#4ee38a" d="M1 2h1v1h1v1H2v1H1V4h1V3H1zM4 5h3v1H4z" />
+            }
+          }
+        </g>
+      </g>
+    }
+  </svg>
+</ng-template>
+
+<ng-template #logo>
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M16 1c1.4 8 3 9.6 15 15-12 5.4-13.6 7-15 15-1.4-8-3-9.6-15-15 12-5.4 13.6-7 15-15z" fill="url(#nova-star)" />
+    <circle cx="16" cy="16" r="3.2" fill="#fff" opacity="0.9" />
+  </svg>
+</ng-template>
+
+<svg class="defs" width="0" height="0" aria-hidden="true">
+  <linearGradient id="nova-star" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ffd27a" />
+    <stop offset="0.5" stop-color="#ff7aa8" />
+    <stop offset="1" stop-color="#58d6c8" />
+  </linearGradient>
+</svg>
+
+<div
+  class="rig"
+  #rig
+  [attr.data-state]="state()"
+  [class.is-compact]="compact()"
+  [class.is-touch]="touch()"
+  (keydown.escape)="closeStart()"
+>
+  <div class="monitor">
+    <div class="bezel">
+      <div class="screen">
+        <div class="desk" #desk (pointerdown)="onDeskDown($event)">
+          <div class="wall" aria-hidden="true">
+            <ng-container [ngTemplateOutlet]="logo" />
+            <span class="wall-name">NovaOS<sup>98</sup></span>
+          </div>
+
+          <div class="icons" #icons role="group" aria-label="Desktop — one file per project" (keydown)="onIconsKey($event)">
+            @for (p of list; track p.name; let i = $index) {
+              <button
+                type="button"
+                class="icon"
+                [attr.data-project]="i"
+                [attr.data-icon]="i"
+                [class.is-selected]="selected() === i"
+                [attr.tabindex]="(selected() === i || (selected() < 0 && i === 0)) ? 0 : -1"
+                [style.--pa]="p.accent"
+                [style.--i]="i"
+                [attr.aria-label]="'Open ' + p.name"
+                (pointerdown)="onIconDown($event)"
+                (click)="onIconClick(i, $event)"
+                (dblclick)="openItem(i)"
+                (focus)="selected.set(i)"
+              >
+                <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: p }" />
+                <span class="icon-label">{{ iconLabel(p) }}</span>
+              </button>
+            }
+            <button
+              type="button"
+              class="icon"
+              [attr.data-icon]="list.length"
+              [class.is-selected]="selected() === list.length"
+              [attr.tabindex]="selected() === list.length ? 0 : -1"
+              [style.--i]="list.length"
+              aria-label="Open README.txt"
+              (pointerdown)="onIconDown($event)"
+              (click)="onIconClick(list.length, $event)"
+              (dblclick)="openItem(list.length)"
+              (focus)="selected.set(list.length)"
+            >
+              <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: null }" />
+              <span class="icon-label">README.txt</span>
+            </button>
+          </div>
+
+          @for (w of wins(); track w.id) {
+            @let p = w.index >= 0 ? list[w.index] : null;
+            @let isPlaying = playing().has(w.id);
+            <section
+              class="win"
+              role="dialog"
+              tabindex="-1"
+              [attr.aria-label]="winTitle(w)"
+              [attr.data-win]="w.id"
+              [class.is-active]="active() === w.id"
+              [class.is-max]="w.max || compact()"
+              [class.is-min]="w.min"
+              [class.is-hidden]="w.hidden"
+              [class.is-note]="!p"
+              [style.left.px]="w.x"
+              [style.top.px]="w.y"
+              [style.width.px]="w.w"
+              [style.height.px]="w.h"
+              [style.z-index]="zOf(w.id)"
+              [style.--pa]="p?.accent ?? '#6c7bd9'"
+              (pointerdown)="focusWin(w.id)"
+              (focusin)="focusWin(w.id)"
+              (keydown)="onWinKey(w, $event)"
+            >
+              <header class="bar" (pointerdown)="startDrag(w, $event)" (dblclick)="toggleMax(w)">
+                <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: p }" />
+                <span class="bar-title">{{ winTitle(w) }}</span>
+                <span class="bar-btns">
+                  <button type="button" class="bb bb-min" aria-label="Minimise" (click)="minimise(w)"><svg width="11" height="10" viewBox="0 0 11 10" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 7h7v2H2z" /></svg></button>
+                  <button type="button" class="bb bb-max" [attr.aria-label]="w.max ? 'Restore' : 'Maximise'" (click)="toggleMax(w)">
+                    <svg width="11" height="10" viewBox="0 0 11 10" fill="currentColor" fill-rule="evenodd" shape-rendering="crispEdges" aria-hidden="true">
+                      <path [attr.d]="w.max ? 'M3 0h7v6H8V2H4v1H3zM0 3h7v6H0zM1 5h5v3H1z' : 'M1 0h9v9H1zM2 2h7v6H2z'" />
+                    </svg>
+                  </button>
+                  <button type="button" class="bb bb-close" aria-label="Close" (click)="closeWin(w)"><svg width="11" height="10" viewBox="0 0 11 10" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 1h2v1h1v1h1v1h1V3h1V2h1V1h2v1H9v1H8v1H7v2h1v1h1v1h1v1H8V8H7V7H6V6H5v1H4v1H3v1H1V8h1V7h1V6h1V4H3V3H2V2H1z" /></svg></button>
+                </span>
+              </header>
+
+              @if (p) {
+                <div class="win-body">
+                  <div class="player">
+                    <div class="stage" [attr.data-project]="w.index" (click)="p.media.video ? togglePlay(w) : openCaseFrom(w)">
+                      <app-project-media [project]="p" [play]="isPlaying ? 'on' : 'off'" />
+                      @if (p.media.video && !isPlaying) {
+                        <svg class="stage-paused" width="56" height="52" viewBox="0 0 14 13" aria-hidden="true"><rect width="14" height="13" fill="#0a081e" fill-opacity=".55" /><path d="M4 3h2v7H4zM8 3h2v7H8z" fill="#fff" /></svg>
+                      }
+                    </div>
+                    <div class="transport">
+                      @if (p.media.video) {
+                        <button type="button" class="tb" [attr.aria-label]="isPlaying ? 'Pause' : 'Play'" (click)="togglePlay(w)">
+                          <svg width="9" height="10" viewBox="0 0 9 10" fill="currentColor" aria-hidden="true"><path [attr.d]="isPlaying ? 'M1 0h3v10H1zM5 0h3v10H5z' : 'M1 0l8 5-8 5z'" /></svg>
+                        </button>
+                        <button type="button" class="tb" aria-label="Restart" (click)="restart(w)">
+                          <svg width="9" height="10" viewBox="0 0 9 10" fill="currentColor" aria-hidden="true"><path d="M0 0h2v10H0zM9 0v10L3 5z" /></svg>
+                        </button>
+                        <input
+                          class="seek"
+                          type="range"
+                          min="0"
+                          max="1000"
+                          value="0"
+                          aria-label="Seek"
+                          (input)="seek(w, $event)"
+                          (pointerdown)="seekHold(w, true)"
+                          (pointerup)="seekHold(w, false)"
+                          (change)="seekHold(w, false)"
+                        />
+                        <span class="time" aria-hidden="true">0:00 / 0:00</span>
+                      } @else {
+                        <span class="still">Still image</span>
+                      }
+                      <button type="button" class="tb tb-open" (click)="openCaseFrom(w)">Open case<span aria-hidden="true"> ↗</span></button>
+                    </div>
+                  </div>
+                  <aside class="info" aria-label="Properties">
+                    <p class="info-name">{{ p.name }}</p>
+                    @if (p.status) {
+                      <p class="info-status">{{ p.status }}</p>
+                    }
+                    <fieldset class="group">
+                      <legend>About</legend>
+                      <p class="info-tag">{{ p.tagline }}</p>
+                    </fieldset>
+                    <fieldset class="group">
+                      <legend>Kind</legend>
+                      <p class="chips">
+                        @for (k of p.kinds; track k) {
+                          <span class="chip">{{ kindLabel(k) }}</span>
+                        }
+                      </p>
+                    </fieldset>
+                    <fieldset class="group">
+                      <legend>Built with</legend>
+                      <ul class="tech">
+                        @for (t of p.technologies; track t) {
+                          <li>{{ t }}</li>
+                        }
+                      </ul>
+                    </fieldset>
+                  </aside>
+                </div>
+                <footer class="status" aria-hidden="true">
+                  <span class="cell">{{ p.media.video ? (isPlaying ? '▶ Playing' : '❚❚ Paused') : '▣ Image' }}</span>
+                  <span class="cell cell-grow">{{ pad(w.index + 1) }} of {{ pad(list.length) }}</span>
+                </footer>
+              } @else {
+                <div class="note">
+                  <p class="note-menu" aria-hidden="true"><span>File</span><span>Edit</span><span>Help</span></p>
+                  <div class="note-text">
+                    <p>SIDE PROJECTS — built for fun, crafted with care.</p>
+                    <p>
+                      Outside client work, I build my own products and creative experiments — a
+                      photo-to-painting studio, shaders and real-time lighting on iPhone with React Native,
+                      a 3D WebGL workspace — plus tools that shape how I work.
+                    </p>
+                    <p>
+                      This desktop holds {{ list.length }} of them. {{ touch() ? 'Tap' : 'Double-click' }} a file to
+                      play it, drag a title bar to move its window, and press "Open case" for the full story.
+                    </p>
+                    <p>Keyboard: arrows move between files, Enter opens, Esc closes a window.</p>
+                  </div>
+                </div>
+              }
+              @if (!w.max && !compact()) {
+                <span class="grip" aria-hidden="true" (pointerdown)="startResize(w, $event)"></span>
+              }
+            </section>
+          }
+
+          <div class="zoom" #zoom aria-hidden="true"></div>
+
+          @if (balloon()) {
+            <div class="balloon" role="status">
+              <button type="button" class="balloon-x" aria-label="Dismiss tip" (click)="balloon.set(false)">×</button>
+              <strong>Welcome to NovaOS 98</strong>
+              <span>{{ touch() ? 'Tap' : 'Double-click' }} a file to play a project.</span>
+            </div>
+          }
+        </div>
+
+        <div class="taskbar">
+          <button
+            type="button"
+            class="start"
+            [class.is-on]="startOpen()"
+            [attr.aria-expanded]="startOpen()"
+            aria-haspopup="menu"
+            [disabled]="state() !== 'ready'"
+            (click)="toggleStart()"
+          >
+            <ng-container [ngTemplateOutlet]="logo" />
+            <span>Nova</span>
+          </button>
+          <span class="sep" aria-hidden="true"></span>
+          <div class="tasks">
+            @for (w of wins(); track w.id) {
+              @let tp = w.index >= 0 ? list[w.index] : null;
+              <button
+                type="button"
+                class="task"
+                [attr.data-task]="w.id"
+                [class.is-on]="active() === w.id"
+                [attr.aria-pressed]="active() === w.id"
+                [style.--pa]="tp?.accent ?? '#6c7bd9'"
+                (click)="onTask(w)"
+              >
+                <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: tp }" />
+                <span>{{ fileName(tp) }}</span>
+              </button>
+            }
+          </div>
+          <div class="tray">
+            <span class="tray-dot" aria-hidden="true"></span>
+            <time class="clock">{{ clock() }}</time>
+          </div>
+        </div>
+
+        @if (startOpen()) {
+          <div class="start-menu" role="menu" aria-label="Start" (keydown)="onStartKey($event)">
+            <p class="sm-head" aria-hidden="true">
+              <ng-container [ngTemplateOutlet]="logo" />
+              <span>Nova Hoang<small>side projects</small></span>
+            </p>
+            @for (p of list; track p.name; let i = $index) {
+              <button type="button" role="menuitem" class="sm-item" [style.--pa]="p.accent" (click)="openItem(i)">
+                <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: p }" />
+                <span>{{ p.name }}</span>
+              </button>
+            }
+            <span class="sm-sep" aria-hidden="true"></span>
+            <button type="button" role="menuitem" class="sm-item" (click)="openItem(list.length)">
+              <ng-container [ngTemplateOutlet]="glyph" [ngTemplateOutletContext]="{ $implicit: null }" />
+              <span>README.txt</span>
+            </button>
+            <button type="button" role="menuitem" class="sm-item sm-off" (click)="shutdown()">
+              <svg class="sm-power" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 1.5v6M4.6 3.8a5.5 5.5 0 1 0 6.8 0" /></svg>
+              <span>Shut down…</span>
+            </button>
+          </div>
+        }
+
+        @if (state() === 'booting') {
+          <div class="boot" (click)="finishBoot()" aria-hidden="true">
+            <div class="bios">
+              <p>NOVA BIOS v0.98</p>
+              <p>Checking memory … OK</p>
+              <p>Found {{ list.length }} project files</p>
+              <p>Starting NovaOS …</p>
+            </div>
+            <div class="splash">
+              <ng-container [ngTemplateOutlet]="logo" />
+              <p class="splash-name">NovaOS<sup>98</sup></p>
+              <p class="bar-wrap"><span class="blocks">@for (b of [0,1,2,3,4,5,6,7,8,9,10,11,12,13]; track b) {<i [style.--b]="b"></i>}</span></p>
+              <p class="splash-sub">Loading desktop…</p>
+            </div>
+          </div>
+        }
+        @if (state() === 'off' || state() === 'shutdown') {
+          <div class="dark">
+            @if (state() === 'shutdown') {
+              <p class="dark-msg">NovaOS is resting.<br />Press the power button to start again.</p>
+            }
+          </div>
+        }
+        <div class="glass" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="chin">
+      <span class="brand" aria-hidden="true">nova<b>station</b></span>
+      <span class="grille" aria-hidden="true"></span>
+      <span class="led" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="power"
+        [attr.aria-label]="state() === 'ready' || state() === 'booting' ? 'Shut down NovaOS' : 'Power on NovaOS'"
+        (click)="power()"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 1.5v6M4.6 3.8a5.5 5.5 0 1 0 6.8 0" /></svg>
+      </button>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite">{{ state() === 'shutdown' ? 'NovaOS shut down' : '' }}</p>
+</div>

@@ -1,45 +1,22 @@
-import { AutoplayVideo } from '../../directives/autoplay-video';
 import { ButtonHover } from '../../directives/button-hover';
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 import { Reveal } from '../../directives/reveal';
-import { contact, profile, skillGroups } from '../../data/profile';
-import { sideProjects } from '../../data/projects';
-import { HeartReactionService } from '../../services/heart-reaction';
+import { contact, profile } from '../../data/profile';
 
+/** About content rendered below the CV on the single portfolio page. */
 @Component({
   selector: 'app-about',
-  imports: [AutoplayVideo, ButtonHover, RouterLink, Reveal],
+  imports: [ButtonHover, Reveal],
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
 export class About {
+  private readonly document = inject(DOCUMENT);
   protected readonly contact = contact;
   protected readonly profile = profile;
-  protected readonly sideProjects = sideProjects;
-  protected readonly skillGroups = skillGroups;
-  protected readonly heartService = inject(HeartReactionService);
 
-  protected readonly heartCount = this.heartService.heartCount;
-  protected readonly floatingHearts = this.heartService.floatingHearts;
-  protected readonly celebrationHearts = this.heartService.celebrationHearts;
-  protected readonly showCelebration = this.heartService.showCelebration;
-  protected readonly hireToast = this.heartService.hireToast;
-
-  protected onAvatarClick(event: MouseEvent | Event): void {
-    this.heartService.triggerHeart(event);
-  }
-
-  protected onToastMouseEnter(): void {
-    this.heartService.onToastMouseEnter();
-  }
-
-  protected onToastMouseLeave(): void {
-    this.heartService.onToastMouseLeave();
-  }
-
-  protected dismissToast(): void {
-    this.heartService.dismissToast();
+  protected scrollToResume(): void {
+    this.document.getElementById('cv')?.scrollIntoView({ block: 'start' });
   }
 }
-

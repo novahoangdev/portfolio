@@ -1,0 +1,66 @@
+<div class="wall-toolbar">
+  <div class="filters" role="group" aria-label="Filter projects">
+    <button type="button" [class.is-active]="filter() === 'all'" [attr.aria-pressed]="filter() === 'all'" (click)="setFilter('all')">
+      All <span class="count">{{ countFor('all') }}</span>
+    </button>
+    @for (kind of kinds; track kind.id) {
+      <button type="button" [class.is-active]="filter() === kind.id" [attr.aria-pressed]="filter() === kind.id" (click)="setFilter(kind.id)">
+        {{ kind.label }} <span class="count">{{ countFor(kind.id) }}</span>
+      </button>
+    }
+  </div>
+</div>
+
+<ul class="wall" #wall>
+  @for (item of visible(); track item.project.name; let position = $index) {
+    @let span = spanFor(position, visible().length);
+    <li
+      class="wall-item"
+      [class.is-hero]="position === 0"
+      [attr.data-project]="item.index"
+      [style.--c]="span.c"
+      [style.--r]="span.r"
+      [style.view-transition-name]="'tile-' + item.index"
+      [appReveal]="position * 70"
+    >
+      <button
+        #tile
+        type="button"
+        class="tile"
+        appTilt
+        [style.--accent]="item.project.accent"
+        [attr.aria-label]="'Open ' + item.project.name + ' — ' + item.project.tagline"
+        (click)="open(item.index, tile)"
+      >
+        <app-project-media [project]="item.project" />
+        <span class="tile-scrim" aria-hidden="true"></span>
+        <span class="tile-shine" aria-hidden="true"></span>
+
+        <span class="tile-top" aria-hidden="true">
+          <span class="tile-index">{{ pad(item.index + 1) }}</span>
+          <span class="tile-kinds">
+            @for (kind of item.project.kinds; track kind) {
+              <span>{{ kindLabel(kind) }}</span>
+            }
+            @if (item.project.status) {
+              <span class="is-status">{{ item.project.status }}</span>
+            }
+          </span>
+          <span class="tile-arrow">↗</span>
+        </span>
+
+        <span class="tile-bottom" aria-hidden="true">
+          <span class="tile-title">{{ item.project.name }}</span>
+          <span class="tile-tagline">{{ item.project.tagline }}</span>
+          <span class="tile-tags">
+            @for (technology of item.project.technologies; track technology; let t = $index) {
+              <span [style.--i]="t">{{ technology }}</span>
+            }
+          </span>
+        </span>
+      </button>
+    </li>
+  }
+</ul>
+
+<span class="wall-cursor" #cursor aria-hidden="true">Open <span>↗</span></span>

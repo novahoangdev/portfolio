@@ -1,0 +1,304 @@
+<section id="projects" class="projects-section" aria-labelledby="projects-title">
+  <header class="projects-heading">
+    <div appReveal>
+      <p class="section-label">05 / Side projects</p>
+      <h2 id="projects-title">Built for fun,<br /><em>crafted with care.</em></h2>
+    </div>
+    <p class="projects-lede" [appReveal]="70">
+      Outside client work, I build my own products and creative experiments — a photo-to-painting
+      studio, shaders and real-time lighting on iPhone with React Native, a 3D WebGL workspace — plus
+      tools that shape how I work.
+    </p>
+  </header>
+
+  <div class="switcher" [appReveal]="120">
+    <div class="switch">
+      <button type="button" class="cycle" (click)="cycleLayout(-1)" aria-label="Previous layout">←</button>
+      <button
+        type="button"
+        class="current"
+        [attr.aria-expanded]="labOpen()"
+        aria-controls="layout-lab"
+        (click)="labOpen.set(!labOpen())"
+      >
+        <span class="current-count">{{ pad(currentPosition()) }}<span>/{{ pad(layouts.length) }}</span></span>
+        <span class="current-name">{{ current().label }}</span>
+        <span class="current-lab">Layout lab <span aria-hidden="true">{{ labOpen() ? '▴' : '▾' }}</span></span>
+      </button>
+      <button type="button" class="cycle" (click)="cycleLayout(1)" aria-label="Next layout">→</button>
+    </div>
+    @for (hint of [current().hint]; track hint) {
+      <p class="switch-hint">{{ hint }}</p>
+    }
+  </div>
+
+  @if (labOpen()) {
+    <div class="lab" id="layout-lab" role="radiogroup" aria-label="Choose how projects are shown">
+      @for (group of layoutGroups; track group.id) {
+        <p class="lab-group">{{ group.label }}</p>
+        <div class="lab-grid">
+          @for (option of group.options; track option.id; let i = $index) {
+            <button
+              type="button"
+              role="radio"
+              class="lab-option"
+              [class.is-active]="layout() === option.id"
+              [attr.aria-checked]="layout() === option.id"
+              [style.--i]="i"
+              (click)="chooseLayout(option.id)"
+            >
+              <span class="lab-name">{{ option.label }}</span>
+              <span class="lab-hint">{{ option.hint }}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <div class="layout">
+    @switch (layout()) {
+      @case ('wall') {
+        <app-projects-wall [projects]="projects" (openCase)="open($event)" />
+      }
+      @case ('orbit') {
+        @defer {
+          <app-projects-orbit [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('deck') {
+        @defer {
+          <app-projects-deck [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('strip') {
+        @defer {
+          <app-projects-strip [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('index') {
+        @defer {
+          <app-projects-index [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('gallery') {
+        @defer {
+          <app-projects-gallery [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('flashlight') {
+        @defer {
+          <app-projects-flashlight [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('desk') {
+        @defer {
+          <app-projects-desk [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('pit') {
+        @defer {
+          <app-projects-pit [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('tv') {
+        @defer {
+          <app-projects-tv [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('vinyl') {
+        @defer {
+          <app-projects-vinyl [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('canvas') {
+        @defer {
+          <app-projects-canvas [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('magazine') {
+        @defer {
+          <app-projects-magazine [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('ide') {
+        @defer {
+          <app-projects-ide [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('cinema') {
+        @defer {
+          <app-projects-cinema [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('metro') {
+        @defer {
+          <app-projects-metro [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('stars') {
+        @defer {
+          <app-projects-stars [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('darkroom') {
+        @defer {
+          <app-projects-darkroom [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('retro') {
+        @defer {
+          <app-projects-retro [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('type') {
+        @defer {
+          <app-projects-type [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('cards') {
+        @defer {
+          <app-projects-cards [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('kaleido') {
+        @defer {
+          <app-projects-kaleido [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('calder') {
+        @defer {
+          <app-projects-calder [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('gacha') {
+        @defer {
+          <app-projects-gacha [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+      @case ('tower') {
+        @defer {
+          <app-projects-tower [projects]="projects" (openCase)="open($event)" />
+        } @placeholder (minimum 200ms) {
+          <div class="layout-loading" aria-hidden="true"></div>
+        }
+      }
+    }
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      @for (round of [0, 1]; track round) {
+        @for (technology of technologies; track technology) {
+          <span>{{ technology }}</span>
+        }
+      }
+    </div>
+  </div>
+
+  <p class="projects-more" appReveal>
+    <a [href]="githubUrl" target="_blank" rel="noopener noreferrer">More on GitHub <span aria-hidden="true">↗</span></a>
+  </p>
+
+  <dialog
+    #caseDialog
+    class="case"
+    [attr.aria-labelledby]="openProject() ? 'case-title' : null"
+    (cancel)="onCancel($event)"
+    (click)="onDialogClick($event)"
+  >
+    @if (openProject(); as project) {
+      <div class="case-inner" [style.--accent]="project.accent">
+        <div class="case-media">
+          <app-project-media [project]="project" [labelled]="true" />
+        </div>
+
+        <div class="case-body">
+          <p class="case-meta">
+            <span class="case-count">{{ pad((openIndex() ?? 0) + 1) }} / {{ pad(projects.length) }}</span>
+            @for (kind of project.kinds; track kind) {
+              <span class="case-kind">{{ kindLabel(kind) }}</span>
+            }
+            @if (project.status) {
+              <span class="case-kind is-status">{{ project.status }}</span>
+            }
+          </p>
+          <h3 id="case-title" class="case-title">{{ project.name }}</h3>
+          <p class="case-tagline">{{ project.tagline }}</p>
+          <p class="case-summary">{{ project.summary }}</p>
+          <ul class="case-tags" aria-label="Technologies">
+            @for (technology of project.technologies; track technology) {
+              <li>{{ technology }}</li>
+            }
+          </ul>
+          <div class="case-links">
+            @if (project.liveUrl) {
+              <a class="is-primary" [href]="project.liveUrl" target="_blank" rel="noopener noreferrer">Live site <span aria-hidden="true">↗</span></a>
+            }
+            @if (project.demoUrl) {
+              <a [href]="project.demoUrl" target="_blank" rel="noopener noreferrer">Watch demo <span aria-hidden="true">↗</span></a>
+            }
+            @if (project.repoUrl) {
+              <a [href]="project.repoUrl" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+            }
+          </div>
+
+          <div class="case-nav">
+            <button type="button" (click)="step(-1)" aria-label="Previous project"><span aria-hidden="true">←</span> Prev</button>
+            <button type="button" (click)="step(1)" aria-label="Next project">Next <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <button type="button" class="case-close" (click)="close()" aria-label="Close project">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+    }
+  </dialog>
+</section>

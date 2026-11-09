@@ -1,0 +1,204 @@
+<div
+  #board
+  class="cv"
+  tabindex="0"
+  role="region"
+  aria-roledescription="canvas"
+  aria-label="Side projects moodboard"
+  aria-describedby="cv-help"
+  [class.is-in]="entered()"
+  [class.is-dragging]="dragging()"
+  [class.has-hot]="hot() !== null"
+>
+  <p id="cv-help" class="cv-sr">
+    Drag or use the arrow keys to pan, plus and minus to zoom, zero to fit everything. Tab moves between projects and
+    the camera follows; press Enter on a project to open its case study.
+  </p>
+
+  <div class="cv-dots" aria-hidden="true"></div>
+  <div class="cv-vignette" aria-hidden="true"></div>
+
+  <!-- Threads between projects that share technologies (screen space, under the cards). -->
+  <svg class="cv-threads" aria-hidden="true">
+    @for (t of threads(); track t.a + '-' + t.b) {
+      <path class="cv-thread-glow" [class.is-hot]="isHotThread(t)" [style.--accent]="projects()[hot() ?? t.a].accent" />
+      <path class="cv-thread" [class.is-hot]="isHotThread(t)" [style.--accent]="projects()[hot() ?? t.a].accent" />
+    }
+  </svg>
+
+  <div class="cv-world">
+    <!-- Masthead card -->
+    <div
+      class="cv-item"
+      [attr.data-x]="title.x"
+      [attr.data-y]="title.y"
+      [attr.data-f]="title.f"
+      [style.z-index]="96"
+    >
+      <div class="cv-title" [style.--r]="title.r + 'deg'">
+        <p class="cv-title-kicker">Side projects · moodboard</p>
+        <p class="cv-title-name">Things I make<br /><em>for fun.</em></p>
+        <p class="cv-title-meta">
+          <span>{{ pad(projects().length) }} projects</span>
+          <span>{{ techCount() }} technologies</span>
+        </p>
+        <ol class="cv-legend" aria-hidden="true">
+          @for (card of cards(); track card.project.name) {
+            <li [style.--accent]="card.project.accent" (click)="legend(card.index)">
+              <span class="cv-legend-dot"></span>{{ card.number }} {{ card.project.name }}
+            </li>
+          }
+        </ol>
+      </div>
+    </div>
+
+    <!-- Kind stamps (pressed into the board, slightly behind) -->
+    @for (stamp of stamps(); track $index) {
+      <div
+        class="cv-item"
+        aria-hidden="true"
+        [attr.data-x]="stamp.x"
+        [attr.data-y]="stamp.y"
+        [attr.data-f]="stamp.f"
+        [style.z-index]="1"
+      >
+        <span class="cv-stamp" [style.--accent]="stamp.accent" [style.--r]="stamp.r + 'deg'" [style.--i]="$index">{{
+          stamp.text
+        }}</span>
+      </div>
+    }
+
+    <!-- Handwritten hints -->
+    @for (s of scribbles; track s.text) {
+      <div class="cv-item" aria-hidden="true" [attr.data-x]="s.x" [attr.data-y]="s.y" [attr.data-f]="s.f" [style.z-index]="2">
+        <div class="cv-scribble" [style.--r]="s.r + 'deg'" [style.--i]="$index">
+          <span>{{ touchUi() ? s.touchText : s.text }}</span>
+          <svg viewBox="0 0 220 130">
+            <path pathLength="1" [attr.d]="s.arrow" />
+            <path pathLength="1" class="cv-head" [attr.d]="s.head" />
+          </svg>
+        </div>
+      </div>
+    }
+
+    <!-- Project cards -->
+    @for (card of cards(); track card.project.name; let i = $index) {
+      <div
+        class="cv-item cv-card-item"
+        [attr.data-project]="i"
+        [attr.data-x]="card.spot.x"
+        [attr.data-y]="card.spot.y"
+        [attr.data-f]="card.spot.f"
+        [class.is-hot]="hot() === i"
+        [class.is-dim]="hot() !== null && hot() !== i"
+        [style.z-index]="round(card.spot.f * 100)"
+        [style.width.px]="card.spot.w"
+        [style.--accent]="card.project.accent"
+      >
+        <button
+          type="button"
+          class="cv-card"
+          [class.is-wide]="card.wide"
+          [attr.data-index]="i"
+          [style.--r]="card.spot.r + 'deg'"
+          [style.--i]="i"
+          [style.--depth]="card.spot.f"
+          [attr.aria-label]="card.project.name + ' — ' + card.project.tagline"
+          (click)="onCard(i, $event)"
+          (dblclick)="onCardDouble(i)"
+        >
+          <span class="cv-tape" aria-hidden="true"></span>
+          <span class="cv-pin" aria-hidden="true"></span>
+          <span class="cv-frame">
+            <app-project-media [project]="card.project" [play]="playing().has(i) ? 'on' : 'off'" />
+            <span class="cv-gloss" aria-hidden="true"></span>
+          </span>
+          <span class="cv-cap" aria-hidden="true">
+            <span class="cv-num">{{ card.number }}</span>
+            <span class="cv-name">{{ card.project.name }}</span>
+            <span class="cv-kinds">{{ card.kinds }}</span>
+          </span>
+        </button>
+      </div>
+    }
+
+    <!-- Sticky notes with each tagline (in front of their card) -->
+    @for (note of notes(); track note.index) {
+      <div
+        class="cv-item"
+        aria-hidden="true"
+        [attr.data-x]="note.x"
+        [attr.data-y]="note.y"
+        [attr.data-f]="note.f"
+        [class.is-dim]="hot() !== null && hot() !== note.index"
+        [style.z-index]="round(note.f * 100) + 10"
+      >
+        <div class="cv-note" [style.--accent]="note.accent" [style.--r]="note.r + 'deg'" [style.--i]="note.index">
+          <p>{{ note.text }}</p>
+          <span class="cv-note-sig">— {{ note.name }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Shared-tech labels at the middle of each thread -->
+  <div class="cv-thread-labels" aria-hidden="true">
+    @for (t of threads(); track t.a + '-' + t.b) {
+      <span class="cv-thread-label" [class.is-hot]="isHotThread(t)" [style.--accent]="projects()[hot() ?? t.a].accent">{{
+        t.label
+      }}</span>
+    }
+  </div>
+
+  <!-- Floating "Zoom in / Open case" label that trails the mouse -->
+  @if (!touchUi()) {
+    <div class="cv-cursor" aria-hidden="true">
+      <span class="cv-cursor-text">Zoom in</span>
+    </div>
+  }
+
+  <!-- Hint (fades away after the first interaction) -->
+  <p class="cv-hint cv-ui" [class.is-gone]="touched()" aria-hidden="true">
+    @if (touchUi()) {
+      <span>Drag</span> to explore · <span>pinch</span> to zoom · <span>tap</span> a card
+    } @else {
+      <span>Drag</span> to explore · <span>⌘/Ctrl + scroll</span> to zoom · <span>double-click</span> to fly
+    }
+  </p>
+
+  <!-- Controls -->
+  <div class="cv-controls cv-ui">
+    <button type="button" class="cv-btn" (click)="tour(-1)" aria-label="Fly to previous project">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6" /></svg>
+    </button>
+    <button type="button" class="cv-btn" (click)="tour(1)" aria-label="Fly to next project">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
+    </button>
+    <span class="cv-sep" aria-hidden="true"></span>
+    <button type="button" class="cv-btn" (click)="zoomBy(1 / 1.4)" aria-label="Zoom out">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+    </button>
+    <span class="cv-zoom-level" aria-hidden="true">100%</span>
+    <button type="button" class="cv-btn" (click)="zoomBy(1.4)" aria-label="Zoom in">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
+    </button>
+    <button type="button" class="cv-btn cv-fit" (click)="fit()" aria-label="Fit all projects">Fit</button>
+  </div>
+
+  <!-- Minimap -->
+  <div class="cv-minimap cv-ui" aria-hidden="true" [style.aspect-ratio]="minimapAspect()">
+    @for (card of cards(); track card.project.name) {
+      <span
+        class="cv-mm-card"
+        [class.is-hot]="hot() === card.index"
+        [class.is-playing]="playing().has(card.index)"
+        [style.--accent]="card.project.accent"
+        [style.left]="mmLeft(card.spot.x, card.spot.w)"
+        [style.top]="mmTop(card.spot.y, card.h)"
+        [style.width]="mmSize(card.spot.w, 'x')"
+        [style.height]="mmSize(card.h, 'y')"
+      ></span>
+    }
+    <span class="cv-mm-view"></span>
+  </div>
+</div>

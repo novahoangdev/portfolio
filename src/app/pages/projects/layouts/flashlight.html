@@ -1,0 +1,75 @@
+<div class="room" #room [class.lights-on]="lightsOn()" [class.has-active]="active() >= 0">
+  <div class="rows">
+    @for (p of projects(); track p.name; let i = $index) {
+      @let s = slot(i);
+      <div
+        class="row"
+        [attr.data-project]="i"
+        [class.is-awake]="active() === i"
+        [class.is-flip]="i % 2 === 1"
+        [class.is-wide]="p.media.shape === 'wide'"
+        [style.--accent]="p.accent"
+        [style.--x.%]="s.x"
+        [style.--w.%]="s.w"
+        [style.--dy.rem]="s.dy"
+        [style.--r.deg]="s.r"
+        [style.--nx.%]="s.nx"
+      >
+        <span class="name" aria-hidden="true" (click)="open(i)">{{ p.name }}</span>
+        <span class="name ghost" aria-hidden="true">{{ p.name }}</span>
+
+        <div class="slot">
+          <button
+            #tile
+            type="button"
+            class="tile"
+            [attr.aria-label]="'Open ' + p.name + ' — ' + p.tagline"
+            (click)="open(i)"
+            (focus)="onFocus(tile)"
+          >
+            <app-project-media [project]="p" [play]="active() === i ? 'on' : 'off'" />
+            <span class="tile-sheen" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="slot caption-slot" aria-hidden="true">
+          <div class="caption">
+            <span class="cap-meta">
+              <span class="cap-dot"></span>{{ pad(i + 1) }} · {{ kinds(p) }}
+              @if (p.status) {
+                · {{ p.status }}
+              }
+            </span>
+            <span class="cap-name">{{ p.name }}</span>
+            <span class="cap-tag">{{ p.tagline }}</span>
+            <span class="cap-cta"><span class="for-hover">Click</span><span class="for-touch">Tap</span> to open <span>↗</span></span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <span class="beam" aria-hidden="true"></span>
+  <canvas class="dark" aria-hidden="true"></canvas>
+
+  <div class="room-ui">
+    <p class="room-title">
+      <span class="room-kicker">{{ lightsOn() ? 'Lights on' : 'Lights off' }}</span>
+      <span class="room-hint">
+        <span class="for-hover">Your cursor is the torch — sweep the wall.</span>
+        <span class="for-touch">Drag a finger to shine the torch.</span>
+      </span>
+    </p>
+    <button
+      type="button"
+      class="switch"
+      aria-label="Light switch"
+      [attr.aria-pressed]="lightsOn()"
+      (click)="toggleLights()"
+    >
+      <span class="switch-plate" aria-hidden="true"><span class="switch-toggle"></span></span>
+      <span class="switch-label" aria-hidden="true">Light switch</span>
+    </button>
+  </div>
+  <p class="room-count" aria-hidden="true">{{ pad(projects().length) }} works hidden in the dark</p>
+</div>

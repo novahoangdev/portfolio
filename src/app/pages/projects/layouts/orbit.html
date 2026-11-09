@@ -1,0 +1,61 @@
+@let current = projects()[active()];
+<div
+  class="orbit"
+  #stage
+  tabindex="0"
+  role="group"
+  aria-roledescription="carousel"
+  aria-label="Projects ring — drag, swipe or use the arrow keys"
+  [style.--accent]="current.accent"
+  (keydown)="onKey($event)"
+>
+  <div class="orbit-glow" aria-hidden="true"></div>
+  <div
+    class="ring"
+    [class.is-settling]="settling()"
+    [style.transform]="'translateZ(' + -radius() + 'px) rotateY(' + angle() + 'deg)'"
+  >
+    @for (project of projects(); track project.name; let i = $index) {
+      <button
+        #card
+        type="button"
+        class="card"
+        [attr.data-project]="i"
+        [class.is-front]="i === active()"
+        [style.--d]="distance(i)"
+        [style.transform]="'rotateY(' + i * step() + 'deg) translateZ(' + radius() + 'px)'"
+        [attr.aria-label]="(i === active() ? 'Open ' : 'Show ') + project.name"
+        [attr.tabindex]="i === active() ? 0 : -1"
+        (click)="onCard(i, card)"
+      >
+        <app-project-media [project]="project" [play]="i === active() ? 'on' : 'off'" />
+        <span class="card-shade" aria-hidden="true"></span>
+        <span class="card-name" aria-hidden="true">{{ project.name }}</span>
+      </button>
+    }
+  </div>
+  <div class="orbit-floor" aria-hidden="true"></div>
+</div>
+
+<div class="orbit-info" aria-live="polite">
+  @for (shown of [active()]; track shown) {
+    <div class="info-swap">
+      <p class="info-meta">
+        <span class="info-count">{{ pad(shown + 1) }} / {{ pad(projects().length) }}</span>
+        @for (kind of current.kinds; track kind) {
+          <span class="info-kind">{{ kindLabel(kind) }}</span>
+        }
+        @if (current.status) {
+          <span class="info-kind is-status">{{ current.status }}</span>
+        }
+      </p>
+      <h3 class="info-title">{{ current.name }}</h3>
+      <p class="info-tagline">{{ current.tagline }}</p>
+    </div>
+  }
+  <div class="info-actions">
+    <button type="button" class="round" (click)="go(-1)" aria-label="Previous project">←</button>
+    <button type="button" class="open" (click)="openActive()">Open case <span aria-hidden="true">↗</span></button>
+    <button type="button" class="round" (click)="go(1)" aria-label="Next project">→</button>
+  </div>
+</div>

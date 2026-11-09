@@ -1,0 +1,189 @@
+@let n = projects().length;
+@let sel = selected();
+<div
+  class="mat"
+  #mat
+  [class]="'phase-' + phase()"
+  [class.is-mobile]="mobile()"
+  [class.is-reduced]="reduced()"
+  [class.has-selection]="sel !== null"
+  [style.height]="mobile() ? m().h + 'px' : null"
+  [style.--cw]="m().cardW + 'px'"
+  [style.--ch]="m().cardH + 'px'"
+  [style.--pw]="m().packW + 'px'"
+  [style.--ph]="m().packH + 'px'"
+  [style.--py]="m().packY + 'px'"
+  [style.--sel-s]="selScale()"
+  [style.--noise]="felt"
+  (keydown)="onKey($event)"
+  (click)="onMatClick($event)"
+>
+  <div class="felt" aria-hidden="true"></div>
+
+  <header class="mat-head">
+    <p class="mat-label">
+      <span class="set-mark" aria-hidden="true">◆</span>
+      Side Projects <span class="mat-dim">· Series 01 · {{ n }} cards</span>
+    </p>
+    @if (phase() === 'open') {
+      <button type="button" class="chip-btn reseal" (click)="reseal()">
+        <span aria-hidden="true">↺</span> Reseal
+      </button>
+    }
+  </header>
+
+  @if (phase() !== 'open') {
+    <app-cards-pack
+      class="pack-stage"
+      [class.is-shaking]="phase() === 'shaking'"
+      [class.is-torn]="phase() === 'bursting'"
+      [count]="n"
+      [emblem]="emblem()"
+      (pick)="onPackClick()"
+    />
+    @if (phase() === 'sealed') {
+      <div class="pack-cta">
+        <p class="pack-hint">Drag along the foil strip to tear it&nbsp;open</p>
+        <button type="button" class="open-btn btn-open" (click)="open()">Open pack</button>
+      </div>
+    }
+  }
+
+  <div class="hand" [class.is-live]="cardsLive()" [class.is-dealing]="phase() === 'bursting'">
+    @for (p of projects(); track p.name; let i = $index) {
+      @let s = slots()[i];
+      @let b = burst(i);
+      <div
+        class="slot"
+        [attr.data-project]="i"
+        [class.is-rare]="p.featured"
+        [class.is-selected]="sel === i"
+        [class.is-dim]="sel !== null && sel !== i"
+        [class.is-hover]="hovered() === i"
+        [class.is-front]="mobile() && front() === i"
+        [style.--x]="s.x + 'px'"
+        [style.--y]="s.y + 'px'"
+        [style.--r]="s.r + 'deg'"
+        [style.--s]="s.s"
+        [style.--o]="s.o"
+        [style.z-index]="s.z"
+        [style.--i]="i"
+        [style.--sr]="b.sr"
+        [style.--br]="b.br"
+        [style.--lift]="b.lift"
+        [style.--bx]="b.bx"
+        [style.--c]="p.accent"
+        (pointerenter)="hover(i)"
+        (pointerleave)="hover(null)"
+      >
+        <button
+          type="button"
+          class="card"
+          [attr.tabindex]="phase() === 'open' && s.o > 0 ? 0 : -1"
+          [attr.aria-label]="cardLabel(p, i)"
+          (click)="onCard(i, $event)"
+          (focus)="onCardFocus(i)"
+        >
+          <span class="card-inner">
+            <span class="face front">
+              <span class="frame"></span>
+              <span class="foil-layer"></span>
+              <span class="name-bar">
+                <span class="name">{{ p.name }}</span>
+                <span class="glyphs">
+                  @for (kind of p.kinds; track kind) {
+                    <span class="glyph" [attr.title]="kindLabel(kind)">
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        @switch (kind) {
+                          @case ('web') {
+                            <circle cx="8" cy="8" r="5.5" />
+                            <ellipse cx="8" cy="8" rx="2.4" ry="5.5" />
+                            <path d="M2.5 8h11" />
+                          }
+                          @case ('ios') {
+                            <rect x="4.5" y="2" width="7" height="12" rx="1.8" />
+                            <path d="M7 4h2" />
+                          }
+                          @case ('3d') {
+                            <path d="M8 2l5.2 3v6L8 14l-5.2-3V5z" />
+                            <path d="M2.8 5L8 8l5.2-3M8 8v6" />
+                          }
+                          @default {
+                            <path d="M3 13l5.5-5.5M9.5 3.2a3 3 0 1 0 3.3 3.3l-1.9.4-1.8-1.8z" />
+                          }
+                        }
+                      </svg>
+                    </span>
+                  }
+                </span>
+              </span>
+              <span class="art">
+                <app-project-media [project]="p" [play]="playing(i)" />
+                <span class="art-gloss"></span>
+                @if (p.status) {
+                  <span class="status">{{ p.status }}</span>
+                }
+              </span>
+              <span class="type-line">
+                <span>{{ typeLine(p) }}</span>
+                <span class="set-sym">{{ p.featured ? '★' : '◆' }}</span>
+              </span>
+              <span class="text-box">
+                <span class="flavour">“{{ p.tagline }}”</span>
+                <span class="chips">
+                  @for (tech of p.technologies.slice(0, 4); track tech) {
+                    <span class="chip"><span class="chip-sym">{{ tech.charAt(0) }}</span>{{ tech }}</span>
+                  }
+                  @if (p.technologies.length > 4) {
+                    <span class="chip">+{{ p.technologies.length - 4 }}</span>
+                  }
+                </span>
+              </span>
+              <span class="card-foot">
+                <span class="num">{{ pad(i + 1) }}/{{ pad(n) }}</span>
+                <span>Series 01</span>
+                <span class="rarity">{{ p.featured ? 'Rainbow rare' : 'Holo' }}</span>
+              </span>
+              <span class="sparkle"></span>
+              <span class="glare"></span>
+            </span>
+            <span class="face back">
+              <span class="back-ring"></span>
+              <span class="back-mark">
+                <span class="back-star">✦</span>
+                <span class="back-title">Side Projects</span>
+              </span>
+            </span>
+          </span>
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (phase() === 'open') {
+    @if (mobile()) {
+      <div class="stack-bar">
+        <button type="button" class="round-btn" (click)="step(-1)" aria-label="Previous card">←</button>
+        <span class="stack-count" aria-live="polite">{{ pad(front() + 1) }} / {{ pad(n) }}</span>
+        <button type="button" class="open-btn" (click)="openSelected()">Open case <span aria-hidden="true">↗</span></button>
+        <button type="button" class="round-btn" (click)="step(1)" aria-label="Next card">→</button>
+      </div>
+    } @else if (sel !== null) {
+      @let sp = projects()[sel];
+      <div class="sel-bar" [style.--c]="sp.accent">
+        <p class="sel-meta">
+          <span>{{ pad(sel + 1) }} / {{ pad(n) }}</span>
+          <span class="sel-rarity">{{ sp.featured ? '★ Rainbow rare' : '◆ Holo' }}</span>
+        </p>
+        <p class="sel-name">{{ sp.name }}</p>
+        <p class="sel-type">{{ typeLine(sp) }}</p>
+        <div class="sel-actions">
+          <button type="button" class="open-btn" (click)="openSelected()">Open case <span aria-hidden="true">↗</span></button>
+          <button type="button" class="chip-btn" (click)="deselect()">← Back to hand</button>
+        </div>
+      </div>
+    } @else {
+      <p class="hand-hint" aria-hidden="true">Pick a card to inspect it</p>
+    }
+  }
+</div>

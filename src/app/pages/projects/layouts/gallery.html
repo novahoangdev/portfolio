@@ -1,0 +1,171 @@
+<ng-template #frameTpl let-p let-i="i" let-play="play">
+  <button
+    #frame
+    type="button"
+    class="frame"
+    [class.is-ebony]="i % 2 === 1"
+    [class.is-wide]="p.media.shape === 'wide'"
+    [attr.aria-label]="'Open ' + p.name + ' — ' + p.tagline"
+    (click)="open(i, frame)"
+    (focus)="onFocus(i)"
+  >
+    <span class="moulding">
+      <span class="mat">
+        <span class="art">
+          <app-project-media [project]="p" [play]="play" />
+          <span class="glass" aria-hidden="true"></span>
+        </span>
+      </span>
+    </span>
+    <span class="view-chip" aria-hidden="true">View case <span>↗</span></span>
+  </button>
+</ng-template>
+
+<ng-template #plaqueTpl let-p let-i="i">
+  <span class="plaque-no">No. {{ pad(i + 1) }}</span>
+  <span class="plaque-name">{{ p.name }}</span>
+  <span class="plaque-tag">{{ p.tagline }}</span>
+  <span class="plaque-kinds">
+    {{ kinds(p) }}
+    @if (p.status) {
+      <em>· {{ p.status }}</em>
+    }
+  </span>
+</ng-template>
+
+@if (immersive()) {
+  <div class="hall" #hall [style.--n]="projects().length" [class.is-end]="station() >= projects().length">
+    <div class="stage">
+      <div class="viewport">
+        <div class="world">
+          @for (b of bays(); track b) {
+            <div class="bay" aria-hidden="true">
+              <div class="plane floor"></div>
+              <div class="plane ceiling"></div>
+              <div class="plane wall wall-l"></div>
+              <div class="plane wall wall-r"></div>
+            </div>
+          }
+          <div class="plane runner" aria-hidden="true"></div>
+
+          <div class="plane intro" aria-hidden="true">
+            <span class="intro-kicker">Exhibition</span>
+            <span class="intro-title">Side projects</span>
+            <span class="intro-sub">{{ pad(projects().length) }} works on view · scroll to walk</span>
+          </div>
+
+          @for (p of projects(); track p.name; let k = $index) {
+            <div class="plane reflection" aria-hidden="true" [attr.data-k]="k" [class.is-wide]="p.media.shape === 'wide'" [class.is-ebony]="k % 2 === 1">
+              <img [src]="p.media.image" alt="" loading="lazy" decoding="async" />
+            </div>
+            <div class="plane pool" aria-hidden="true" [attr.data-k]="k" [class.is-on]="active() === k"></div>
+            <div class="plane lamp" aria-hidden="true" [attr.data-k]="k" [class.is-on]="active() === k"></div>
+          }
+
+          <div class="plane end-wall">
+            <span class="end-wash" aria-hidden="true"></span>
+            <span class="end-kicker">Fin</span>
+            <span class="end-title">End of exhibition</span>
+            <a class="end-link" [href]="githubUrl" target="_blank" rel="noopener noreferrer">
+              More on GitHub <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+        <!--
+          The artworks get their own 3D context, composited over the shell (walls never occlude a
+          wall-hung piece from inside the corridor), so frame, mat and media never depth-sort
+          against the wall planes.
+        -->
+        <div class="world pieces">
+          @for (p of projects(); track p.name; let k = $index) {
+            <div
+              class="exhibit"
+              [attr.data-project]="k"
+              [class.is-on]="active() === k"
+              [class.is-left]="k % 2 === 0"
+              [style.--accent]="p.accent"
+            >
+              <span class="wash" aria-hidden="true"></span>
+              <ng-container *ngTemplateOutlet="frameTpl; context: { $implicit: p, i: k, play: playFor(k) }" />
+              <div class="plaque" aria-hidden="true">
+                <ng-container *ngTemplateOutlet="plaqueTpl; context: { $implicit: p, i: k }" />
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Light shafts live in their own 3D context, composited over the hall, so they never slice the frames. -->
+        <div class="world light" aria-hidden="true">
+          @for (p of projects(); track p.name; let k = $index) {
+            <div class="plane shaft" [attr.data-k]="k" [class.is-on]="active() === k"></div>
+          }
+        </div>
+      </div>
+
+      <div class="vignette" aria-hidden="true"></div>
+
+      <div class="hud">
+        <div class="hud-info" aria-live="polite">
+          @for (s of [station()]; track s) {
+            <div class="hud-swap">
+              @if (s >= 0 && s < projects().length) {
+                @let p = projects()[s];
+                <p class="hud-meta">
+                  <span>Room {{ pad(s + 1) }} / {{ pad(projects().length) }}</span>
+                  <span class="hud-dot" [style.background]="p.accent"></span>
+                  <span>{{ kinds(p) }}</span>
+                </p>
+                <p class="hud-title">{{ p.name }}</p>
+                <p class="hud-tag">{{ p.tagline }} <span class="hud-cta">Click the frame to open</span></p>
+              } @else if (s < 0) {
+                <p class="hud-meta"><span>Gallery Hall</span></p>
+                <p class="hud-title">{{ pad(projects().length) }} works, one corridor.</p>
+                <p class="hud-tag">Scroll to walk the hall · each piece opens its case study.</p>
+              } @else {
+                <p class="hud-meta"><span>Exit</span></p>
+                <p class="hud-title">That's the whole show.</p>
+                <p class="hud-tag">More experiments live on GitHub.</p>
+              }
+            </div>
+          }
+        </div>
+        <div class="hud-rail" aria-hidden="true">
+          <span class="hud-fill"></span>
+          @for (p of projects(); track p.name; let k = $index) {
+            <span
+              class="hud-tick"
+              [class.is-on]="station() === k"
+              [style.left.%]="((k + 1) / (projects().length + 1)) * 100"
+              [style.--accent]="p.accent"
+            ></span>
+          }
+        </div>
+        <p class="hud-hint" aria-hidden="true">Scroll to walk <span>↓</span></p>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="sequence" #list>
+    <p class="seq-intro">
+      <span class="seq-kicker">Gallery Hall</span>
+      <span class="seq-title">{{ pad(projects().length) }} works on view</span>
+    </p>
+    @for (p of projects(); track p.name; let k = $index) {
+      <article class="piece" [attr.data-project]="k" [class.is-lit]="lit().has(k)" [style.--accent]="p.accent">
+        <span class="piece-lamp" aria-hidden="true"></span>
+        <span class="piece-cone" aria-hidden="true"></span>
+        <ng-container *ngTemplateOutlet="frameTpl; context: { $implicit: p, i: k, play: 'in-view' }" />
+        <span class="piece-pool" aria-hidden="true"></span>
+        <div class="plaque">
+          <ng-container *ngTemplateOutlet="plaqueTpl; context: { $implicit: p, i: k }" />
+        </div>
+      </article>
+    }
+    <div class="seq-end">
+      <span class="end-kicker">Fin</span>
+      <span class="end-title">End of exhibition</span>
+      <a class="end-link" [href]="githubUrl" target="_blank" rel="noopener noreferrer">
+        More on GitHub <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </div>
+}
