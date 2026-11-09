@@ -42,7 +42,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* clip (not hidden) so html/body don't become scroll containers and break position: sticky */
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -55,6 +57,7 @@ body {
   margin: 0;
   min-width: 320px;
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   width: 100%;
   -webkit-font-smoothing: antialiased;
@@ -331,4 +334,24 @@ input {
   body {
     background: white;
   }
+}
+
+/* Side projects: view transitions (tile reflow on filter, tile -> case morph). */
+::view-transition-group(*) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-group(case-media) {
+  animation-duration: 700ms;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+}
+
+/* Keep the page still while a project case is open. */
+html.case-open {
+  overflow: hidden;
 }

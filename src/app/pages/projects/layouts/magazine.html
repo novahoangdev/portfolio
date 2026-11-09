@@ -1,0 +1,310 @@
+<div
+  #root
+  class="mz"
+  tabindex="0"
+  role="region"
+  aria-roledescription="magazine"
+  aria-label="Side Projects magazine — use the arrow keys or drag a page corner to turn pages"
+  [class.is-single]="single()"
+  (keydown)="onKey($event)"
+>
+  <p class="mz-sr" aria-live="polite">{{ currentLabel() }}</p>
+
+  <div class="mz-stage">
+    <div class="mz-book">
+      <div class="mz-shadow" aria-hidden="true"></div>
+      <div class="mz-edges mz-edges-left" aria-hidden="true"></div>
+      <div class="mz-edges mz-edges-right" aria-hidden="true"></div>
+      <div class="mz-cast mz-cast-left" aria-hidden="true"></div>
+      <div class="mz-cast mz-cast-right" aria-hidden="true"></div>
+
+      @for (leaf of leaves(); track leaf.key; let k = $index) {
+        <div class="mz-leaf">
+          <div
+            class="mz-face mz-front"
+            [class.is-dark]="leaf.front.kind === 'cover' || leaf.front.kind === 'back'"
+            [attr.inert]="faceVisible(k, 'front') ? null : ''"
+            [attr.aria-hidden]="faceVisible(k, 'front') ? null : 'true'"
+          >
+            <ng-container *ngTemplateOutlet="pageTpl; context: { $implicit: leaf.front }" />
+            <span class="mz-light" aria-hidden="true"></span>
+            <span class="mz-sheen" aria-hidden="true"></span>
+          </div>
+          <div
+            class="mz-face mz-back"
+            [class.is-dark]="leaf.back?.kind === 'back'"
+            [attr.inert]="faceVisible(k, 'back') ? null : ''"
+            [attr.aria-hidden]="faceVisible(k, 'back') ? null : 'true'"
+          >
+            @if (leaf.back; as back) {
+              <ng-container *ngTemplateOutlet="pageTpl; context: { $implicit: back }" />
+            } @else {
+              <div class="pg pg-blank"></div>
+            }
+            <span class="mz-light" aria-hidden="true"></span>
+            <span class="mz-sheen" aria-hidden="true"></span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="mz-nav">
+    <button type="button" class="mz-arrow" (click)="step(-1)" [disabled]="turned() === 0" aria-label="Previous page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+    </button>
+    <div class="mz-mid">
+      <div class="mz-rail">
+        @for (stop of stops(); track $index; let t = $index) {
+          <button
+            type="button"
+            class="mz-stop"
+            [class.is-current]="t === turned()"
+            [class.is-past]="t < turned()"
+            [style.--stop]="stop.accent"
+            [attr.aria-label]="'Turn to ' + stop.label"
+            [attr.aria-current]="t === turned() ? 'page' : null"
+            (click)="go(t)"
+          ></button>
+        }
+      </div>
+      @for (label of [currentLabel()]; track label) {
+        <p class="mz-where">
+          <span class="mz-count">{{ pad(turned() + 1) }} / {{ pad(stops().length) }}</span>
+          <span class="mz-label">{{ label }}</span>
+        </p>
+      }
+    </div>
+    <button
+      type="button"
+      class="mz-arrow"
+      (click)="step(1)"
+      [disabled]="turned() >= maxTurn()"
+      aria-label="Next page"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+    </button>
+  </div>
+</div>
+
+<ng-template #pageTpl let-page>
+  @let p = page.project !== undefined ? projects()[page.project] : null;
+  @switch (page.kind) {
+    <!-- ================= Cover ================= -->
+    @case ('cover') {
+      <div class="pg pg-cover" [style.--accent]="coverProject().accent">
+        @if (coverMedia().video) {
+          <video
+            class="pg-cover-video"
+            [src]="coverMedia().video"
+            [poster]="coverMedia().image"
+            muted
+            loop
+            playsinline
+            preload="none"
+            disablepictureinpicture
+            tabindex="-1"
+            aria-hidden="true"
+          ></video>
+        } @else {
+          <img class="pg-cover-video" [src]="coverMedia().image" alt="" />
+        }
+        <span class="pg-cover-shade" aria-hidden="true"></span>
+        <header class="pg-cover-top">
+          <span>Issue {{ issue() }}</span>
+          <span>{{ kindsAll().join(' · ') }}</span>
+        </header>
+        <h3 class="pg-masthead"><span>Side</span><span>Projects</span></h3>
+        <div class="pg-coverstory">
+          <span class="pg-coverstory-kicker">Cover story</span>
+          <p class="pg-coverstory-name">{{ coverProject().name }}</p>
+          <p class="pg-coverstory-tag">{{ coverProject().tagline }}</p>
+        </div>
+        <ul class="pg-coverlines">
+          @for (line of coverLines(); track line.name) {
+            <li [style.--accent]="line.accent">
+              <b>{{ line.name }}</b>
+              <span>{{ line.tagline }}</span>
+            </li>
+          }
+        </ul>
+        <div class="pg-barcode" aria-hidden="true">
+          <span class="pg-barcode-bars"></span>
+          <span>No. {{ issue() }}</span>
+        </div>
+        <span class="pg-corner" aria-hidden="true"></span>
+      </div>
+    }
+
+    <!-- ================= Contents (left) ================= -->
+    @case ('contents-left') {
+      <div class="pg pg-paper pg-contents-left">
+        <p class="pg-kicker">Inside issue {{ issue() }}</p>
+        <h3 class="pg-huge">Contents</h3>
+        <div class="pg-thumbs">
+          @for (item of projects(); track item.name; let i = $index) {
+            <button
+              type="button"
+              class="pg-thumb"
+              [style.--accent]="item.accent"
+              [attr.aria-label]="'Turn to ' + item.name"
+              (click)="goToProject(i)"
+            >
+              <img [src]="item.media.image" alt="" loading="lazy" decoding="async" />
+              <span>{{ pad(projectFolio().get(i) ?? 0) }}</span>
+            </button>
+          }
+        </div>
+        <footer class="pg-folio"><span>{{ pad(page.folio) }}</span><span>Side Projects — Issue {{ issue() }}</span></footer>
+      </div>
+    }
+
+    <!-- ================= Contents (right) ================= -->
+    @case ('contents') {
+      <div class="pg pg-paper pg-contents">
+        <p class="pg-kicker">In this issue</p>
+        <ol class="pg-toc">
+          @for (item of projects(); track item.name; let i = $index) {
+            <li [style.--accent]="item.accent">
+              <button type="button" (click)="goToProject(i)">
+                <span class="pg-toc-page">{{ pad(projectFolio().get(i) ?? 0) }}</span>
+                <span class="pg-toc-text">
+                  <span class="pg-toc-name">{{ item.name }}</span>
+                  <span class="pg-toc-tag">{{ item.tagline }}</span>
+                </span>
+                <span class="pg-toc-kind">{{ kindsOf(item) }}</span>
+              </button>
+            </li>
+          }
+        </ol>
+        <footer class="pg-folio"><span>Contents</span><span>{{ pad(page.folio) }}</span></footer>
+      </div>
+    }
+
+    <!-- ================= Project: media (left) ================= -->
+    @case ('media') {
+      @if (p) {
+        <div class="pg pg-paper pg-media" [style.--accent]="p.accent">
+          <div class="mz-media" [attr.data-project]="page.project">
+            <button
+              type="button"
+              class="mz-photo"
+              [attr.aria-label]="'Open case: ' + p.name"
+              (click)="open(page.project)"
+            >
+              <app-project-media [project]="p" [play]="playingProject() === page.project ? 'on' : 'off'" />
+              <span class="mz-photo-tag" aria-hidden="true">Open case ↗</span>
+            </button>
+          </div>
+          <div class="pg-caption">
+            <span class="pg-fig">Fig. {{ pad(page.project + 1) }}</span>
+            <p>{{ p.media.alt }}</p>
+          </div>
+          <span class="pg-bignum" aria-hidden="true">{{ pad(page.project + 1) }}</span>
+          <footer class="pg-folio"><span>{{ pad(page.folio) }}</span><span>Side Projects — Issue {{ issue() }}</span></footer>
+        </div>
+      }
+    }
+
+    <!-- ================= Project: story (right) ================= -->
+    @case ('text') {
+      @if (p) {
+        <article class="pg pg-paper pg-text" [style.--accent]="p.accent">
+          <header class="pg-text-head">
+            <span>{{ kindsOf(p) }}</span>
+            @if (p.status) {
+              <span class="pg-status">{{ p.status }}</span>
+            } @else {
+              <span>No. {{ pad(page.project + 1) }}</span>
+            }
+          </header>
+          <h3 class="pg-title">{{ p.name }}</h3>
+          <blockquote class="pg-quote">{{ p.tagline }}</blockquote>
+          <div class="pg-cols">
+            <p class="pg-body">{{ p.summary }}</p>
+            <aside class="pg-side">
+              <p class="pg-side-title">Built with</p>
+              <ul class="pg-techs">
+                @for (tech of p.technologies; track tech) {
+                  <li>{{ tech }}</li>
+                }
+              </ul>
+              @if (linksOf(p); as links) {
+                @if (links.length) {
+                  <p class="pg-side-title">Links</p>
+                  <ul class="pg-links">
+                    @for (link of links; track link.href) {
+                      <li>
+                        <a [href]="link.href" target="_blank" rel="noopener noreferrer"
+                          >{{ link.label }} <span aria-hidden="true">↗</span></a
+                        >
+                      </li>
+                    }
+                  </ul>
+                }
+              }
+            </aside>
+          </div>
+          <footer class="pg-text-foot">
+            <button type="button" class="pg-open" (click)="open(page.project)">
+              Open case <span aria-hidden="true">↗</span>
+            </button>
+            <span class="pg-folio-r">{{ p.name }} · {{ pad(page.folio) }}</span>
+          </footer>
+        </article>
+      }
+    }
+
+    <!-- ================= Index (left) ================= -->
+    @case ('index-left') {
+      <div class="pg pg-paper pg-index-left">
+        <p class="pg-kicker">Technologies, A–Z</p>
+        <h3 class="pg-huge">Index</h3>
+        <ul class="pg-index">
+          @for (entry of techIndex(); track entry.name) {
+            <li>
+              <span>{{ entry.name }}</span>
+              <i aria-hidden="true"></i>
+              <span class="pg-index-pages">{{ entry.pages.join(', ') }}</span>
+            </li>
+          }
+        </ul>
+        <footer class="pg-folio"><span>{{ pad(page.folio) }}</span><span>Side Projects — Issue {{ issue() }}</span></footer>
+      </div>
+    }
+
+    <!-- ================= Closing page (right) ================= -->
+    @case ('index') {
+      <div class="pg pg-paper pg-fin">
+        <p class="pg-kicker">End of issue {{ issue() }}</p>
+        <p class="pg-fin-word">Fin.</p>
+        <p class="pg-fin-text">
+          {{ projects().length }} projects across {{ kindsAll().join(', ') }} — {{ techIndex().length }} technologies
+          in all.
+        </p>
+        <div class="pg-fin-dots" aria-hidden="true">
+          @for (item of projects(); track item.name) {
+            <span [style.--accent]="item.accent"></span>
+          }
+        </div>
+        <button type="button" class="pg-open pg-fin-btn" (click)="go(0)">
+          <span aria-hidden="true">↺</span> Back to the cover
+        </button>
+        <footer class="pg-folio"><span>Index</span><span>{{ pad(page.folio) }}</span></footer>
+      </div>
+    }
+
+    <!-- ================= Back cover ================= -->
+    @case ('back') {
+      <div class="pg pg-back-cover">
+        <span class="pg-back-num" aria-hidden="true">{{ issue() }}</span>
+        <p class="pg-back-title">Side Projects</p>
+        <p class="pg-back-sub">Issue {{ issue() }} · {{ kindsAll().join(' · ') }}</p>
+        <div class="pg-barcode" aria-hidden="true">
+          <span class="pg-barcode-bars"></span>
+          <span>No. {{ issue() }}</span>
+        </div>
+      </div>
+    }
+  }
+</ng-template>

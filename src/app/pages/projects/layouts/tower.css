@@ -1,0 +1,1194 @@
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #78bbb5;
+}
+
+:host {
+  --glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --sky: linear-gradient(to bottom, #232b55 0%, #45457f 28%, #8f6496 55%, #e0907a 80%, #f6c08e 100%);
+  --c0: #73628f;
+  --c1: #4b416f;
+  --c2: #2b2645;
+  --tower: #24223a;
+  --sil: #1b1310;
+  --star: 0.3;
+  --cloud: rgba(255, 196, 182, 0.4);
+  --amber: #ffb547;
+  display: block;
+}
+
+:host-context(html[data-theme='dark']) {
+  --sky: linear-gradient(to bottom, #02040b 0%, #050c1d 38%, #0b1832 72%, #18264a 100%);
+  --c0: #121b33;
+  --c1: #0c1428;
+  --c2: #070b18;
+  --tower: #0f121c;
+  --star: 1;
+  --cloud: rgba(110, 130, 170, 0.16);
+}
+
+/* ============ Stage ============ */
+
+.run {
+  height: calc(100dvh - 4.5rem + (var(--n) - 0.4) * 80vh);
+  margin-left: calc(50% - 50vw);
+  position: relative;
+  width: 100vw;
+}
+
+.stage {
+  --fh: 400px;
+  --u: calc(var(--fh) / 100);
+  background: #10132a;
+  color: #f4efe6;
+  height: calc(100dvh - 4.5rem);
+  min-height: 30rem;
+  overflow: clip;
+  position: sticky;
+  top: 4.5rem;
+}
+
+/* ---------- Sky + city ---------- */
+
+.sky,
+.stars,
+.city,
+.clouds {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.sky {
+  background: var(--sky);
+}
+
+.horizon-glow {
+  background: radial-gradient(60% 45% at 50% 100%, rgba(255, 170, 120, 0.35), transparent 70%);
+  inset: 0;
+  position: absolute;
+}
+
+.stars i {
+  animation: twinkle 3.4s ease-in-out infinite alternate;
+  background: #fff;
+  border-radius: 50%;
+  height: var(--s);
+  opacity: var(--star);
+  position: absolute;
+  width: var(--s);
+}
+
+@keyframes twinkle {
+  from {
+    opacity: calc(var(--star) * 0.25);
+  }
+}
+
+.moon {
+  height: clamp(3.4rem, 9vh, 5.6rem);
+  left: 14%;
+  position: absolute;
+  top: 8%;
+  width: clamp(3.4rem, 9vh, 5.6rem);
+}
+
+.moon span {
+  background:
+    radial-gradient(circle at 34% 40%, rgba(160, 150, 130, 0.35) 0 9%, transparent 10%),
+    radial-gradient(circle at 62% 64%, rgba(160, 150, 130, 0.3) 0 7%, transparent 8%),
+    radial-gradient(circle at 36% 32%, #fffbea, #efe4c4 60%, #d8caa4);
+  border-radius: 50%;
+  box-shadow:
+    0 0 40px 8px rgba(255, 244, 214, 0.35),
+    0 0 120px 40px rgba(255, 244, 214, 0.12);
+  inset: 0;
+  position: absolute;
+}
+
+.clouds i {
+  animation: drift 150s linear infinite;
+  background: radial-gradient(closest-side, var(--cloud), transparent);
+  border-radius: 50%;
+  filter: blur(6px);
+  height: 9vh;
+  left: 0;
+  position: absolute;
+  top: 22%;
+  width: 42vw;
+}
+
+.clouds i:nth-child(2) {
+  animation-delay: -70s;
+  animation-duration: 190s;
+  height: 6vh;
+  top: 38%;
+  width: 30vw;
+}
+
+.clouds i:nth-child(3) {
+  animation-delay: -125s;
+  animation-duration: 120s;
+  top: 11%;
+  width: 24vw;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-45vw);
+  }
+  to {
+    transform: translateX(110vw);
+  }
+}
+
+.plane {
+  animation: fly 46s linear infinite;
+  height: 3px;
+  left: 0;
+  position: absolute;
+  top: 14%;
+  width: 3px;
+}
+
+.plane::before,
+.plane::after {
+  animation: blink 1.3s steps(1) infinite;
+  background: #ff5b5b;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 2px rgba(255, 80, 80, 0.7);
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.plane::after {
+  animation-delay: 0.65s;
+  background: #fff;
+  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.7);
+  left: 9px;
+}
+
+@keyframes fly {
+  0% {
+    opacity: 1;
+    transform: translate(-2vw, 6vh);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(102vw, -2vh);
+  }
+  61%,
+  100% {
+    opacity: 0;
+    transform: translate(102vw, -2vh);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.bldg {
+  background: var(--c);
+  bottom: -50vh;
+  box-sizing: content-box;
+  padding-bottom: 50vh;
+  position: absolute;
+}
+
+.city-0 {
+  --c: var(--c0);
+  --wx: 3px;
+  --wy: 6px;
+}
+
+.city-1 {
+  --c: var(--c1);
+  --wx: 5px;
+  --wy: 9px;
+}
+
+.city-2 {
+  --c: var(--c2);
+  --wx: 8px;
+  --wy: 13px;
+}
+
+.top-spire::after {
+  background: var(--c);
+  bottom: 100%;
+  content: '';
+  height: 14%;
+  left: 48%;
+  position: absolute;
+  width: 3px;
+}
+
+.top-step::before {
+  background: var(--c);
+  bottom: 100%;
+  content: '';
+  height: 6%;
+  left: 18%;
+  position: absolute;
+  right: 18%;
+}
+
+.wins {
+  background: #ffcf86;
+  inset: 6% 12% 0;
+  mask:
+    repeating-linear-gradient(90deg, #000 0 calc(var(--wx) * 0.55), transparent 0 var(--wx)),
+    repeating-linear-gradient(#000 0 calc(var(--wy) * 0.5), transparent 0 var(--wy)),
+    linear-gradient(#000 var(--band), transparent 0 calc(var(--band) + 18%), #000 0);
+  mask-composite: intersect;
+  opacity: calc(var(--lit) * 0.55);
+  position: absolute;
+}
+
+.is-cool .wins {
+  background: #a9c6ff;
+}
+
+.tw {
+  animation: blink 6s steps(1) infinite;
+  background: #ffe0a0;
+  box-shadow: 0 0 6px rgba(255, 210, 140, 0.9);
+  height: calc(var(--wy) * 0.5);
+  position: absolute;
+  width: calc(var(--wx) * 0.55);
+}
+
+/* ---------- Tower ---------- */
+
+.tower {
+  --wall: 3.5em;
+  font-size: var(--u);
+  left: var(--tx, 50%);
+  margin-left: -101em;
+  position: absolute;
+  top: 0;
+  width: 202em;
+  will-change: transform;
+}
+
+.roof {
+  height: 105em;
+  position: relative;
+  width: 162em;
+}
+
+.roof > span {
+  bottom: 6em;
+  position: absolute;
+}
+
+.parapet {
+  background:
+    linear-gradient(var(--tower), var(--tower)) bottom / 100% 7em no-repeat,
+    repeating-linear-gradient(90deg, rgba(150, 160, 190, 0.5) 0 0.5em, transparent 0 10em) top / 100% 9em no-repeat;
+  border-top: 0.6em solid rgba(150, 160, 190, 0.55);
+  bottom: 0 !important;
+  height: 13em;
+  left: 0;
+  right: 0;
+}
+
+.tank {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1em, transparent 0 4em),
+    linear-gradient(90deg, #2b2a40, #3c3a57 40%, #23223a);
+  border-radius: 12em 12em 1em 1em / 5em 5em 1em 1em;
+  height: 30em;
+  left: 16em;
+  margin-bottom: 13em;
+  width: 26em;
+}
+
+.tank::after {
+  border: 0.8em solid #22213a;
+  border-top: 0;
+  content: '';
+  height: 13em;
+  left: 3em;
+  position: absolute;
+  right: 3em;
+  top: 100%;
+}
+
+.antenna {
+  background: linear-gradient(#5a5f73, #2f3245);
+  height: 70em;
+  left: 96em;
+  width: 1.1em;
+}
+
+.beacon {
+  animation: blink 2.2s steps(1) infinite;
+  background: #ff4a4a;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 4px rgba(255, 60, 60, 0.6);
+  height: 2.2em;
+  left: -0.55em;
+  position: absolute;
+  top: -1em;
+  width: 2.2em;
+}
+
+.planter {
+  background:
+    radial-gradient(circle at 20% 100%, #23402b 0 4em, transparent 0),
+    radial-gradient(circle at 45% 100%, #2c5135 0 5.5em, transparent 0),
+    radial-gradient(circle at 75% 100%, #23402b 0 4.5em, transparent 0);
+  border-bottom: 4em solid #3b3046;
+  height: 10em;
+  left: 52em;
+  width: 32em;
+}
+
+.machine {
+  background: linear-gradient(#34334e, var(--tower));
+  border-radius: 1em 1em 0 0;
+  bottom: auto !important;
+  height: 22em;
+  left: 160em;
+  top: 26em;
+  width: 42em;
+}
+
+.pulley {
+  border: 1em dashed #9aa1b4;
+  border-radius: 50%;
+  bottom: -3em;
+  height: 12em;
+  left: 15em;
+  position: absolute;
+  width: 12em;
+}
+
+.shaft {
+  background:
+    linear-gradient(90deg, transparent 3.5em, rgba(150, 160, 180, 0.55) 0 4.1em, transparent 0 35.4em, rgba(150, 160, 180, 0.55) 0 36em, transparent 0),
+    linear-gradient(90deg, rgba(8, 12, 22, 0.9), rgba(24, 30, 48, 0.8));
+  border-left: var(--wall) solid var(--tower);
+  border-right: var(--wall) solid var(--tower);
+  bottom: 0;
+  left: 158.5em;
+  position: absolute;
+  top: 44.1em;
+  width: 43.5em;
+}
+
+.sill {
+  border-bottom: 0.7em solid #687087;
+  height: 94em;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sill b {
+  color: rgba(255, 255, 255, 0.28);
+  font: 600 3em var(--mono);
+  left: 5.5em;
+  position: absolute;
+  top: 3em;
+}
+
+.cable {
+  background: #8d93a3;
+  height: 1px;
+  left: 180em;
+  position: absolute;
+  top: 44.1em;
+  transform-origin: top;
+  width: max(1px, 0.35em);
+}
+
+.cable-cw {
+  left: 194.4em;
+}
+
+.counterweight {
+  background: repeating-linear-gradient(#383c48 0 2.4em, #1e2028 0 3em);
+  border-radius: 0.5em;
+  height: 30em;
+  left: 192.2em;
+  position: absolute;
+  top: 0;
+  width: 4.4em;
+}
+
+/* The glass car */
+.car {
+  background: rgba(150, 180, 220, 0.1);
+  border: 0.5em solid #a6adb8;
+  border-radius: 1.6em 1.6em 0.6em 0.6em;
+  box-shadow: 0 2em 6em rgba(0, 0, 0, 0.55);
+  height: 62em;
+  left: 166em;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  transform-origin: 50% 0;
+  width: 28em;
+}
+
+.car-led {
+  align-items: center;
+  background: #09090b;
+  display: flex;
+  gap: 1em;
+  height: 7em;
+  inset: 0 0 auto;
+  justify-content: center;
+  position: absolute;
+  z-index: 2;
+}
+
+.car-led b,
+.lift-led b {
+  color: var(--amber);
+  font-family: var(--mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px rgba(255, 170, 60, 0.85);
+}
+
+.car-led b {
+  font-size: 3.8em;
+}
+
+.arrow {
+  border-left: 0.32em solid transparent;
+  border-right: 0.32em solid transparent;
+  height: 0;
+  opacity: 0.25;
+  transition: opacity 300ms ease;
+  width: 0;
+}
+
+.car-led .arrow {
+  font-size: 4em;
+}
+
+.arrow.is-up {
+  border-bottom: 0.45em solid var(--amber);
+  opacity: 1;
+}
+
+.arrow.is-down {
+  border-top: 0.45em solid var(--amber);
+  opacity: 1;
+}
+
+.arrow:not(.is-up):not(.is-down) {
+  border-top: 0.45em solid var(--amber);
+}
+
+.car-in {
+  background:
+    linear-gradient(transparent calc(100% - 24em), rgba(60, 40, 30, 0.6) 0 calc(100% - 23em), transparent 0),
+    radial-gradient(100% 60% at 50% 0, #ffe4b8, #d89a62 70%, #8a5a3a);
+  inset: 7em 0 0;
+  opacity: 0.3;
+  position: absolute;
+  transition: opacity 900ms ease 150ms;
+}
+
+.door {
+  background: linear-gradient(90deg, rgba(210, 222, 240, 0.28), rgba(210, 222, 240, 0.1));
+  border: 0.25em solid rgba(225, 232, 245, 0.45);
+  bottom: 0;
+  position: absolute;
+  top: 7em;
+  transition: transform 950ms var(--glide) 220ms;
+  width: 50%;
+}
+
+.door-l {
+  left: 0;
+}
+
+.door-r {
+  right: 0;
+}
+
+.car.is-open .car-in {
+  opacity: 1;
+}
+
+.car.is-open .door-l {
+  transform: translateX(-88%);
+}
+
+.car.is-open .door-r {
+  transform: translateX(88%);
+}
+
+.car:not(.is-open) .door {
+  transition-delay: 0ms;
+  transition-duration: 450ms;
+}
+
+.car-glass {
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.22) 0 18%, transparent 30% 60%, rgba(255, 255, 255, 0.08) 70%, transparent 80%);
+  inset: 0;
+  position: absolute;
+}
+
+/* ---------- Floors and rooms ---------- */
+
+.floor {
+  background: none;
+  border: 0;
+  color: inherit;
+  display: block;
+  font: inherit;
+  height: 100em;
+  padding: 0;
+  position: relative;
+  text-align: left;
+  width: 162em;
+}
+
+.floor::before {
+  background: var(--tower);
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.room {
+  background: linear-gradient(color-mix(in srgb, var(--accent) 20%, #4b3529), #2a1c16);
+  height: 94em;
+  left: var(--wall);
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 155em;
+}
+
+.wall {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 0.4em, transparent 0 5em),
+    linear-gradient(transparent 70%, rgba(0, 0, 0, 0.25));
+  inset: 0;
+  position: absolute;
+}
+
+.wall,
+.glow,
+.furn,
+.plate {
+  pointer-events: none;
+}
+
+.glow {
+  background:
+    radial-gradient(circle at var(--gx) var(--gy), rgba(255, 196, 120, 0.75), rgba(255, 160, 90, 0.18) 22%, transparent 48%),
+    radial-gradient(70% 50% at var(--sx) 30%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%);
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  position: absolute;
+  z-index: 3;
+}
+
+.furn {
+  color: var(--accent);
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+/* Room variants: where the window and the lamp light sit. */
+.v0 { --gx: 95%; --gy: 40%; --sx: 30%; }
+.v0 .window { left: 10em; }
+.v1 { --gx: 30%; --gy: 56%; --sx: 70%; }
+.v1 .window { right: 10em; }
+.v2 { --gx: 26%; --gy: 40%; --sx: 58%; }
+.v2 .window { left: 52em; }
+
+/* The big window / screen */
+.window {
+  background: #07080c;
+  border: 0;
+  font-size: inherit;
+  border-radius: 1em;
+  box-shadow:
+    0 0 0 0.5em #2c2420,
+    0 0 12em 1em color-mix(in srgb, var(--accent) 30%, transparent);
+  cursor: pointer;
+  display: block;
+  height: 45em;
+  padding: 0;
+  position: absolute;
+  top: 14em;
+  transition:
+    transform 600ms var(--spring),
+    box-shadow 900ms ease;
+  width: 60em;
+  z-index: 2;
+}
+
+.window.is-wide {
+  height: 44em;
+  width: 78em;
+}
+
+.window.is-tall {
+  height: 50em;
+  top: 11em;
+  width: 28em;
+}
+
+.screen {
+  border-radius: 0.4em;
+  display: block;
+  inset: 1.3em;
+  overflow: hidden;
+  position: absolute;
+}
+
+.screen app-project-media {
+  filter: brightness(0.62) saturate(0.8);
+  transition: filter 1200ms ease;
+}
+
+.glass {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.12) 0 22%, transparent 34% 70%, rgba(255, 255, 255, 0.05) 80%);
+  border-radius: inherit;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.chip {
+  background: rgba(12, 14, 22, 0.78);
+  border-radius: 999px;
+  bottom: 3em;
+  color: #fff;
+  font: 700 max(0.6rem, 2.4em) var(--mono);
+  left: 50%;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  padding: 0.3em 0.8em;
+  position: absolute;
+  transform: translate(-50%, 0.4rem);
+  transition:
+    opacity 300ms ease,
+    transform 500ms var(--glide);
+  white-space: nowrap;
+}
+
+.window:hover,
+.window:focus-visible {
+  transform: translateY(-0.8em);
+}
+
+.window:hover .chip,
+.window:focus-visible .chip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.window:hover .screen,
+.window:focus-visible .screen {
+  --media-zoom: 1.08;
+}
+
+.window:focus-visible,
+.floor:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.dim {
+  background: linear-gradient(rgba(10, 14, 38, 0.74), rgba(6, 8, 24, 0.82));
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 1200ms ease;
+  z-index: 4;
+}
+
+.railing {
+  background:
+    linear-gradient(#9aa3b5, #6b7385) top / 100% 1em no-repeat,
+    repeating-linear-gradient(90deg, rgba(120, 130, 150, 0.7) 0 0.6em, transparent 0 31em),
+    linear-gradient(rgba(170, 200, 235, 0.14), rgba(170, 200, 235, 0.06));
+  bottom: 0;
+  height: 15em;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: 5;
+}
+
+.plate {
+  color: rgba(255, 255, 255, 0.4);
+  font: 700 3.2em var(--mono);
+  left: 2.5em;
+  letter-spacing: 0.1em;
+  position: absolute;
+  top: 2.5em;
+  z-index: 5;
+}
+
+.slab {
+  background: linear-gradient(#5d6070 0 0.6em, #34364a 0 50%, #22232f);
+  bottom: 0;
+  height: 6em;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+/* States: neighbours glow softly; the floor the lift stops at warms up fully. */
+.floor.is-near .dim {
+  opacity: 0.55;
+}
+
+.floor.is-near .screen app-project-media {
+  filter: brightness(0.85);
+}
+
+.floor.is-lit .dim {
+  opacity: 0;
+}
+
+.floor.is-lit .screen app-project-media {
+  filter: none;
+}
+
+.floor.is-lit .glow {
+  animation: warm 1300ms ease-out both;
+  opacity: 1;
+}
+
+.floor.is-lit .window {
+  box-shadow:
+    0 0 0 0.5em #2c2420,
+    0 0 18em 3em color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes warm {
+  0% { opacity: 0.4; }
+  14% { opacity: 1; }
+  22% { opacity: 0.5; }
+  34% { opacity: 1; }
+}
+
+.lobby {
+  background:
+    linear-gradient(90deg, var(--tower) var(--wall), transparent 0 calc(100% - var(--wall)), var(--tower) 0),
+    radial-gradient(60% 80% at 50% 100%, #ffd9a0, #c9854f 55%, #3a2418);
+  height: 75em;
+  position: relative;
+  width: 162em;
+}
+
+.canopy {
+  background: #1a1820;
+  border-bottom: 0.6em solid var(--amber);
+  color: var(--amber);
+  font: 700 3.4em var(--mono);
+  left: 36em;
+  letter-spacing: 0.4em;
+  padding: 1.6em 0;
+  position: absolute;
+  right: 36em;
+  text-align: center;
+  text-transform: uppercase;
+  top: 12em;
+}
+
+.entry {
+  background:
+    linear-gradient(90deg, transparent 49.4%, #1a1820 0 50.6%, transparent 0),
+    linear-gradient(rgba(255, 240, 210, 0.6), rgba(255, 210, 150, 0.25));
+  border: 1em solid #1a1820;
+  bottom: 0;
+  height: 38em;
+  left: 62em;
+  position: absolute;
+  width: 38em;
+}
+
+.street {
+  background: linear-gradient(#3a3d4a 0 2em, #0b0d14 0);
+  height: 40em;
+  left: -150vw;
+  position: absolute;
+  top: 100%;
+  width: 300vw;
+}
+
+/* Foreground balconies of the building next door, out of focus. */
+.fore {
+  inset: calc(var(--fh) * -2.4) 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.fore span {
+  background:
+    repeating-linear-gradient(transparent 0 calc(var(--fh) * 1.9), #07080e 0 calc(var(--fh) * 1.96), transparent 0 calc(var(--fh) * 2.0), rgba(120, 130, 160, 0.35) 0 calc(var(--fh) * 2.02), transparent 0 calc(var(--fh) * 2.4)),
+    linear-gradient(90deg, #05060b, #10121c);
+  bottom: 0;
+  filter: blur(2px);
+  position: absolute;
+  top: 0;
+  width: 3.2vw;
+}
+
+.fore-l {
+  left: 0;
+}
+
+.fore-r {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* ---------- HUD: label panel + lift panel ---------- */
+
+.panel {
+  backdrop-filter: blur(14px) saturate(1.2);
+  background: rgba(10, 12, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.2rem;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+  display: grid;
+  left: clamp(1.5rem, 4vw, 4rem);
+  padding: 1.4rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(15rem, 19vw, 19rem);
+  z-index: 10;
+}
+
+.sheet {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.sheet p,
+.sheet h3 {
+  margin: 0;
+}
+
+.ln {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.ln > span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(110%);
+  transition:
+    transform 320ms cubic-bezier(0.5, 0, 0.75, 0),
+    opacity 200ms ease;
+}
+
+.sheet.is-on .ln > span {
+  opacity: 1;
+  transform: none;
+  transition:
+    transform 900ms var(--glide) calc(var(--d, 0ms) + 240ms),
+    opacity 1ms linear calc(var(--d, 0ms) + 240ms);
+}
+
+.kicker {
+  color: var(--accent);
+  font: 700 0.7rem var(--mono);
+  letter-spacing: 0.16em;
+}
+
+.name {
+  font: 400 clamp(1.6rem, 2.2vw, 2.2rem) / 1.05 'DM Serif Display', Georgia, serif;
+  margin-top: 0.5rem !important;
+}
+
+.tag {
+  color: rgba(244, 239, 230, 0.85);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  margin-top: 0.6rem !important;
+}
+
+.kinds {
+  color: rgba(244, 239, 230, 0.55);
+  font: 600 0.64rem var(--mono);
+  letter-spacing: 0.14em;
+  margin-top: 0.8rem !important;
+  text-transform: uppercase;
+}
+
+.open {
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  color: #10141a;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  justify-self: start;
+  margin-top: 1.2rem;
+  padding: 0.65rem 1.1rem;
+  transition:
+    transform 500ms var(--spring),
+    background 600ms ease,
+    opacity 400ms ease;
+}
+
+.is-moving .open {
+  opacity: 0.6;
+}
+
+.open b {
+  display: inline-block;
+  transition: transform 500ms var(--spring);
+}
+
+.open:hover {
+  transform: translateY(-2px);
+}
+
+.open:hover b {
+  transform: translate(0.15em, -0.15em);
+}
+
+.open:focus-visible,
+.call:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.lift {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 0 3px),
+    linear-gradient(135deg, #8e949d, #d5d9de 38%, #a2a8b1 62%, #7a8089);
+  border-radius: 1rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 30px 60px -20px rgba(0, 0, 0, 0.6);
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+  padding: 1rem 0.9rem 1.1rem;
+  position: absolute;
+  right: clamp(1.5rem, 4vw, 4rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.lift-led {
+  align-items: center;
+  background: #08080a;
+  border-radius: 0.45rem;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.45rem 0.8rem;
+  width: 100%;
+}
+
+.lift-led b {
+  font-size: 1.35rem;
+}
+
+.lift-led .arrow {
+  font-size: 1.1rem;
+}
+
+.calls {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, 2.5rem);
+}
+
+.call {
+  background: radial-gradient(circle at 40% 35%, #f4f5f7, #b9bec6 70%, #969ba4);
+  border: 2px solid #7d838c;
+  border-radius: 50%;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 #fff;
+  color: #2c3038;
+  cursor: pointer;
+  font: 700 0.78rem var(--mono);
+  height: 2.5rem;
+  padding: 0;
+  transition:
+    transform 200ms var(--spring),
+    box-shadow 400ms ease,
+    color 400ms ease,
+    border-color 400ms ease;
+  width: 2.5rem;
+}
+
+.call:active {
+  transform: scale(0.92);
+}
+
+.call.is-target {
+  border-color: var(--amber);
+  box-shadow:
+    0 0 0 2px rgba(255, 181, 71, 0.35),
+    0 0 14px rgba(255, 170, 60, 0.8);
+  color: #b35c00;
+}
+
+@media (max-width: 1100px) {
+  .panel {
+    bottom: 0.75rem;
+    gap: 0 1rem;
+    grid-template-columns: 1fr auto;
+    left: 0.75rem;
+    padding: 1rem 1.1rem;
+    right: 0.75rem;
+    top: auto;
+    transform: none;
+    width: auto;
+  }
+
+  .open {
+    align-self: end;
+    margin-top: 0;
+  }
+
+  .name {
+    font-size: 1.45rem;
+  }
+
+  .tag {
+    font-size: 0.84rem;
+  }
+
+  .lift {
+    border-radius: 0.8rem;
+    display: flex;
+    gap: 0.6rem;
+    left: 0.75rem;
+    padding: 0.45rem;
+    right: 0.75rem;
+    top: 0.75rem;
+    transform: none;
+  }
+
+  .lift-led {
+    flex: none;
+    padding: 0.3rem 0.55rem;
+    width: auto;
+  }
+
+  .lift-led b {
+    font-size: 1rem;
+  }
+
+  .calls {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .call {
+    flex: none;
+    height: 2.2rem;
+    width: 2.2rem;
+  }
+
+  .fore {
+    display: none;
+  }
+}
+
+/* ============ Reduced motion: a static stack of floors ============ */
+
+.static {
+  --fh: 400px;
+  --u: calc(var(--fh) / 100);
+  background: #10132a;
+  border-radius: 1.6rem;
+  color: #f4efe6;
+  overflow: hidden;
+  padding-top: 2rem;
+  position: relative;
+}
+
+.static-sky {
+  background: var(--sky);
+  inset: 0;
+  position: absolute;
+}
+
+.static .tower {
+  left: auto;
+  margin: 0 auto;
+  position: relative;
+  width: 162em;
+}
+
+.static .floor {
+  cursor: pointer;
+}
+
+.static .dim {
+  display: none;
+}
+
+.label {
+  bottom: 17em;
+  display: grid;
+  gap: 0.8em;
+  left: 6em;
+  position: absolute;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+  z-index: 6;
+}
+
+.label b {
+  font: 400 6em / 1 'DM Serif Display', Georgia, serif;
+}
+
+.label span {
+  font-size: max(0.7rem, 2.6em);
+}
+
+.static .lobby {
+  height: 50em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars i,
+  .clouds i,
+  .plane,
+  .plane::before,
+  .plane::after,
+  .beacon,
+  .tw {
+    animation: none;
+  }
+
+  .plane {
+    display: none;
+  }
+}

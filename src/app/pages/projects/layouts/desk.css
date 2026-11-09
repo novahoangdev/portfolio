@@ -1,0 +1,826 @@
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #78bbb5;
+}
+
+:host {
+  --glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --hand: 'Bradley Hand', 'Segoe Print', 'Noteworthy', 'Ink Free', 'Chalkboard SE', 'DM Serif Display', cursive;
+  --pen: #24407e;
+  --paper-front: #fbfaf6;
+  --paper-back: #f1ece1;
+  --wood-hi: #d6ab7c;
+  --wood-lo: #b78250;
+  --seam: rgba(92, 50, 18, 0.2);
+  --grain-opacity: 0.55;
+  display: block;
+}
+
+:host-context(html[data-theme='dark']) {
+  --pen: #2b3f74;
+  --paper-front: #efe9dd;
+  --paper-back: #e3dbcb;
+  --wood-hi: #4a3121;
+  --wood-lo: #2a1a10;
+  --seam: rgba(0, 0, 0, 0.38);
+  --grain-opacity: 0.7;
+}
+
+.desk-wrap {
+  position: relative;
+}
+
+/* ---------- The desk surface ---------- */
+
+.desk {
+  background:
+    /* grain: horizontal fractal noise */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1800' height='480'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0045 0.16' numOctaves='4' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.17  0 0 0 0 0.07  0 0 0 1.25 -0.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    /* plank seams */
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(9.5rem - 2px),
+      var(--seam) calc(9.5rem - 2px) calc(9.5rem - 1px),
+      rgba(255, 235, 205, 0.12) calc(9.5rem - 1px) 9.5rem
+    ),
+    /* plank tone variation */
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 225, 185, 0.08) 0 9.5rem,
+      rgba(70, 35, 10, 0.07) 9.5rem 19rem,
+      rgba(255, 225, 185, 0.03) 19rem 28.5rem
+    ),
+    linear-gradient(170deg, var(--wood-hi), var(--wood-lo));
+  background-blend-mode: multiply, normal, normal, normal;
+  border-radius: clamp(1.25rem, 2.5vw, 2rem);
+  box-shadow:
+    inset 0 0 0 1px rgba(60, 30, 10, 0.18),
+    inset 0 1px 0 rgba(255, 240, 220, 0.35),
+    inset 0 -40px 90px -50px rgba(50, 22, 4, 0.55),
+    0 50px 90px -60px rgba(50, 25, 5, 0.7);
+  height: clamp(32rem, 76vh, 46rem);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:host-context(html[data-theme='dark']) .desk {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 220, 180, 0.07),
+    inset 0 1px 0 rgba(255, 220, 180, 0.08),
+    inset 0 0 120px 10px rgba(0, 0, 0, 0.55),
+    0 50px 90px -60px rgba(0, 0, 0, 0.9);
+}
+
+/* Daylight through blinds (light) / a warm desk lamp (dark) — falls across the prints too. */
+.desk-light {
+  animation: blinds 18s ease-in-out infinite alternate;
+  background: repeating-linear-gradient(
+    112deg,
+    transparent 0 3.2rem,
+    rgba(255, 250, 236, 0.2) 3.6rem 6.4rem,
+    transparent 6.8rem 7.6rem
+  );
+  filter: blur(10px);
+  inset: -20% -10%;
+  mask-image: radial-gradient(60% 70% at 78% 18%, #000, transparent 75%);
+  pointer-events: none;
+  position: absolute;
+  z-index: 100000;
+}
+
+:host-context(html[data-theme='dark']) .desk-light {
+  animation: none;
+  background: radial-gradient(42% 52% at 26% 22%, rgba(255, 190, 120, 0.13), rgba(255, 170, 90, 0.04) 55%, transparent 80%);
+  filter: none;
+  inset: 0;
+  mask-image: none;
+}
+
+:host-context(html[data-theme='dark']) .desk::after {
+  /* Warm glow pooling on the wood under the lamp. */
+  background: radial-gradient(38% 46% at 26% 22%, rgba(255, 178, 102, 0.2), transparent 70%);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+@keyframes blinds {
+  to {
+    transform: translate3d(-2.5rem, 0.6rem, 0) rotate(-1.5deg);
+  }
+}
+
+.desk-stain {
+  aspect-ratio: 1;
+  background:
+    radial-gradient(circle, transparent 57%, rgba(96, 48, 14, 0.26) 60%, rgba(96, 48, 14, 0.1) 63.5%, transparent 67%),
+    radial-gradient(circle at 62% 70%, rgba(96, 48, 14, 0.08), transparent 38%);
+  border-radius: 50%;
+  bottom: 9%;
+  pointer-events: none;
+  position: absolute;
+  right: 7%;
+  transform: rotate(18deg) scaleX(0.96);
+  width: clamp(5rem, 9vw, 8rem);
+}
+
+.desk-pencil {
+  background:
+    linear-gradient(90deg, #f0a6b0 0 6%, #c9c9c9 6% 10%, #a8a8a8 10% 11%, transparent 11%),
+    linear-gradient(180deg, #f8cf4a 0 33%, #eebd2e 33% 66%, #d9a419 66%);
+  border-radius: 0.35rem 0 0 0.35rem;
+  bottom: 6%;
+  box-shadow: 0 10px 14px -8px rgba(40, 20, 5, 0.6);
+  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+  height: 0.75rem;
+  left: -2%;
+  pointer-events: none;
+  position: absolute;
+  transform: rotate(-14deg);
+  width: clamp(9rem, 16vw, 13rem);
+}
+
+.desk-pencil::after {
+  /* Sharpened wood and graphite tip. */
+  background: linear-gradient(90deg, #e9c79c 0 70%, #3a3a3a 70%);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  content: '';
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 12%;
+}
+
+/* ---------- A print ---------- */
+
+.print {
+  --pw: clamp(9.25rem, 15vw, 14rem);
+  --ax: 0deg;
+  --ay: 0deg;
+  --sheen: 50%;
+  --read: 1.12;
+  cursor: grab;
+  left: 0;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  width: var(--pw);
+  will-change: transform;
+}
+
+.print.is-featured {
+  --pw: clamp(12.5rem, 24vw, 21rem);
+}
+
+.desk.is-dragging,
+.desk.is-dragging .print {
+  cursor: grabbing;
+}
+
+.lift {
+  isolation: isolate;
+  perspective: 1000px;
+  position: relative;
+  transition: transform 520ms var(--spring);
+}
+
+/* Two shadows, cross-faded: tight when resting, soft and far when lifted. */
+.lift::before,
+.lift::after {
+  border-radius: 3px;
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition:
+    opacity 420ms var(--glide),
+    transform 520ms var(--glide);
+  z-index: -1;
+}
+
+.lift::before {
+  box-shadow:
+    0 1px 1px rgba(40, 20, 5, 0.25),
+    0 6px 10px -4px rgba(40, 20, 5, 0.45);
+}
+
+.lift::after {
+  box-shadow: 0 34px 46px -14px rgba(30, 14, 2, 0.55);
+  opacity: 0;
+  transform: translate3d(1.2rem, 1.6rem, 0) scale(0.97);
+}
+
+@media (hover: hover) {
+  .print:hover .lift {
+    transform: scale(1.03) translateY(-2px);
+  }
+
+  .print:hover .lift::after {
+    opacity: 0.45;
+    transform: translate3d(0.5rem, 0.8rem, 0);
+  }
+}
+
+.print.is-held .lift,
+.print.is-flying .lift {
+  transform: scale(1.08) translateY(-4px);
+}
+
+.print.is-held .lift::before,
+.print.is-flying .lift::before {
+  opacity: 0;
+}
+
+.print.is-held .lift::after,
+.print.is-flying .lift::after {
+  opacity: 1;
+}
+
+.print.is-flipped .lift {
+  transform: scale(var(--read));
+}
+
+.print.is-flipped .lift::after {
+  opacity: 0.7;
+}
+
+.tilt {
+  transform: rotateX(var(--ax)) rotateY(var(--ay));
+  transform-style: preserve-3d;
+}
+
+.flipper {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 900ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+
+.print.is-flipped .flipper {
+  transform: rotateY(180deg);
+}
+
+.print.no-flip-anim .flipper {
+  transition: none;
+}
+
+.face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 3px;
+}
+
+/* Front: the photo in its white frame. */
+.front {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, var(--paper-front), color-mix(in srgb, var(--paper-front) 92%, #c9bfa9));
+  border: 0;
+  color: var(--pen);
+  cursor: inherit;
+  display: block;
+  font: inherit;
+  margin: 0;
+  padding: 6.5% 6.5% 0;
+  position: relative;
+  text-align: left;
+  width: 100%;
+}
+
+.photo {
+  aspect-ratio: 1;
+  background: #0c171d;
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
+.print.is-featured .photo {
+  aspect-ratio: 16 / 11;
+}
+
+.photo::after {
+  /* Print emulsion: soft inner edge and a hint of warmth. */
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+    inset 0 0 24px rgba(40, 20, 0, 0.28);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.photo app-project-media {
+  --media-zoom: 1.04;
+  filter: saturate(0.92) contrast(1.04) sepia(0.06);
+  transition: filter 600ms var(--glide);
+}
+
+.print.is-playing .photo app-project-media {
+  --media-zoom: 1.1;
+  filter: none;
+}
+
+.sheen {
+  background: linear-gradient(
+    115deg,
+    transparent calc(var(--sheen) - 30%),
+    rgba(255, 255, 255, 0.24) var(--sheen),
+    transparent calc(var(--sheen) + 30%)
+  );
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: absolute;
+}
+
+.caption {
+  display: block;
+  font-family: var(--hand);
+  /* Long names write a little smaller so they still fit on one line. */
+  font-size: calc(var(--pw) * min(0.095, 1.5 / var(--len, 12)));
+  font-weight: 600;
+  line-height: 1.1;
+  overflow: hidden;
+  padding: 0.55em 0.2em 0.9em;
+  text-overflow: ellipsis;
+  transform: rotate(-1.6deg);
+  white-space: nowrap;
+}
+
+.print.is-featured .caption {
+  font-size: calc(var(--pw) * min(0.075, 1.2 / var(--len, 12)));
+}
+
+.stamp {
+  /* Film date-stamp digits in the corner of the photo. */
+  color: #ff9d42;
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: calc(var(--pw) * 0.06);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+  bottom: 5%;
+  position: absolute;
+  right: 6%;
+  text-shadow:
+    0 0 4px rgba(255, 120, 30, 0.8),
+    0 0 1px rgba(255, 200, 120, 1);
+}
+
+.front:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+}
+
+/* Back: handwritten notes on the reverse of the print. */
+.back {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--pw) * 0.1 - 1px),
+      rgba(60, 90, 140, 0.13) calc(var(--pw) * 0.1 - 1px) calc(var(--pw) * 0.1)
+    ),
+    linear-gradient(200deg, var(--paper-back), color-mix(in srgb, var(--paper-back) 88%, #b9ab8f));
+  background-position: 0 calc(var(--pw) * 0.03), 0 0;
+  color: var(--pen);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--hand);
+  gap: calc(var(--pw) * 0.035);
+  inset: 0;
+  overflow: hidden;
+  padding: 9% 9% 8%;
+  position: absolute;
+  transform: rotateY(180deg);
+}
+
+.back::before {
+  /* A splash of the project's accent, like a marker swatch. */
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: 40% 60% 55% 45%;
+  content: '';
+  filter: blur(0.5px);
+  height: calc(var(--pw) * 0.09);
+  opacity: 0.75;
+  position: absolute;
+  right: 8%;
+  top: 7%;
+  transform: rotate(-8deg);
+  width: calc(var(--pw) * 0.09);
+}
+
+.back p {
+  margin: 0;
+}
+
+.note-no {
+  color: color-mix(in srgb, var(--pen) 70%, transparent);
+  font-family: Manrope, system-ui, sans-serif;
+  font-size: max(0.5rem, calc(var(--pw) * 0.04));
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding-right: 14%;
+  text-transform: uppercase;
+}
+
+.note-tagline {
+  font-size: calc(var(--pw) * 0.078);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.print.is-featured .note-tagline {
+  font-size: calc(var(--pw) * 0.062);
+}
+
+.note-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: calc(var(--pw) * 0.06);
+  gap: 0.15em 0.55em;
+}
+
+.note-kinds span {
+  color: color-mix(in srgb, var(--accent) 55%, #3a2a1a);
+}
+
+.note-kinds .note-status {
+  border: 1.5px solid currentColor;
+  border-radius: 40% 55% 45% 50% / 60% 45% 55% 40%;
+  color: #b2402f;
+  padding: 0 0.35em;
+  transform: rotate(-3deg);
+}
+
+.note-tech {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  color: color-mix(in srgb, var(--pen) 82%, transparent);
+  display: -webkit-box;
+  font-size: calc(var(--pw) * 0.055);
+  line-height: 1.3;
+  overflow: hidden;
+}
+
+.print.is-featured .note-tech {
+  font-size: calc(var(--pw) * 0.045);
+}
+
+.note-open {
+  align-self: flex-start;
+  background: var(--pen);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px -8px rgba(20, 30, 70, 0.8);
+  color: #fbfaf6;
+  cursor: pointer;
+  font-family: Manrope, system-ui, sans-serif;
+  font-size: max(0.6rem, calc(var(--pw) * 0.05));
+  font-weight: 800;
+  margin-top: auto;
+  min-height: 1.9rem;
+  padding: 0.35em 1em;
+  transition: transform 360ms var(--spring), background-color 250ms ease;
+}
+
+.note-open:hover {
+  background: color-mix(in srgb, var(--pen) 80%, var(--accent));
+  transform: translateY(-2px) rotate(-1.5deg);
+}
+
+.note-open:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Washi tape */
+.tape {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.28) 0 5px,
+      transparent 5px 10px
+    ),
+    color-mix(in srgb, var(--accent) 62%, #fff7e8);
+  box-shadow: 0 1px 2px rgba(40, 20, 5, 0.18);
+  clip-path: polygon(
+    0 8%, 3% 0, 6% 10%, 9% 0, 91% 0, 94% 10%, 97% 0, 100% 8%,
+    100% 92%, 97% 100%, 94% 90%, 91% 100%, 9% 100%, 6% 90%, 3% 100%, 0 92%
+  );
+  height: calc(var(--pw) * 0.11);
+  opacity: 0.86;
+  pointer-events: none;
+  position: absolute;
+}
+
+.tape-top {
+  left: 50%;
+  top: calc(var(--pw) * -0.05);
+  transform: translateX(-50%) rotate(var(--tape-r));
+  width: calc(var(--pw) * 0.42);
+}
+
+.print.is-featured .tape-top {
+  width: calc(var(--pw) * 0.3);
+}
+
+.tape-left,
+.tape-right {
+  top: calc(var(--pw) * 0.01);
+  width: calc(var(--pw) * 0.28);
+}
+
+.tape-left {
+  left: calc(var(--pw) * -0.07);
+  transform: rotate(-42deg);
+}
+
+.tape-right {
+  bottom: calc(var(--pw) * 0.03);
+  right: calc(var(--pw) * -0.07);
+  top: auto;
+  transform: rotate(-42deg);
+}
+
+.print.is-flipped .tape {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+/* Flip button */
+.flip {
+  align-items: center;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: 0 8px 18px -8px rgba(30, 14, 2, 0.6);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  height: 2.25rem;
+  justify-content: center;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  right: -0.8rem;
+  top: -0.8rem;
+  transform: scale(0.6) rotate(-90deg);
+  transition:
+    opacity 260ms ease,
+    transform 520ms var(--spring),
+    background-color 250ms ease;
+  width: 2.25rem;
+  z-index: 2;
+}
+
+.flip svg {
+  fill: none;
+  height: 1.05rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 1.05rem;
+}
+
+.print:hover .flip,
+.print:focus-within .flip,
+.print.is-flipped .flip {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.print.is-flipped .flip {
+  /* Counter the reading zoom so the button stays the same size. */
+  transform: scale(calc(1 / var(--read))) rotate(180deg);
+}
+
+.flip:hover {
+  background: var(--accent);
+  color: #10181d;
+}
+
+.flip:focus-visible {
+  opacity: 1;
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  transform: scale(1);
+}
+
+@media (hover: none) {
+  /* Touch: only the print you last touched shows its flip button. */
+  .print.is-front .flip {
+    opacity: 0.95;
+    transform: scale(0.9);
+  }
+}
+
+/* ---------- Dealing the prints onto the desk ---------- */
+
+.desk:not(.is-landed) .lift {
+  opacity: 0;
+}
+
+.desk.is-landed .lift {
+  animation: deal 1100ms var(--glide) backwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+
+.desk.is-landed .lift::after {
+  animation: deal-shadow 1100ms var(--glide) backwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translate3d(-6%, -24%, 0) scale(1.35) rotate(-9deg);
+  }
+  35% {
+    opacity: 1;
+  }
+}
+
+@keyframes deal-shadow {
+  from {
+    opacity: 1;
+    transform: translate3d(3rem, 4rem, 0) scale(1.05);
+  }
+}
+
+/* ---------- Toolbar ---------- */
+
+.desk-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.5rem;
+  justify-content: space-between;
+  margin-top: 1.1rem;
+}
+
+.desk-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.hint-keys,
+.hint-touch {
+  display: none;
+}
+
+@media (hover: none) {
+  .hint-pointer {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
+}
+
+.desk-wrap:has(.desk :focus-visible) .hint-pointer,
+.desk-wrap:has(.desk :focus-visible) .hint-touch {
+  display: none;
+}
+
+.desk-wrap:has(.desk :focus-visible) .hint-keys {
+  display: inline;
+}
+
+.desk-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.desk-btn {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.15rem;
+  transition:
+    background-color 250ms ease,
+    border-color 250ms ease,
+    color 250ms ease,
+    transform 420ms var(--spring);
+}
+
+.desk-btn svg {
+  fill: none;
+  height: 1rem;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform 520ms var(--spring);
+  width: 1rem;
+}
+
+.desk-btn:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.desk-btn:hover svg {
+  transform: rotate(-12deg) scale(1.12);
+}
+
+.desk-btn:active {
+  transform: scale(0.96);
+}
+
+.desk-btn.is-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--page);
+}
+
+.desk-btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .desk {
+    height: clamp(30rem, 78vh, 40rem);
+  }
+
+  .desk-bar {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ---------- Reduced motion: no physics, flips become fades ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-light {
+    animation: none;
+  }
+
+  .desk.is-landed .lift,
+  .desk.is-landed .lift::after {
+    animation: fade 400ms ease backwards;
+  }
+
+  .lift,
+  .flip,
+  .desk-btn,
+  .desk-btn svg,
+  .note-open {
+    transition-duration: 1ms;
+  }
+
+  .flipper,
+  .print.is-flipped .flipper {
+    transform: none;
+    transition: none;
+  }
+
+  .back {
+    opacity: 0;
+    transform: none;
+    transition: opacity 250ms ease;
+  }
+
+  .front {
+    transition: opacity 250ms ease;
+  }
+
+  .print.is-flipped .back {
+    opacity: 1;
+  }
+
+  .print.is-flipped .front {
+    opacity: 0;
+  }
+
+  .print.is-flipped .lift {
+    transform: none;
+  }
+
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+}

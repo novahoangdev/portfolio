@@ -1,0 +1,108 @@
+<section
+  #room
+  class="room"
+  [class.is-lit]="lightsOn()"
+  [class.is-reduced]="reduced"
+  aria-label="Darkroom: side projects hanging as prints on a clothesline"
+>
+  <div class="wall" aria-hidden="true"></div>
+  <span class="tube" aria-hidden="true"></span>
+
+  <div class="lamp" aria-hidden="true">
+    <span class="lamp-cable"></span>
+    <span class="lamp-housing">
+      <span class="lamp-filter"><span class="lamp-mark">Safelight</span></span>
+    </span>
+  </div>
+
+  <svg class="lines" aria-hidden="true" preserveAspectRatio="none">
+    <g class="line-shadows"></g>
+    <g class="line-cords"></g>
+    <g class="line-hits"></g>
+  </svg>
+
+  @for (p of projects(); track p.name; let i = $index) {
+    <div
+      class="print"
+      [attr.data-project]="i"
+      [class.is-blank]="states()[i] !== 'developed'"
+      [class.is-developed]="states()[i] === 'developed'"
+      [class.is-busy]="states()[i] === 'busy'"
+      [style.--accent]="p.accent"
+    >
+      <button
+        #paper
+        type="button"
+        class="paper"
+        [attr.aria-label]="label(p, i)"
+        [attr.aria-disabled]="states()[i] === 'busy' ? 'true' : null"
+        (click)="activate(i, paper)"
+        (pointerenter)="look(i)"
+        (focus)="look(i)"
+        (keydown)="onKey($event, i)"
+      >
+        <span class="photo">
+          <app-project-media [project]="p" [play]="playFor(i)" />
+        </span>
+        <span class="caption">
+          <span class="caption-no">No.&nbsp;{{ pad(i + 1) }}</span>
+          <span class="caption-name">{{ p.name }}</span>
+        </span>
+        <span class="sheen"></span>
+        <span class="bath"></span>
+      </button>
+    </div>
+  }
+
+  @for (p of projects(); track p.name) {
+    <span class="peg" aria-hidden="true"><span class="peg-jaw peg-jaw-a"></span><span class="peg-jaw peg-jaw-b"></span><span class="peg-spring"></span></span>
+  }
+
+  <div class="drips" aria-hidden="true"></div>
+
+  <div class="spacer" aria-hidden="true"></div>
+
+  <div class="bench">
+    @for (t of trays; track t.id) {
+      <div class="tray" [attr.data-tray]="t.id" role="img" [attr.aria-label]="t.name + ' tray'">
+        <span class="tray-rim"></span>
+        <canvas class="tray-liquid"></canvas>
+        <span class="tray-front"><span class="tray-tag">{{ t.short }}</span></span>
+      </div>
+    }
+  </div>
+
+  <div class="safelight" aria-hidden="true"></div>
+  <div class="bloom" aria-hidden="true"></div>
+
+  <div class="hud">
+    <p class="hud-title">
+      <span class="hud-kicker">Darkroom</span>
+      <span class="hud-count"><b>{{ pad(developedCount()) }}</b>/{{ pad(projects().length) }} developed</span>
+    </p>
+    <span class="timer" aria-hidden="true"><span class="timer-label">Dev</span><span class="timer-digits">00.0</span><span class="timer-unit">s</span></span>
+    <button
+      type="button"
+      class="develop-all"
+      (click)="developAll()"
+      [disabled]="running() || blankCount() === 0"
+    >
+      {{ blankCount() === 0 ? 'All developed' : running() ? 'Developing…' : 'Develop all' }}
+    </button>
+    <p class="hud-hint">{{ blankCount() ? 'Choose a blank print to develop it' : 'Choose a print to open it' }}{{ reduced ? '' : ' · tug the line to set it swinging' }}</p>
+  </div>
+
+  <button
+    #cord
+    type="button"
+    class="cord"
+    [attr.aria-pressed]="lightsOn()"
+    (click)="toggleLights(cord)"
+  >
+    <span class="cord-string" aria-hidden="true"></span>
+    <span class="cord-pull" aria-hidden="true"></span>
+    <span class="cord-tag">{{ lightsOn() ? 'Lights off' : 'Lights on' }}</span>
+  </button>
+
+  <p class="sr-only" aria-live="polite">{{ announce() }}</p>
+</section>

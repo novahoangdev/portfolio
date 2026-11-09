@@ -1,0 +1,58 @@
+@let current = projects()[active()];
+<div
+  class="table"
+  #table
+  tabindex="0"
+  role="group"
+  aria-roledescription="carousel"
+  aria-label="Projects deck — swipe or use the arrow keys"
+  [style.--accent]="current.accent"
+  (keydown)="onKey($event)"
+  (pointerdown)="onPointerDown($event)"
+  (pointerup)="onPointerUp($event)"
+>
+  <div class="table-glow" aria-hidden="true"></div>
+  @for (project of projects(); track project.name; let i = $index) {
+    @let k = seat(i);
+    <button
+      #card
+      type="button"
+      class="card"
+      [attr.data-project]="i"
+      [class.is-active]="k === 0"
+      [style.--k]="k"
+      [style.--abs]="k < 0 ? -k : k"
+      [style.--card-accent]="project.accent"
+      [style.z-index]="20 - (k < 0 ? -k : k)"
+      [attr.aria-label]="(k === 0 ? 'Open ' : 'Show ') + project.name"
+      [attr.tabindex]="k === 0 ? 0 : -1"
+      (click)="onCard(i, card)"
+    >
+      <app-project-media [project]="project" [play]="k === 0 ? 'on' : 'off'" />
+      <span class="card-shade" aria-hidden="true"></span>
+      <span class="card-copy" aria-hidden="true">
+        <span class="card-index">{{ pad(i + 1) }}</span>
+        <span class="card-title">{{ project.name }}</span>
+        <span class="card-tagline">{{ project.tagline }}</span>
+      </span>
+    </button>
+  }
+</div>
+
+<div class="deck-bar">
+  <button type="button" class="round" (click)="go(-1)" aria-label="Previous project">←</button>
+  <div class="dots" role="group" aria-label="Choose a project">
+    @for (project of projects(); track project.name; let i = $index) {
+      <button
+        type="button"
+        [class.is-active]="i === active()"
+        [attr.aria-current]="i === active() ? 'true' : null"
+        [attr.aria-label]="project.name"
+        [style.--dot]="project.accent"
+        (click)="active.set(i)"
+      ></button>
+    }
+  </div>
+  <button type="button" class="round" (click)="go(1)" aria-label="Next project">→</button>
+  <button type="button" class="open" (click)="openActive()">Open {{ current.name }} <span aria-hidden="true">↗</span></button>
+</div>

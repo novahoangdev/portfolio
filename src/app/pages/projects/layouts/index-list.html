@@ -1,0 +1,39 @@
+<ol class="list" #list [class.has-hover]="hovered() !== null">
+  @for (project of projects(); track project.name; let i = $index) {
+    <li [attr.data-project]="i" [style.--row-accent]="project.accent">
+      <button
+        #row
+        type="button"
+        class="row"
+        [class.is-hovered]="hovered() === i"
+        [attr.aria-label]="'Open ' + project.name + ' — ' + project.tagline"
+        (pointerenter)="hovered.set(i)"
+        (focus)="hovered.set(i)"
+        (click)="open(i, row)"
+      >
+        <span class="row-thumb" aria-hidden="true">
+          <app-project-media [project]="project" play="off" />
+        </span>
+        <span class="row-index" aria-hidden="true">{{ pad(i + 1) }}</span>
+        <span class="row-name" aria-hidden="true">{{ project.name }}</span>
+        <span class="row-meta" aria-hidden="true">
+          <span class="row-tagline">{{ project.tagline }}</span>
+          <span class="row-kinds">
+            @for (kind of project.kinds; track kind) {
+              <span>{{ kindLabel(kind) }}</span>
+            }
+          </span>
+        </span>
+        <span class="row-arrow" aria-hidden="true">↗</span>
+      </button>
+    </li>
+  }
+</ol>
+
+<div class="preview" #preview [class.is-visible]="hovered() !== null" aria-hidden="true">
+  @for (project of projects(); track project.name; let i = $index) {
+    <div class="preview-item" [attr.data-preview]="i" [class.is-active]="hovered() === i">
+      <app-project-media [project]="project" [play]="hovered() === i ? 'on' : 'off'" />
+    </div>
+  }
+</div>

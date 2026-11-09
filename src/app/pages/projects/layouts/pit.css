@@ -1,0 +1,470 @@
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #78bbb5;
+}
+
+:host {
+  --glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --tank-hi: #fbf9f4;
+  --tank-lo: #e6e1d6;
+  --tank-line: rgba(23, 43, 54, 0.07);
+  display: block;
+}
+
+:host-context(html[data-theme='dark']) {
+  --tank-hi: #15232a;
+  --tank-lo: #0b151a;
+  --tank-line: rgba(237, 242, 239, 0.05);
+}
+
+/* ---------- The pit ---------- */
+
+.pit {
+  background:
+    radial-gradient(circle at 1px 1px, var(--tank-line) 1px, transparent 1.5px) 0 0 / 22px 22px,
+    linear-gradient(180deg, var(--tank-hi), var(--tank-lo));
+  border: 1px solid var(--line);
+  border-radius: clamp(1.25rem, 2.5vw, 2rem);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -50px 80px -60px rgba(23, 43, 54, 0.35);
+  cursor: default;
+  height: clamp(30rem, 70vh, 44rem);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y;
+  transition: --accent 900ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:host-context(html[data-theme='dark']) .pit {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -60px 90px -50px rgba(0, 0, 0, 0.6);
+}
+
+.pit.is-over {
+  cursor: grab;
+}
+
+.pit.is-grabbing,
+.pit.is-grabbing .bubble {
+  cursor: grabbing;
+}
+
+.pit.is-shaking {
+  animation: rattle 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes rattle {
+  15% {
+    transform: translate3d(-5px, 2px, 0) rotate(-0.5deg);
+  }
+  30% {
+    transform: translate3d(6px, -3px, 0) rotate(0.6deg);
+  }
+  45% {
+    transform: translate3d(-4px, 1px, 0) rotate(-0.3deg);
+  }
+  60% {
+    transform: translate3d(3px, -1px, 0);
+  }
+  80% {
+    transform: translate3d(-1px, 0, 0);
+  }
+}
+
+.pit-glow {
+  background: radial-gradient(48% 60% at 50% 100%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 72%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.pit-floor {
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 10%, rgba(23, 43, 54, 0.12)));
+  bottom: 0;
+  height: 18%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+/* ---------- A bubble ---------- */
+
+.bubble {
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  cursor: inherit;
+  font: inherit;
+  left: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.bubble:focus-visible {
+  outline: none;
+}
+
+.shell {
+  border-radius: 50%;
+  box-shadow:
+    0 calc(var(--box) * 0.09) calc(var(--box) * 0.12) calc(var(--box) * -0.05) rgba(10, 20, 26, 0.38),
+    0 calc(var(--box) * 0.02) calc(var(--box) * 0.03) rgba(10, 20, 26, 0.18);
+  display: block;
+  inset: 0;
+  position: absolute;
+  transition: box-shadow 500ms var(--glide);
+}
+
+.bubble.is-active .shell {
+  box-shadow:
+    0 0 0 calc(var(--box) * 0.012) color-mix(in srgb, var(--accent) 85%, white),
+    0 0 calc(var(--box) * 0.22) calc(var(--box) * -0.02) color-mix(in srgb, var(--accent) 70%, transparent),
+    0 calc(var(--box) * 0.12) calc(var(--box) * 0.16) calc(var(--box) * -0.06) rgba(10, 20, 26, 0.45);
+}
+
+.bubble:focus-visible .shell {
+  outline: calc(var(--box) * 0.012 + 2px) solid var(--accent);
+  outline-offset: calc(var(--box) * 0.025);
+}
+
+.lens {
+  background: #0c171d;
+  border-radius: 50%;
+  display: block;
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  /* Keeps the circular clip on composited video in Safari. */
+  transform: translateZ(0);
+}
+
+.lens app-project-media {
+  --media-zoom: 1.18;
+  --phone-tilt: -6deg;
+  filter: saturate(0.85) brightness(0.92);
+  transition: filter 600ms var(--glide);
+}
+
+.bubble.is-playing .lens app-project-media {
+  filter: none;
+}
+
+.bubble.is-active .lens app-project-media {
+  --media-zoom: 1.08;
+  --phone-lift: -4%;
+}
+
+/* Spherical shading: darker towards the rim, a tint of the project's colour at the bottom. */
+.shade {
+  background:
+    radial-gradient(circle at 50% 40%, transparent 48%, rgba(5, 12, 16, 0.18) 66%, rgba(5, 12, 16, 0.62) 100%),
+    linear-gradient(0deg, color-mix(in srgb, var(--accent) 34%, rgba(5, 12, 16, 0.75)) 0%, transparent 42%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* Thin-film colours swirling around the rim, like a soap bubble. */
+.film {
+  animation: swirl 14s linear infinite;
+  background: conic-gradient(
+    from 0deg,
+    #ff8ad8,
+    #8ad8ff,
+    #b7ff9e,
+    #ffe38a,
+    #ff9e8a,
+    #c49eff,
+    #ff8ad8
+  );
+  border-radius: 50%;
+  inset: 0;
+  mask-image: radial-gradient(circle, transparent 66%, #000 71%, #000 74%, transparent 76%, transparent 100%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  pointer-events: none;
+  position: absolute;
+}
+
+.pit.is-offscreen .film {
+  animation-play-state: paused;
+}
+
+@keyframes swirl {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Glass: a crisp rim, a big soft window highlight and a small hot spot. */
+.spec {
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    inset 0 calc(var(--box) * 0.02) calc(var(--box) * 0.02) rgba(255, 255, 255, 0.25),
+    inset 0 calc(var(--box) * -0.03) calc(var(--box) * 0.06) rgba(0, 0, 0, 0.25);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.spec::before {
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.25) 55%, transparent);
+  border-radius: 50%;
+  content: '';
+  height: 22%;
+  left: 15%;
+  position: absolute;
+  top: 9%;
+  transform: rotate(-32deg);
+  transition: transform 700ms var(--spring);
+  width: 40%;
+}
+
+.spec::after {
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), transparent);
+  border-radius: 50%;
+  content: '';
+  height: 5%;
+  left: 68%;
+  position: absolute;
+  top: 18%;
+  width: 5%;
+}
+
+.bubble.is-active .spec::before {
+  transform: rotate(-32deg) translate(4%, -6%) scale(1.06);
+}
+
+.label {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.label text {
+  fill: #fdfbf6;
+  font-family: Manrope, system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  paint-order: stroke;
+  stroke: rgba(5, 12, 16, 0.5);
+  stroke-width: 3px;
+  text-transform: uppercase;
+}
+
+.bubble.is-featured .label text {
+  font-size: 11.5px;
+}
+
+/* ---------- Readout and actions ---------- */
+
+.pit-bar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  margin-top: clamp(1.1rem, 2vw, 1.6rem);
+}
+
+.pit-info {
+  animation: info-in 650ms var(--glide) both;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+@keyframes info-in {
+  from {
+    filter: blur(5px);
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.info-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+}
+
+.info-count {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-right: 0.3rem;
+}
+
+.info-kind {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.info-kind.is-status {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--ink);
+}
+
+.info-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin: 0 0 0.4rem;
+}
+
+.info-title::after {
+  background: var(--accent);
+  border-radius: 50%;
+  content: '';
+  display: inline-block;
+  height: 0.22em;
+  margin-left: 0.12em;
+  width: 0.22em;
+}
+
+.info-tagline {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.pit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pit-btn {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.2rem;
+  transition:
+    background-color 250ms ease,
+    border-color 250ms ease,
+    transform 420ms var(--spring);
+}
+
+.pit-btn svg {
+  fill: none;
+  height: 1.1rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.7;
+  transition: transform 520ms var(--spring);
+  width: 1.1rem;
+}
+
+.pit-btn:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.pit-btn:hover svg {
+  animation: jiggle 600ms var(--spring);
+}
+
+@keyframes jiggle {
+  25% {
+    transform: rotate(-14deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+}
+
+.pit-btn:active {
+  transform: scale(0.95);
+}
+
+.pit-btn.is-solid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--page);
+}
+
+.pit-btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .pit {
+    height: clamp(28rem, 70vh, 36rem);
+  }
+
+  .label text {
+    font-size: 15px;
+    letter-spacing: 0.1em;
+  }
+
+  .bubble.is-featured .label text {
+    font-size: 12.5px;
+  }
+
+  .pit-actions {
+    width: 100%;
+  }
+
+  .pit-btn.is-solid {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pit.is-shaking,
+  .film,
+  .pit-info,
+  .pit-btn:hover svg {
+    animation: none;
+  }
+
+  .shell,
+  .spec::before,
+  .pit-btn {
+    transition-duration: 1ms;
+  }
+}

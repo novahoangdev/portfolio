@@ -1,0 +1,265 @@
+@let nw = net();
+@let list = projects();
+@let here = list[shown()];
+<div
+  class="metro"
+  #root
+  [class.is-compact]="compact()"
+  [class.is-drawn]="drawn()"
+  [class.is-ready]="ready()"
+  [class.is-moving]="moving()"
+  [style.--accent]="list[current()]?.accent"
+  [style.--pos]="current()"
+  [style.--count]="list.length"
+  [style.--lanes]="nw.lines.length"
+>
+  @if (!compact()) {
+    <div class="map" #viewport (keydown)="onKey($event)">
+      <div class="cam" #cam>
+        <svg
+          class="map-svg"
+          [attr.viewBox]="viewBox(nw)"
+          [attr.width]="nw.w"
+          [attr.height]="nw.h"
+          aria-hidden="true"
+        >
+          <path class="river" [attr.d]="nw.river" />
+          <path class="river-edge" [attr.d]="nw.river" />
+
+          @for (line of nw.lines; track line.kind; let l = $index) {
+            <path class="casing" [attr.d]="line.d" pathLength="1" [style.--i]="l" />
+            <path class="line" [attr.d]="line.d" pathLength="1" [style.--i]="l" [style.--c]="line.color" />
+          }
+
+          @for (line of nw.lines; track line.kind; let l = $index) {
+            <g class="terminus" [style.--i]="l" [attr.transform]="'translate(' + line.badge.x + ' ' + line.badge.y + ')'">
+              <circle r="16" [attr.fill]="line.color" />
+              <text class="terminus-code" dy="0.35em">{{ line.code }}</text>
+            </g>
+          }
+
+          <g class="hub">
+            <rect
+              [attr.x]="nw.hub.x"
+              [attr.y]="nw.hub.y"
+              [attr.width]="nw.hub.w"
+              [attr.height]="nw.hub.h"
+              [attr.rx]="nw.hub.w / 2"
+            />
+            <text class="hub-label" [attr.x]="nw.hubLabel.x" [attr.y]="nw.hubLabel.y">Central</text>
+          </g>
+
+          @for (station of nw.stations; track station.index) {
+            @let p = list[station.index]!;
+            <g
+              class="station"
+              [class.is-current]="station.index === current()"
+              [class.is-hover]="station.index === hovered()"
+              [style.--accent]="p.accent"
+              [style.--c]="station.color"
+              [style.--n]="station.index"
+            >
+              <g [attr.transform]="'translate(' + station.x + ' ' + station.y + ')'">
+                <circle class="station-halo" r="22" />
+                @if (station.interchange) {
+                  <circle class="station-ring" r="10.5" />
+                } @else {
+                  <rect class="station-tick" x="-3.5" y="-9" width="7" height="18" rx="3.5" />
+                }
+              </g>
+              <text class="station-label" [attr.text-anchor]="station.label.anchor">
+                @for (row of station.label.lines; track $index) {
+                  <tspan [attr.x]="station.label.x" [attr.y]="station.label.y + $index * 16.5">{{ row }}</tspan>
+                }
+              </text>
+            </g>
+          }
+
+          @let at = nw.stations[shown()];
+          @if (at) {
+            <g class="here" [attr.transform]="'translate(' + at.x + ' ' + at.y + ')'">
+              <circle class="here-pulse" r="14" />
+              <circle class="here-pulse is-late" r="14" />
+            </g>
+          }
+
+          <g class="train" #train>
+            <g class="train-body">
+              <rect class="train-shell" x="-19" y="-7.5" width="38" height="15" rx="7.5" />
+              <rect class="train-window" x="-12.5" y="-3.4" width="5.2" height="6.8" rx="1.6" />
+              <rect class="train-window" x="-5.2" y="-3.4" width="5.2" height="6.8" rx="1.6" />
+              <rect class="train-window" x="2.1" y="-3.4" width="5.2" height="6.8" rx="1.6" />
+              <path class="train-nose" d="M10.4 -3.4 h2.6 a3.6 3.6 0 0 1 3.4 3.4 a3.6 3.6 0 0 1 -3.4 3.4 h-2.6 z" />
+              <circle class="train-lamp" cx="18.4" cy="0" r="1.5" />
+            </g>
+          </g>
+        </svg>
+
+        @for (station of nw.stations; track station.index) {
+          @let p = list[station.index]!;
+          <button
+            type="button"
+            class="stop"
+            [attr.data-project]="station.index"
+            [style.left.px]="station.hit.x"
+            [style.top.px]="station.hit.y"
+            [style.width.px]="station.hit.w"
+            [style.height.px]="station.hit.h"
+            [style.--accent]="p.accent"
+            [attr.aria-label]="'Stop ' + pad(station.index + 1) + ': ' + p.name"
+            [attr.aria-current]="station.index === shown() && !moving() ? 'location' : null"
+            (click)="onStation(station.index)"
+            (pointerenter)="hovered.set(station.index)"
+            (pointerleave)="hovered.set(-1)"
+            (focus)="hovered.set(station.index)"
+            (blur)="hovered.set(-1)"
+          ></button>
+        }
+      </div>
+
+      <div class="cartouche" aria-hidden="true">
+        <span class="cartouche-kicker">Network map</span>
+        <span class="cartouche-title">Side projects</span>
+        <span class="cartouche-note">Pick a station · ← → to ride the line</span>
+      </div>
+
+      <ul class="legend" aria-label="Lines">
+        @for (line of nw.lines; track line.kind) {
+          <li class="legend-line">
+            <span class="badge" [style.--c]="line.color" aria-hidden="true">{{ line.code }}</span>
+            <span>{{ line.label }}</span>
+            <span class="legend-count">{{ line.stops }} {{ line.stops === 1 ? 'stop' : 'stops' }}</span>
+          </li>
+        }
+        <li class="legend-key" aria-hidden="true"><span class="key-ring"></span>Interchange</li>
+        <li class="legend-key" aria-hidden="true"><span class="key-here"></span>You are here</li>
+      </ul>
+
+      <svg class="compass" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" />
+        <path d="M20 5 L25 21 L20 18 L15 21 Z" />
+        <text x="20" y="35.5">N</text>
+      </svg>
+    </div>
+  } @else {
+    <div class="strip-wrap">
+      <p class="strip-head" aria-hidden="true">
+        <span>Side projects line</span>
+        <span>{{ pad(list.length) }} stops</span>
+      </p>
+      <ol class="strip" (keydown)="onKey($event)">
+        @for (lane of lanes(); track lane.line.kind) {
+          <span
+            class="lane"
+            aria-hidden="true"
+            [style.--c]="lane.line.color"
+            [style.--lane]="lane.lane"
+            [style.--from]="lane.from"
+            [style.--to]="lane.to"
+          ></span>
+        }
+        @let span = laneSpan(current());
+        <span
+          class="strip-train"
+          aria-hidden="true"
+          [style.--lane-from]="span.from"
+          [style.--lane-to]="span.to"
+          [style.--c]="list[current()] ? nw.stations[current()]!.color : null"
+        ></span>
+        @for (p of list; track p.name; let i = $index) {
+          @let own = laneSpan(i);
+          <li class="strip-row" [class.is-current]="i === shown() && !moving()" [style.--accent]="p.accent">
+            <span
+              class="strip-dot"
+              aria-hidden="true"
+              [class.is-interchange]="nw.stations[i]!.interchange"
+              [style.--lane-from]="own.from"
+              [style.--lane-to]="own.to"
+              [style.--c]="nw.stations[i]!.color"
+            ></span>
+            <button
+              type="button"
+              class="strip-stop"
+              [attr.data-project]="i"
+              [attr.aria-current]="i === shown() && !moving() ? 'location' : null"
+              (click)="onStation(i)"
+            >
+              <span class="strip-num">{{ pad(i + 1) }}</span>
+              <span class="strip-name">{{ p.name }}</span>
+              <span class="strip-badges" aria-hidden="true">
+                @for (kind of p.kinds; track kind) {
+                  <span class="badge is-small" [style.--c]="lineByKind().get(kind)?.color">{{
+                    lineByKind().get(kind)?.code
+                  }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+    </div>
+  }
+
+  <aside class="screen" [attr.data-project]="shown()" [style.--accent]="here?.accent" aria-live="polite">
+    <div class="screen-head">
+      <span class="screen-led">
+        @if (moving()) {
+          Next stop
+        } @else {
+          This stop
+        }
+      </span>
+      <span class="screen-count">{{ pad(shown() + 1) }}/{{ pad(list.length) }}</span>
+    </div>
+    <div class="screen-ticker" aria-hidden="true">
+      <span class="ticker-text">{{ ticker() }}</span>
+    </div>
+    @if (here) {
+      @for (s of [shown()]; track s) {
+        <div class="screen-body">
+          <button
+            type="button"
+            class="screen-media"
+            [class.is-portrait]="here.media.shape === 'portrait'"
+            [attr.aria-label]="'Open case: ' + here.name"
+            (click)="open(s)"
+          >
+            <app-project-media [project]="here" [play]="inView() && !moving() && ready() ? 'on' : 'off'" />
+            <span class="screen-glass" aria-hidden="true"></span>
+          </button>
+          <p class="screen-stop">Stop {{ pad(s + 1) }}</p>
+          <h3 class="screen-name">{{ here.name }}</h3>
+          <p class="screen-tagline">{{ here.tagline }}</p>
+          <ul class="screen-lines" aria-label="Lines">
+            @for (kind of here.kinds; track kind) {
+              <li>
+                <span class="badge" [style.--c]="lineByKind().get(kind)?.color" aria-hidden="true">{{
+                  lineByKind().get(kind)?.code
+                }}</span>
+                {{ kindLabel(kind) }}
+              </li>
+            }
+          </ul>
+          <ol class="screen-next" aria-label="Next stops">
+            @for (k of upcoming(); track k; let first = $first) {
+              <li>
+                <span class="next-when">{{ first ? 'Next' : 'Then' }}</span>
+                <span class="next-name">{{ list[k]?.name }}</span>
+                <span class="next-num">{{ pad(k + 1) }}</span>
+              </li>
+            }
+          </ol>
+          <div class="screen-foot">
+            <button type="button" class="screen-open" (click)="open(s)">
+              Open case <span aria-hidden="true">→</span>
+            </button>
+            <span class="screen-nav">
+              <button type="button" class="screen-step" (click)="stepBy(-1)" aria-label="Previous stop">←</button>
+              <button type="button" class="screen-step" (click)="stepBy(1)" aria-label="Next stop">→</button>
+            </span>
+          </div>
+        </div>
+      }
+    }
+  </aside>
+</div>

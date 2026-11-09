@@ -1,0 +1,145 @@
+@let current = projects()[channel()];
+<div class="surf" [style.--accent]="current.accent" [attr.data-screen]="screen()" [attr.data-phase]="phase()">
+  <div class="set" #set (keydown)="onKey($event)">
+    <div class="wall-glow" aria-hidden="true"></div>
+
+    <div class="tv">
+      <div class="antenna" #antenna aria-hidden="true">
+        <span class="rod rod-l"></span>
+        <span class="rod rod-r"></span>
+        <span class="antenna-base"></span>
+      </div>
+
+      <div class="cabinet">
+        <div class="bezel">
+          <div class="screen" [class.is-osd]="osd()">
+            <div class="picture">
+              <div class="channels" #channels>
+                @for (project of projects(); track project.name; let i = $index) {
+                  <button
+                    #channelButton
+                    type="button"
+                    class="channel"
+                    [attr.data-project]="i"
+                    [class.is-on]="i === showing()"
+                    [attr.tabindex]="i === showing() ? 0 : -1"
+                    [attr.aria-label]="powered() ? 'Open case: ' + project.name : 'Switch the television on'"
+                    (focus)="onChannelFocus(i)"
+                    (click)="onScreen(i, channelButton)"
+                  >
+                    <app-project-media
+                      [project]="project"
+                      [play]="i === showing() && powered() && inView() ? 'on' : 'off'"
+                    />
+                  </button>
+                }
+              </div>
+              <canvas class="snow" #noise aria-hidden="true"></canvas>
+              <div class="scanlines" aria-hidden="true"></div>
+              <div class="osd" aria-hidden="true">
+                <span class="osd-ch">CH {{ pad(channel() + 1) }}</span>
+                <span class="osd-name">{{ current.name }}</span>
+              </div>
+              <div class="osd-hint" aria-hidden="true"><span>▶</span> Open case</div>
+            </div>
+            <div class="afterglow" aria-hidden="true"></div>
+            <div class="glass" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="badge" aria-hidden="true">Nova<span>vision</span></p>
+
+          <div class="dial-wrap">
+            <div
+              #dial
+              class="dial"
+              role="slider"
+              tabindex="0"
+              aria-label="Channel dial"
+              aria-valuemin="1"
+              [attr.aria-valuemax]="projects().length"
+              [attr.aria-valuenow]="channel() + 1"
+              [attr.aria-valuetext]="'Channel ' + (channel() + 1) + ', ' + current.name"
+              [style.--n]="projects().length"
+              (keydown)="onDialKey($event)"
+            >
+              <span class="dial-ring" aria-hidden="true"></span>
+              @for (project of projects(); track project.name; let i = $index) {
+                <span
+                  class="dial-num"
+                  aria-hidden="true"
+                  [class.is-current]="i === channel()"
+                  [style.--a]="i * step() + 'deg'"
+                >{{ i + 1 }}</span>
+              }
+              <span class="knob-shadow" aria-hidden="true"></span>
+              <span class="knob" #knob aria-hidden="true">
+                <span class="knob-cap"></span>
+                <span class="knob-mark"></span>
+              </span>
+              <span class="knob-light" aria-hidden="true"></span>
+            </div>
+            <span class="engraved">Channel</span>
+          </div>
+
+          <div class="grille" aria-hidden="true"></div>
+
+          <div class="power-wrap">
+            <span class="led" aria-hidden="true"></span>
+            <button type="button" class="power" [attr.aria-pressed]="powered()" aria-label="Power" (click)="togglePower()">
+              <span class="power-icon" aria-hidden="true"></span>
+            </button>
+            <span class="engraved">Power</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="legs" aria-hidden="true"><span></span><span></span></div>
+    </div>
+    <div class="floor-shadow" aria-hidden="true"></div>
+  </div>
+
+  <aside class="guide" aria-label="Channel guide">
+    <header class="guide-head">
+      <p class="guide-kicker">Tonight's listings</p>
+      <h3 class="guide-title">Channel guide</h3>
+    </header>
+    <ol class="guide-list">
+      @for (project of projects(); track project.name; let i = $index) {
+        <li>
+          <button
+            type="button"
+            class="slot"
+            [class.is-current]="i === channel()"
+            [attr.aria-current]="i === channel() ? 'true' : null"
+            [style.--slot-accent]="project.accent"
+            (click)="tune(i)"
+          >
+            <span class="slot-ch">{{ pad(i + 1) }}</span>
+            <span class="slot-text">
+              <span class="slot-name">{{ project.name }}</span>
+              <span class="slot-tag">{{ project.tagline }}</span>
+            </span>
+            <span class="slot-air" aria-hidden="true">On air</span>
+          </button>
+        </li>
+      }
+    </ol>
+    <div class="guide-now">
+      <p class="now-meta">
+        @for (kind of current.kinds; track kind) {
+          <span class="now-kind">{{ kindLabel(kind) }}</span>
+        }
+        @if (current.status) {
+          <span class="now-kind is-status">{{ current.status }}</span>
+        }
+      </p>
+      <button type="button" class="open" (click)="openShowing()">
+        Open case <span aria-hidden="true">↗</span>
+      </button>
+    </div>
+  </aside>
+
+  <p class="visually-hidden" aria-live="polite">{{ announcement() }}</p>
+</div>

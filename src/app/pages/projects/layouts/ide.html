@@ -1,0 +1,388 @@
+@let cur = current();
+@let d = doc();
+<div
+  class="ide"
+  role="region"
+  aria-label="Side projects code editor — open a file, or press Control K to search"
+  tabindex="-1"
+  [class.is-booted]="booted()"
+  [class.is-terminal-open]="terminalOpen()"
+  [style.--ide-accent]="cur?.project?.accent ?? '#78bbb5'"
+  (keydown)="onKey($event)"
+>
+  <div class="ide-glow" aria-hidden="true"></div>
+
+  <!-- Title bar -->
+  <header class="titlebar">
+    <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+    <button type="button" class="command-center" (click)="openPalette()" aria-label="Search files">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.25" /><path d="m10.2 10.2 3.3 3.3" /></svg>
+      <span class="cc-title">
+        @if (cur) {
+          <span class="cc-file">{{ cur.file }} — </span>
+        }
+        side-projects — novahoangdev
+      </span>
+      <kbd class="cc-kbd" aria-hidden="true">⌘K</kbd>
+    </button>
+    <span class="titlebar-end" aria-hidden="true"></span>
+  </header>
+
+  <div class="body">
+    <!-- Activity bar -->
+    <nav class="activity" aria-label="Editor views">
+      <span class="act is-active" aria-hidden="true" title="Explorer">
+        <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7z" /><path d="M14 3v4h4" /><path d="M9 21h8a2 2 0 0 0 2-2V9" opacity=".5" /></svg>
+      </span>
+      <button type="button" class="act" (click)="openPalette()" aria-label="Search files" title="Search (⌘K)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="m15 15 5 5" /></svg>
+      </button>
+      <span class="act" aria-hidden="true" title="Source control">
+        <svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2" /><circle cx="6" cy="19" r="2" /><circle cx="18" cy="8" r="2" /><path d="M6 7v10M18 10c0 4-6 3-11.2 7.4" /></svg>
+      </span>
+      <span class="act" aria-hidden="true" title="Extensions">
+        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="6" height="6" rx="1" /><rect x="10" y="10" width="6" height="6" rx="1" /><rect x="4" y="16" width="6" height="4" rx="1" opacity="0" /><rect x="14" y="3" width="6" height="6" rx="1" transform="rotate(12 17 6)" /><rect x="4" y="16" width="12" height="0" /></svg>
+      </span>
+      <span class="act act-bottom" aria-hidden="true" title="Account">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5" /><path d="M5 20c1.4-3.5 4-5 7-5s5.6 1.5 7 5" /></svg>
+      </span>
+    </nav>
+
+    <!-- Explorer -->
+    <aside class="explorer" aria-label="Explorer" (keydown)="onExplorerKey($event)">
+      <p class="pane-title">Explorer</p>
+      <p class="root-row" aria-hidden="true"><span class="chev is-open"></span>side-projects</p>
+      <ul class="tree" role="list">
+        @for (folder of folders(); track folder.kind; let fi = $index) {
+          @let isOpen = !collapsed().has(folder.kind);
+          <li class="folder" [style.--fi]="fi">
+            <button
+              type="button"
+              class="tree-row folder-row"
+              [attr.aria-expanded]="isOpen"
+              [attr.aria-label]="folder.label + ' folder, ' + folder.files.length + ' files'"
+              (click)="toggleFolder(folder.kind)"
+            >
+              <span class="chev" [class.is-open]="isOpen" aria-hidden="true"></span>
+              <svg class="folder-icon" viewBox="0 0 16 16" aria-hidden="true">
+                @if (isOpen) {
+                  <path d="M1.5 4.5v8h11l2-5.5h-11l-2 5.5" />
+                  <path d="M1.5 12.5v-9h4l1.5 1.5h5v2" />
+                } @else {
+                  <path d="M1.5 3.5h4l1.5 1.5h7.5v7.5h-13z" />
+                }
+              </svg>
+              <span>{{ folder.kind }}</span>
+              <span class="count" aria-hidden="true">{{ folder.files.length }}</span>
+            </button>
+            <div class="folder-files" [class.is-open]="isOpen">
+              <ul role="list">
+                @for (f of folder.files; track f.index; let i = $index) {
+                  <li [style.--i]="i">
+                    <button
+                      type="button"
+                      class="tree-row file-row"
+                      [class.is-active]="f.index === active()"
+                      [class.is-open-tab]="tabs().includes(f.index)"
+                      [attr.aria-current]="f.index === active() ? 'true' : null"
+                      [attr.tabindex]="isOpen ? 0 : -1"
+                      [style.--file-accent]="f.project.accent"
+                      (click)="open(f.index)"
+                    >
+                      <span class="md-icon" aria-hidden="true">M↓</span>
+                      <span class="file-name">{{ f.file }}</span>
+                      @if (f.project.status) {
+                        <span class="file-status" [title]="f.project.status">
+                          <span class="visually-hidden">— {{ f.project.status }}</span>
+                        </span>
+                      }
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          </li>
+        }
+      </ul>
+      <p class="explorer-foot" aria-hidden="true">
+        <span class="chev"></span>Outline
+        @if (cur) {
+          <span class="outline-name"># {{ cur.project.name }}</span>
+        }
+      </p>
+    </aside>
+
+    <!-- Mobile: the explorer as a strip of files -->
+    <div class="file-strip" role="list" aria-label="Files">
+      @for (f of files(); track f.index) {
+        <div role="listitem">
+          <button
+            type="button"
+            class="strip-file"
+            [class.is-active]="f.index === active()"
+            [attr.aria-pressed]="f.index === active()"
+            [style.--file-accent]="f.project.accent"
+            (click)="open(f.index)"
+          >
+            <span class="md-icon" aria-hidden="true">M↓</span>{{ f.file }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Editor -->
+    <section class="editor" aria-label="Editor">
+      <div class="tabs" role="tablist" aria-label="Open files">
+        @for (index of tabs(); track index) {
+          <div class="tab" [class.is-active]="index === active()" [style.--file-accent]="files()[index].project.accent" (auxclick)="onTabAux(index, $event)">
+            <button
+              type="button"
+              class="tab-label"
+              role="tab"
+              [attr.aria-selected]="index === active()"
+              (click)="open(index)"
+            >
+              <span class="md-icon" aria-hidden="true">M↓</span>{{ fileOf(index) }}
+            </button>
+            <button type="button" class="tab-close" [attr.aria-label]="'Close ' + fileOf(index)" (click)="closeTab(index, $event)">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 4.5 7 7m0-7-7 7" /></svg>
+            </button>
+          </div>
+        }
+        <span class="tabs-fill" aria-hidden="true"></span>
+      </div>
+
+      @if (cur && d) {
+        <p class="crumbs" aria-hidden="true">
+          side-projects<span>›</span>{{ cur.project.kinds[0] }}<span>›</span><b>{{ cur.file }}</b><span>›</span># {{ cur.project.name }}
+        </p>
+        <div class="code-wrap" role="document" [attr.aria-label]="cur.file + ' — ' + cur.project.name + ' README'">
+          <div class="code" [class.is-typing]="typing()" aria-hidden="true">
+            @for (line of d.lines; track $index; let li = $index) {
+              @if (line.start <= typed()) {
+                <div class="ln" [class.is-current]="li === caret().line" (click)="setCaret(li)">
+                  <span class="ln-no">{{ li + 1 }}</span>
+                  <span class="ln-code">
+                    @for (tok of line.tokens; track $index) {
+                      @if (tok.start < typed()) {
+                        @if (tok.swatch) {
+                          <i class="swatch" [style.background]="tok.swatch"></i>
+                        }
+                        @if (tok.href && !typing()) {
+                          <a class="t-u" [href]="tok.href" target="_blank" rel="noopener noreferrer" tabindex="-1">{{ tok.text }}</a>
+                        } @else {
+                          <span [class]="'t-' + tok.cls">{{ visibleText(tok) }}</span>
+                        }
+                      }
+                    }
+                    @if (li === caret().line) {
+                      <span class="caret"></span>
+                    }
+                  </span>
+                </div>
+              }
+            }
+          </div>
+          <!-- Accessible copy of the README (the visual one is decorative while it types). -->
+          <div class="visually-hidden">
+            <h3>{{ cur.project.name }}</h3>
+            <p>{{ cur.project.tagline }}</p>
+            <p>{{ cur.project.summary }}</p>
+            <p>Technologies: {{ cur.project.technologies.join(', ') }}</p>
+            @if (cur.project.liveUrl) {
+              <a [href]="cur.project.liveUrl" target="_blank" rel="noopener noreferrer">Live site</a>
+            }
+            @if (cur.project.demoUrl) {
+              <a [href]="cur.project.demoUrl" target="_blank" rel="noopener noreferrer">Watch demo</a>
+            }
+            @if (cur.project.repoUrl) {
+              <a [href]="cur.project.repoUrl" target="_blank" rel="noopener noreferrer">GitHub</a>
+            }
+          </div>
+          <div class="minimap" aria-hidden="true">
+            @for (line of d.lines; track $index; let li = $index) {
+              <div class="mm-line" [class.is-shown]="line.start <= typed()">
+                @for (tok of line.tokens; track $index) {
+                  <i [class]="'mm-' + tok.cls" [style.width.px]="Math.min(tok.text.length, 60) * 1.1"></i>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="welcome">
+          <svg class="welcome-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M24 18 10 32l14 14M40 18l14 14-14 14M35 14l-6 36" /></svg>
+          <p class="welcome-title">No file open</p>
+          <button type="button" class="welcome-row" (click)="openPalette()">Go to file <kbd>⌘K</kbd></button>
+          <button type="button" class="welcome-row" (click)="open(0)">Open {{ fileOf(0) }} <kbd>↵</kbd></button>
+        </div>
+      }
+    </section>
+
+    <!-- Preview -->
+    <section class="preview" aria-label="Preview">
+      <div class="preview-head">
+        <span class="preview-tab">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.2" /><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8Z" /></svg>
+          Preview
+          @if (cur) {
+            <span class="preview-file">{{ cur.slug }}</span>
+          }
+        </span>
+        <button type="button" class="open-btn" [disabled]="!cur" (click)="openPreview()">
+          Open preview <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+      @if (cur) {
+        <div class="urlbar" aria-hidden="true">
+          <span class="url-dots"><i></i><i></i></span>
+          <span class="url">{{ cur.project.liveUrl ?? cur.project.repoUrl ?? cur.file }}</span>
+          @for (n of [loading()]; track n) {
+            <span class="url-load"></span>
+          }
+        </div>
+        @for (f of [cur]; track f.index) {
+          <div class="preview-stage" [attr.data-project]="f.index">
+            <button type="button" class="preview-frame" [attr.aria-label]="'Open ' + f.project.name + ' case study'" (click)="openPreview()">
+              <app-project-media [project]="f.project" [play]="onScreen() ? 'on' : 'off'" />
+              <span class="preview-hint" aria-hidden="true">Open case <span>↗</span></span>
+            </button>
+          </div>
+        }
+        <p class="preview-meta">
+          @for (kind of cur.project.kinds; track kind) {
+            <span class="chip">{{ kindLabel(kind) }}</span>
+          }
+          @if (cur.project.status) {
+            <span class="chip is-status">{{ cur.project.status }}</span>
+          }
+          <span class="preview-count">{{ pad(cur.index + 1) }} / {{ pad(files().length) }}</span>
+        </p>
+      } @else {
+        <div class="preview-empty">Open a file to preview it</div>
+      }
+    </section>
+
+    <!-- Terminal -->
+    <section class="terminal" aria-label="Terminal">
+      <div class="term-head">
+        <span class="term-tab">Terminal</span>
+        <span class="term-shell" aria-hidden="true">zsh</span>
+        <button
+          type="button"
+          class="term-toggle"
+          [attr.aria-expanded]="terminalOpen()"
+          [attr.aria-label]="terminalOpen() ? 'Collapse terminal' : 'Expand terminal'"
+          (click)="toggleTerminal()"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 10 4-4 4 4" /></svg>
+        </button>
+      </div>
+      <div class="term-collapse" [class.is-open]="terminalOpen()">
+        <div class="term-clip">
+        <div class="term-body" #termBody>
+          @for (s of sessions(); track s.id; let last = $last) {
+            <div class="term-session" [class.is-old]="!last">
+              <p class="term-line">
+                <span class="prompt">➜&nbsp;&nbsp;</span><span class="cwd">side-projects&nbsp;</span><span class="git">git:(<b>main</b>)&nbsp;</span>{{ s.command.slice(0, s.typed) }}@if (last && s.typed < s.command.length) {<span class="term-caret"></span>}
+              </p>
+              @for (o of s.out.slice(0, s.shown); track $index) {
+                <p class="term-line term-out">
+                  <span class="arrow">▶</span>
+                  <span class="label">{{ o.label }}</span>
+                  @if (o.href) {
+                    <a [href]="o.href" target="_blank" rel="noopener noreferrer" [attr.tabindex]="terminalOpen() ? 0 : -1">{{ o.value }}</a>
+                  } @else {
+                    <span class="value">{{ o.value }}</span>
+                  }
+                </p>
+              }
+            </div>
+          }
+          @if (sessions().length) {
+            @let lastSession = sessions()[sessions().length - 1];
+            @if (lastSession.shown === lastSession.out.length) {
+              <p class="term-line">
+                <span class="prompt">➜&nbsp;&nbsp;</span><span class="cwd">side-projects&nbsp;</span><span class="git">git:(<b>main</b>)&nbsp;</span><span class="term-caret is-idle"></span>
+              </p>
+            }
+          }
+        </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Status bar -->
+  <footer class="statusbar" aria-label="Status bar">
+    <span class="sb-item">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="3.5" r="1.5" /><circle cx="4.5" cy="12.5" r="1.5" /><circle cx="11.5" cy="5.5" r="1.5" /><path d="M4.5 5v6M11.5 7c0 3-4.5 2.5-6.6 4.6" /></svg>
+      main
+    </span>
+    <span class="sb-spacer"></span>
+    @if (cur) {
+      <span class="sb-item">Ln {{ caret().line + 1 }}, Col {{ caret().col }}</span>
+      <span class="sb-item sb-wide">Spaces: 2</span>
+      <span class="sb-item sb-wide">UTF-8</span>
+      <span class="sb-item">Markdown</span>
+      <span class="sb-item"><i class="sb-dot" aria-hidden="true"></i>{{ cur.project.accent }}</span>
+    }
+  </footer>
+
+  <!-- Command palette -->
+  @if (paletteOpen()) {
+    <div class="palette-scrim" (click)="closePalette()" aria-hidden="true"></div>
+    <div class="palette" role="dialog" aria-label="Go to file">
+      <div class="palette-field">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.25" /><path d="m10.2 10.2 3.3 3.3" /></svg>
+        <input
+          #paletteInput
+          type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="true"
+          aria-controls="ide-palette-list"
+          [attr.aria-activedescendant]="hits()[cursor()] ? 'ide-opt-' + hits()[cursor()].index : null"
+          placeholder="Search files by name"
+          autocomplete="off"
+          spellcheck="false"
+          [value]="query()"
+          (input)="onQuery($any($event.target).value)"
+          (keydown)="onPaletteKey($event)"
+        />
+      </div>
+      <ul class="palette-list" id="ide-palette-list" role="listbox" aria-label="Files">
+        @for (hit of hits(); track hit.index; let i = $index) {
+          @let p = files()[hit.index].project;
+          <li
+            class="palette-item"
+            role="option"
+            [id]="'ide-opt-' + hit.index"
+            [attr.aria-selected]="i === cursor()"
+            [class.is-cursor]="i === cursor()"
+            [style.--file-accent]="p.accent"
+            [style.--i]="i"
+            (mousemove)="cursor.set(i)"
+            (mousedown)="$event.preventDefault()"
+            (click)="pick(hit.index)"
+          >
+            <span class="md-icon" aria-hidden="true">M↓</span>
+            <span class="pi-name">
+              @for (part of hit.parts; track $index) {
+                @if (part.hit) {
+                  <mark>{{ part.text }}</mark>
+                } @else {
+                  <span>{{ part.text }}</span>
+                }
+              }
+            </span>
+            <span class="pi-path">{{ p.name }} · {{ p.kinds.join(', ') }}</span>
+          </li>
+        } @empty {
+          <li class="palette-empty" role="presentation">No matching files</li>
+        }
+      </ul>
+      <p class="palette-foot" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> open <kbd>esc</kbd> close</p>
+    </div>
+  }
+</div>

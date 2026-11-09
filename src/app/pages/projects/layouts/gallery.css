@@ -1,0 +1,896 @@
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #78bbb5;
+}
+
+:host {
+  --glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --warm: 255, 224, 176;
+  --cream: #efe6d6;
+  display: block;
+}
+
+/* ============ Shared: framed piece + museum plaque ============ */
+
+.frame {
+  --fw: 0.56;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  padding: 0;
+  width: calc(var(--u) * var(--fw));
+}
+
+.frame.is-wide {
+  --fw: 0.72;
+}
+
+.moulding {
+  background:
+    linear-gradient(135deg, #5d431b 0%, #c9a557 14%, #f7e5a4 24%, #a6823c 40%, #e9cf88 58%, #7a5a25 76%, #d3b062 92%, #6b4e20 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 244, 210, 0.45),
+    inset 0 0 0 calc(var(--u) * 0.007) rgba(90, 64, 24, 0.55),
+    0 calc(var(--u) * 0.045) calc(var(--u) * 0.07) calc(var(--u) * -0.015) rgba(0, 0, 0, 0.85),
+    0 calc(var(--u) * 0.008) calc(var(--u) * 0.018) rgba(0, 0, 0, 0.55);
+  display: block;
+  padding: calc(var(--u) * 0.024);
+  position: relative;
+  transition:
+    transform 700ms var(--spring),
+    box-shadow 700ms var(--glide),
+    outline-color 300ms ease;
+}
+
+.frame.is-ebony .moulding {
+  background:
+    linear-gradient(135deg, #050506 0%, #2b2a2c 22%, #0c0c0e 46%, #1f1e21 70%, #070708 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 0 0 calc(var(--u) * 0.0045) #050506,
+    inset 0 0 0 calc(var(--u) * 0.0065) rgba(214, 178, 98, 0.75),
+    0 calc(var(--u) * 0.045) calc(var(--u) * 0.07) calc(var(--u) * -0.015) rgba(0, 0, 0, 0.85),
+    0 calc(var(--u) * 0.008) calc(var(--u) * 0.018) rgba(0, 0, 0, 0.55);
+}
+
+.mat {
+  background: linear-gradient(to bottom, #f4efe3 0%, #e6dfcf 55%, #d8cfbc 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.006) calc(var(--u) * 0.01) rgba(0, 0, 0, 0.32),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  display: block;
+  padding: calc(var(--u) * 0.048);
+}
+
+.art {
+  aspect-ratio: 4 / 3;
+  background: #0c171d;
+  box-shadow:
+    0 0 0 calc(var(--u) * 0.003) #fbf8ef,
+    0 0 0 calc(var(--u) * 0.0045) rgba(0, 0, 0, 0.12);
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
+.frame.is-wide .art {
+  aspect-ratio: 16 / 10;
+}
+
+.glass {
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.16) 47%, rgba(255, 255, 255, 0.04) 52%, transparent 60%) 120% 0 / 260% 100% no-repeat,
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.07), transparent 38%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: background-position 1200ms var(--glide);
+}
+
+.view-chip {
+  align-items: center;
+  background: rgba(8, 13, 16, 0.82);
+  border: 1px solid rgba(var(--warm), 0.28);
+  border-radius: 999px;
+  color: var(--cream);
+  display: inline-flex;
+  font-size: max(0.6rem, calc(var(--u) * 0.0125));
+  font-weight: 800;
+  gap: 0.4em;
+  left: 50%;
+  letter-spacing: 0.14em;
+  opacity: 0;
+  padding: 0.55em 1.1em;
+  position: absolute;
+  text-transform: uppercase;
+  top: calc(100% + var(--u) * 0.022);
+  transform: translate(-50%, -0.6em);
+  transition:
+    opacity 400ms var(--glide),
+    transform 600ms var(--spring);
+  white-space: nowrap;
+}
+
+.view-chip span {
+  color: var(--accent);
+}
+
+.frame:hover .moulding,
+.frame:focus-visible .moulding {
+  transform: scale(1.015);
+}
+
+.frame:hover .glass,
+.frame:focus-visible .glass {
+  background-position: -30% 0, 0 0;
+}
+
+.frame:hover .view-chip,
+.frame:focus-visible .view-chip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.frame:focus-visible {
+  outline: none;
+}
+
+.frame:focus-visible .moulding {
+  outline: calc(var(--u) * 0.004 + 1px) solid var(--accent);
+  outline-offset: calc(var(--u) * 0.016);
+}
+
+.frame:active .moulding {
+  transform: scale(0.99);
+  transition-duration: 120ms;
+}
+
+.plaque {
+  background: linear-gradient(to bottom, #f1ebdf, #ddd5c3);
+  border-radius: 2px;
+  box-shadow:
+    0 calc(var(--u) * 0.01) calc(var(--u) * 0.02) rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  color: #1c262b;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.006);
+  padding: calc(var(--u) * 0.017);
+  text-align: left;
+  width: calc(var(--u) * 0.19);
+}
+
+.plaque-no {
+  color: #7a6a4c;
+  font-size: calc(var(--u) * 0.0105);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.plaque-name {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: calc(var(--u) * 0.026);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.plaque-tag {
+  color: #3d4a50;
+  font-size: calc(var(--u) * 0.0118);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.plaque-kinds {
+  border-top: 1px solid rgba(28, 38, 43, 0.18);
+  color: #5b6468;
+  font-size: calc(var(--u) * 0.0098);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin-top: calc(var(--u) * 0.004);
+  padding-top: calc(var(--u) * 0.008);
+  text-transform: uppercase;
+}
+
+.plaque-kinds em {
+  color: #8a6a2f;
+  font-style: normal;
+}
+
+.end-kicker,
+.intro-kicker {
+  color: rgba(var(--warm), 0.7);
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.end-title,
+.intro-title {
+  color: #f6eee0;
+  font-family: 'DM Serif Display', Georgia, serif;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.end-link {
+  align-items: center;
+  border: 1px solid rgba(var(--warm), 0.45);
+  border-radius: 999px;
+  color: #f6eee0;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 0.5em;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background 400ms var(--glide),
+    color 400ms var(--glide),
+    transform 500ms var(--spring);
+}
+
+.end-link span {
+  display: inline-block;
+  transition: transform 500ms var(--spring);
+}
+
+.end-link:hover,
+.end-link:focus-visible {
+  background: #f6eee0;
+  color: #10181c;
+  transform: translateY(-2px);
+}
+
+.end-link:hover span,
+.end-link:focus-visible span {
+  transform: translate(2px, -2px);
+}
+
+.end-link:focus-visible {
+  outline: 2px solid rgba(var(--warm), 0.9);
+  outline-offset: 4px;
+}
+
+/* ============ The hall (3D) ============ */
+
+.hall {
+  --door: 0;
+  height: calc(100dvh - 4.5rem + (var(--n) + 1) * 72vh);
+  margin-left: calc(50% - 50vw);
+  position: relative;
+  width: 100vw;
+}
+
+.stage {
+  --u: 800px;
+  background: #05090b;
+  clip-path: inset(calc(var(--door) * 7%) calc(var(--door) * 9%) round calc(var(--door) * 2.4rem));
+  height: calc(100dvh - 4.5rem);
+  min-height: 30rem;
+  overflow: clip;
+  position: sticky;
+  top: 4.5rem;
+}
+
+.viewport {
+  inset: 0;
+  perspective: 640px;
+  perspective-origin: 50% 50%;
+  position: absolute;
+}
+
+.world {
+  pointer-events: none;
+  height: 0;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform-style: preserve-3d;
+  width: 0;
+  will-change: transform;
+}
+
+.bay {
+  transform-style: preserve-3d;
+}
+
+.plane {
+  backface-visibility: hidden;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.wall {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0 2px, rgba(255, 255, 255, 0.025) 2px 3px, transparent 3px),
+    linear-gradient(
+      to bottom,
+      transparent 11.6%,
+      rgba(var(--warm), 0.08) 11.6% 11.9%,
+      rgba(0, 0, 0, 0.35) 11.9% 12.3%,
+      transparent 12.3%
+    ),
+    linear-gradient(
+      to bottom,
+      #070d10 0%,
+      #0f1d23 14%,
+      #13252c 48%,
+      #11222a 86%,
+      #0c181d 92.4%,
+      rgba(var(--warm), 0.1) 92.4% 92.7%,
+      #05090b 92.7%,
+      #091216 100%
+    );
+}
+
+.floor {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.65), transparent 14%, transparent 86%, rgba(0, 0, 0, 0.65)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px calc(var(--u) * 0.11)),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px calc(var(--u) * 0.47)),
+    rgba(10, 16, 19, 0.72);
+}
+
+.ceiling {
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(var(--u) * 0.31),
+      rgba(255, 255, 255, 0.07) calc(var(--u) * 0.31) calc(var(--u) * 0.33),
+      transparent calc(var(--u) * 0.33) calc(100% - var(--u) * 0.33),
+      rgba(255, 255, 255, 0.07) calc(100% - var(--u) * 0.33) calc(100% - var(--u) * 0.31),
+      transparent calc(100% - var(--u) * 0.31)
+    ),
+    linear-gradient(90deg, #020405, #070c0f 30%, #070c0f 70%, #020405);
+}
+
+.runner {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 4%,
+      rgba(214, 178, 98, 0.32) 4% 5%,
+      transparent 5% 95%,
+      rgba(214, 178, 98, 0.32) 95% 96%,
+      transparent 96%
+    ),
+    linear-gradient(to bottom, rgba(18, 44, 46, 0.25), rgba(16, 40, 42, 0.7) 30%, rgba(16, 40, 42, 0.7));
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.02);
+  justify-content: center;
+  padding: 0 calc(var(--u) * 0.05);
+}
+
+.intro-kicker {
+  font-size: calc(var(--u) * 0.022);
+}
+
+.intro-title {
+  font-size: calc(var(--u) * 0.12);
+}
+
+.intro-sub {
+  color: rgba(239, 230, 214, 0.6);
+  font-size: calc(var(--u) * 0.024);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Light: ceiling can, the beam in the air, the pool on the floor. */
+.lamp {
+  background: radial-gradient(circle, #fff8ea 0 16%, rgba(var(--warm), 0.55) 28%, rgba(var(--warm), 0.12) 48%, transparent 70%);
+  opacity: 0.7;
+  transition: opacity 900ms var(--glide);
+}
+
+.shaft {
+  background: linear-gradient(to bottom, rgba(var(--warm), 0.16), rgba(var(--warm), 0.05) 45%, transparent 85%);
+  clip-path: polygon(47% 0, 53% 0, 100% 46%, 100% 100%, 62% 100%);
+  opacity: 0.45;
+  transition: opacity 1200ms var(--glide);
+}
+
+.pool {
+  background: radial-gradient(closest-side, rgba(var(--warm), 0.3), rgba(var(--warm), 0.08) 55%, transparent);
+  opacity: 0.6;
+  transition: opacity 1200ms var(--glide);
+}
+
+.lamp.is-on,
+.shaft.is-on,
+.pool.is-on {
+  opacity: 1;
+}
+
+.reflection {
+  height: 0;
+  opacity: 0.3;
+  width: 0;
+}
+
+.reflection img {
+  background: #b7ad98;
+  border: calc(var(--u) * 0.024) solid #8c6c30;
+  box-sizing: border-box;
+  display: block;
+  filter: blur(1.5px);
+  height: calc(var(--u) * 0.456);
+  left: 0;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 75%);
+  mask-image: linear-gradient(to top, #000, transparent 75%);
+  object-fit: cover;
+  padding: calc(var(--u) * 0.048);
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -50%);
+  width: calc(var(--u) * 0.56);
+}
+
+.reflection.is-ebony img {
+  border-color: #141416;
+}
+
+.reflection.is-wide img {
+  height: calc(var(--u) * 0.534);
+  width: calc(var(--u) * 0.72);
+}
+
+/* An exhibit: wall wash + frame + plaque, flat on its wall. */
+.exhibit,
+.end-wall {
+  pointer-events: auto;
+}
+
+.exhibit {
+  --half: 0.28;
+  /* Forces one render surface: frame, mat, video and plaque are drawn as a single plane. */
+  isolation: isolate;
+  opacity: 0.999;
+  height: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
+}
+
+.exhibit:has(.is-wide) {
+  --half: 0.36;
+}
+
+.exhibit .frame {
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+
+.exhibit .frame .art {
+  filter: brightness(0.62) saturate(0.8);
+  transition: filter 1100ms var(--glide);
+}
+
+.exhibit.is-on .frame .art {
+  filter: none;
+}
+
+.wash {
+  background:
+    radial-gradient(42% 46% at 50% 54%, rgba(var(--warm), 0.24), rgba(var(--warm), 0.08) 55%, transparent 75%),
+    radial-gradient(20% 30% at 50% 0%, rgba(var(--warm), 0.22), transparent 70%);
+  height: calc(var(--u) * 1.03);
+  left: calc(var(--u) * -0.62);
+  opacity: 0.45;
+  pointer-events: none;
+  position: absolute;
+  top: calc(var(--u) * -0.59);
+  transition: opacity 1200ms var(--glide);
+  width: calc(var(--u) * 1.24);
+}
+
+.exhibit.is-on .wash {
+  opacity: 1;
+}
+
+.exhibit .plaque {
+  position: absolute;
+  top: calc(var(--u) * 0.02);
+}
+
+.exhibit.is-left .plaque {
+  right: calc(var(--u) * (var(--half) + 0.05));
+}
+
+.exhibit:not(.is-left) .plaque {
+  left: calc(var(--u) * (var(--half) + 0.05));
+}
+
+.end-wall {
+  align-items: center;
+  background:
+    radial-gradient(34% 62% at 50% 30%, rgba(var(--warm), 0.2), rgba(var(--warm), 0.05) 60%, transparent 75%),
+    radial-gradient(12% 20% at 50% 0%, rgba(var(--warm), 0.3), transparent 70%),
+    linear-gradient(to bottom, #070d10 0%, #11222a 30%, #13252c 60%, #0c181d 92.4%, #05090b 92.7%);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.025);
+  justify-content: center;
+  text-align: center;
+}
+
+.end-wall .end-kicker {
+  font-size: calc(var(--u) * 0.016);
+}
+
+.end-wall::before {
+  border: 1px solid rgba(214, 178, 98, 0.28);
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.008) transparent, inset 0 0 0 calc(var(--u) * 0.009) rgba(214, 178, 98, 0.16);
+  content: '';
+  inset: 16% 22% 22%;
+  position: absolute;
+}
+
+.end-wall .end-title {
+  font-size: calc(var(--u) * 0.11);
+}
+
+.end-wall .end-link {
+  font-size: calc(var(--u) * 0.016);
+  margin-top: calc(var(--u) * 0.02);
+  padding: 1em 1.8em;
+}
+
+.vignette {
+  background:
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.6) 100%),
+    linear-gradient(to bottom, rgba(5, 9, 11, 0.5), transparent 18%, transparent 70%, rgba(5, 9, 11, 0.85));
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* ---------- HUD ---------- */
+
+.hud {
+  bottom: 0;
+  color: var(--cream);
+  left: 0;
+  padding: clamp(1.2rem, 3vw, 2.2rem) max(1.5rem, calc((100vw - 88rem) / 2 + 4rem));
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.hud-info {
+  display: grid;
+  min-height: 6.4rem;
+}
+
+.hud-swap {
+  align-self: end;
+  animation: hud-in 900ms var(--glide) both;
+  grid-area: 1 / 1;
+}
+
+@keyframes hud-in {
+  from {
+    filter: blur(6px);
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+}
+
+.hud-meta {
+  align-items: center;
+  color: rgba(239, 230, 214, 0.6);
+  display: flex;
+  font-size: 0.66rem;
+  font-weight: 800;
+  gap: 0.7rem;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.hud-dot {
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor;
+  height: 0.45rem;
+  width: 0.45rem;
+}
+
+.hud-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin: 0.45rem 0 0.4rem;
+}
+
+.hud-tag {
+  color: rgba(239, 230, 214, 0.72);
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.hud-cta {
+  color: rgba(var(--warm), 0.9);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin-left: 0.8rem;
+  text-transform: uppercase;
+}
+
+.hud-rail {
+  background: rgba(239, 230, 214, 0.14);
+  height: 1px;
+  margin-top: 1.2rem;
+  position: relative;
+}
+
+.hud-fill {
+  background: linear-gradient(90deg, rgba(var(--warm), 0.2), rgba(var(--warm), 0.95));
+  inset: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+.hud-tick {
+  background: #05090b;
+  border: 1px solid rgba(239, 230, 214, 0.45);
+  border-radius: 50%;
+  height: 7px;
+  position: absolute;
+  top: -3px;
+  transform: translateX(-50%) scale(1);
+  transition:
+    transform 600ms var(--spring),
+    background 400ms ease,
+    border-color 400ms ease,
+    box-shadow 400ms ease;
+  width: 7px;
+}
+
+.hud-tick.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+  transform: translateX(-50%) scale(1.6);
+}
+
+.hud-hint {
+  animation: hint-bob 2.2s ease-in-out infinite;
+  color: rgba(239, 230, 214, 0.7);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  margin: 0;
+  position: absolute;
+  right: max(1.5rem, calc((100vw - 88rem) / 2 + 4rem));
+  text-transform: uppercase;
+  bottom: calc(clamp(1.2rem, 3vw, 2.2rem) + 1.4rem);
+}
+
+@keyframes hint-bob {
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* ============ The calm sequence (narrow screens / reduced motion) ============ */
+
+.sequence {
+  --u: min(152vw, 60rem);
+  background:
+    linear-gradient(to bottom, #05090b, transparent 6rem, transparent calc(100% - 6rem), #05090b),
+    linear-gradient(90deg, #0b161b, #13252c 50%, #0b161b);
+  color: var(--cream);
+  margin-left: calc(50% - 50vw);
+  padding: clamp(3rem, 10vw, 5rem) 1rem;
+  width: 100vw;
+}
+
+.seq-intro,
+.seq-end {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 0;
+  text-align: center;
+}
+
+.seq-kicker {
+  color: rgba(var(--warm), 0.7);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.seq-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(2.2rem, 9vw, 3.4rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.piece {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(5rem, 22vw, 8rem) 0 clamp(4.5rem, 16vw, 8rem);
+  position: relative;
+}
+
+.piece-lamp {
+  background: #1a1d1f;
+  border-radius: 0 0 0.6rem 0.6rem;
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.06);
+  height: 1.1rem;
+  position: absolute;
+  top: 0;
+  width: 2.4rem;
+}
+
+.piece-lamp::after {
+  background: radial-gradient(closest-side, #fff8ea, rgba(var(--warm), 0.5) 45%, transparent);
+  bottom: -0.45rem;
+  content: '';
+  height: 0.9rem;
+  left: 50%;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 1.8rem;
+}
+
+.piece-cone {
+  background: linear-gradient(to bottom, rgba(var(--warm), 0.22), rgba(var(--warm), 0.06) 60%, transparent);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  height: calc(clamp(5rem, 22vw, 8rem) + var(--u) * 0.3);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0.6rem;
+  width: calc(var(--u) * 0.72);
+}
+
+.piece-pool {
+  background: radial-gradient(closest-side, rgba(var(--warm), 0.16), transparent);
+  height: 3rem;
+  margin-top: -0.4rem;
+  opacity: 0;
+  width: calc(var(--u) * 0.6);
+}
+
+.piece .frame {
+  max-width: 100%;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.piece .art {
+  filter: brightness(0.25) saturate(0.4);
+  transition: filter 1400ms var(--glide) 120ms;
+}
+
+.piece .moulding {
+  filter: brightness(0.35);
+  transition: filter 1400ms var(--glide) 120ms;
+}
+
+.piece .plaque {
+  --u: 60rem;
+  margin-top: -1.9rem;
+  position: relative;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 900ms var(--glide) 400ms,
+    transform 900ms var(--glide) 400ms;
+  width: min(20rem, 82vw);
+}
+
+.piece.is-lit .piece-lamp::after,
+.piece.is-lit .piece-cone,
+.piece.is-lit .piece-pool {
+  animation: switch-on 1100ms steps(1, end) both;
+  opacity: 1;
+}
+
+.piece.is-lit .art,
+.piece.is-lit .moulding {
+  filter: none;
+}
+
+.piece.is-lit .plaque {
+  opacity: 1;
+  transform: none;
+}
+
+/* A spotlight that stutters on, like a warming lamp. */
+@keyframes switch-on {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  18% {
+    opacity: 0.1;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  36% {
+    opacity: 0.35;
+  }
+  48%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.seq-end {
+  padding: 3rem 0 1rem;
+}
+
+.seq-end .end-title {
+  font-size: clamp(2rem, 8vw, 3rem);
+}
+
+.seq-end .end-link {
+  font-size: 0.7rem;
+  margin-top: 0.6rem;
+  padding: 1em 1.6em;
+}
+
+@media (hover: none) {
+  .piece .view-chip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .piece .view-chip {
+    position: static;
+    margin-top: 0.9rem;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece.is-lit .piece-lamp::after,
+  .piece.is-lit .piece-cone,
+  .piece.is-lit .piece-pool {
+    animation: none;
+  }
+
+  .hud-hint {
+    animation: none;
+  }
+
+  .moulding,
+  .glass,
+  .view-chip,
+  .piece .art,
+  .piece .moulding,
+  .piece .plaque {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
+}

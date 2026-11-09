@@ -1,0 +1,159 @@
+@let list = projects();
+@let target = list[index()];
+@let shown = list[text()];
+<div
+  class="cinema"
+  #stage
+  tabindex="0"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="Project stories — arrow keys or space to skip, Enter to open"
+  [class.is-paused]="paused()"
+  [class.is-reduced]="reduced"
+  [style.--cine-accent]="target.accent"
+  [style.--story-s]="storySeconds + 's'"
+  (keydown)="onKey($event)"
+>
+  <!-- Ambient light: a heavily blurred copy of the current poster -->
+  <div class="ambient" aria-hidden="true">
+    @for (p of list; track p.name; let i = $index) {
+      <img class="ambient-img" [class.is-on]="i === index()" [src]="p.media.image" alt="" decoding="async" />
+    }
+    <div class="ambient-glow"></div>
+  </div>
+
+  <div class="frame">
+    <!-- Current story -->
+    @for (m of [media()]; track m) {
+      @let p = list[m];
+      <div class="story" [attr.data-project]="m">
+        <button type="button" class="story-hit" tabindex="-1" [attr.aria-label]="'Open ' + p.name + ' case study'" (click)="onStory()">
+          <app-project-media [project]="p" [play]="videoOn() ? 'on' : 'off'" />
+        </button>
+      </div>
+    }
+
+    <!-- Venetian blinds: the next poster sweeps in, slice by slice -->
+    @if (blinds(); as b) {
+      @for (bk of [b.key]; track bk) {
+        <div class="blinds" [class.is-done]="b.done" aria-hidden="true">
+          @for (k of slices; track k) {
+            <span
+              class="slice"
+              [style.--k]="k"
+              [style.--n]="slices.length"
+              [style.--from]="b.forward ? '-92deg' : '92deg'"
+              [style.animation-delay.ms]="sliceDelay(k, b.forward)"
+              [style.animation-duration.ms]="sliceMs"
+            >
+              <span class="slice-img" [style.background-image]="'url(' + list[b.index].media.image + ')'"></span>
+              <span class="slice-sheen" [style.animation-delay.ms]="sliceDelay(k, b.forward)"></span>
+            </span>
+          }
+        </div>
+      }
+    }
+
+    <div class="shade" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <!-- Tap zones -->
+    <button type="button" class="zone zone-prev" tabindex="-1" aria-hidden="true" (click)="onZone(-1)">
+      <span class="zone-arrow">
+        <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" /></svg>
+      </span>
+    </button>
+    <button type="button" class="zone zone-next" tabindex="-1" aria-hidden="true" (click)="onZone(1)">
+      <span class="zone-arrow">
+        <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
+      </span>
+    </button>
+
+    <!-- Top chrome: progress + index -->
+    <div class="top">
+      <div class="progress" role="group" aria-label="Stories">
+        @for (p of list; track p.name; let i = $index) {
+          <button
+            type="button"
+            class="bar chrome-btn"
+            [class.is-done]="i < index()"
+            [class.is-active]="i === index()"
+            [attr.aria-label]="'Story ' + (i + 1) + ': ' + p.name"
+            [attr.aria-current]="i === index() ? 'true' : null"
+            (click)="goTo(i)"
+          >
+            <span class="bar-track">
+              @if (i === index()) {
+                @for (e of [epoch()]; track e) {
+                  <span class="fill is-active" (animationend)="onFilled()"></span>
+                }
+              } @else {
+                <span class="fill"></span>
+              }
+            </span>
+          </button>
+        }
+      </div>
+      <div class="top-row">
+        <p class="count" aria-hidden="true">
+          @for (i of [index()]; track i) {
+            <span class="count-now">{{ pad(i + 1) }}</span>
+          }
+          <span class="count-all">/ {{ pad(list.length) }}</span>
+        </p>
+        <span class="paused-pill" [class.is-on]="heldByUser()" aria-hidden="true">
+          <i></i><i></i> Paused
+        </span>
+        @if (!reduced) {
+          <button
+            type="button"
+            class="chrome-btn pause-btn"
+            [attr.aria-label]="userPaused() ? 'Play stories' : 'Pause stories'"
+            [attr.aria-pressed]="userPaused()"
+            (click)="togglePause()"
+          >
+            @if (userPaused()) {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" class="solid" /></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13M15.5 5.5v13" /></svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Bottom: title, tagline, kinds, open -->
+    <div class="meta" [class.is-leaving]="leaving()" [attr.aria-live]="paused() ? 'polite' : 'off'">
+      @for (t of [text()]; track t) {
+        <div class="meta-swap" [style.--letters]="shown.name.length">
+          <p class="kinds">
+            @for (kind of shown.kinds; track kind) {
+              <span class="kind">{{ kindLabel(kind) }}</span>
+            }
+            @if (shown.status) {
+              <span class="kind is-status">{{ shown.status }}</span>
+            }
+          </p>
+          <h3 class="title" [attr.aria-label]="shown.name">
+            @for (word of titleWords(); track $index) {
+              <span class="word" aria-hidden="true">
+                @for (c of word; track c.i) {
+                  <span class="char" [style.--ci]="c.i">{{ c.ch }}</span>
+                }
+              </span>
+            }
+          </h3>
+          <p class="tagline">{{ shown.tagline }}</p>
+        </div>
+      }
+      <button type="button" class="open chrome-btn" (click)="openActive()">
+        <span class="open-label">Open case</span>
+        <span class="open-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8" /></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+</div>
