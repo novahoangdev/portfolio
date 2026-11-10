@@ -8,6 +8,7 @@
   [class.is-drawn]="drawn()"
   [class.is-ready]="ready()"
   [class.is-moving]="moving()"
+  [class.is-inview]="inView()"
   [style.--accent]="list[current()]?.accent"
   [style.--pos]="current()"
   [style.--count]="list.length"
@@ -16,6 +17,11 @@
   @if (!compact()) {
     <div class="map" #viewport (keydown)="onKey($event)">
       <div class="cam" #cam>
+        <!-- The river sits on its own layer: its slow ripple repaints only this sheet, not the network above. -->
+        <svg class="map-river" [attr.viewBox]="viewBox(nw)" [attr.width]="nw.w" [attr.height]="nw.h" aria-hidden="true">
+          <path class="river" [attr.d]="nw.river" />
+          <path class="river-edge" [attr.d]="nw.river" />
+        </svg>
         <svg
           class="map-svg"
           [attr.viewBox]="viewBox(nw)"
@@ -23,9 +29,6 @@
           [attr.height]="nw.h"
           aria-hidden="true"
         >
-          <path class="river" [attr.d]="nw.river" />
-          <path class="river-edge" [attr.d]="nw.river" />
-
           @for (line of nw.lines; track line.kind; let l = $index) {
             <path class="casing" [attr.d]="line.d" pathLength="1" [style.--i]="l" />
             <path class="line" [attr.d]="line.d" pathLength="1" [style.--i]="l" [style.--c]="line.color" />
@@ -75,15 +78,19 @@
             </g>
           }
 
-          @let at = nw.stations[shown()];
-          @if (at) {
-            <g class="here" [attr.transform]="'translate(' + at.x + ' ' + at.y + ')'">
-              <circle class="here-pulse" r="14" />
-              <circle class="here-pulse is-late" r="14" />
-            </g>
-          }
+        </svg>
 
-          <g class="train" #train>
+        <!-- "You are here" and the train are HTML layers over the sheet, so their motion stays on the compositor. -->
+        @let at = nw.stations[shown()];
+        @if (at) {
+          <span class="here" aria-hidden="true" [style.left.px]="at.x" [style.top.px]="at.y">
+            <span class="here-pulse"></span>
+            <span class="here-pulse is-late"></span>
+          </span>
+        }
+
+        <div class="train" #train aria-hidden="true">
+          <svg class="train-svg" viewBox="-30 -20 60 40" width="60" height="40">
             <g class="train-body">
               <rect class="train-shell" x="-19" y="-7.5" width="38" height="15" rx="7.5" />
               <rect class="train-window" x="-12.5" y="-3.4" width="5.2" height="6.8" rx="1.6" />
@@ -92,8 +99,8 @@
               <path class="train-nose" d="M10.4 -3.4 h2.6 a3.6 3.6 0 0 1 3.4 3.4 a3.6 3.6 0 0 1 -3.4 3.4 h-2.6 z" />
               <circle class="train-lamp" cx="18.4" cy="0" r="1.5" />
             </g>
-          </g>
-        </svg>
+          </svg>
+        </div>
 
         @for (station of nw.stations; track station.index) {
           @let p = list[station.index]!;

@@ -78,7 +78,7 @@ function jitter(i: number, salt: number): number {
           <span class="tear-gap"><span class="tear-peek"></span></span>
           <span class="pack-body foil" [style.clip-path]="bodyClip">
             <span class="crimp crimp-bottom"></span>
-            <span class="pack-emblem" [style.background]="emblem()">
+            <span class="pack-emblem" [style.--emblem]="emblem()">
               <span class="emblem-core">
                 <span class="emblem-star">✦</span>
                 <span class="emblem-set">S·01</span>
@@ -137,6 +137,8 @@ export class ProjectsCards {
   protected readonly front = signal(0);
   protected readonly mobile = signal(false);
   protected readonly reduced = signal(false);
+  /** Off screen: the pack's idle loops (bob, glint, emblem) and the foil shimmer pause. */
+  protected readonly offscreen = signal(false);
   protected readonly m = signal<Metrics>({
     w: 1200,
     h: 720,
@@ -259,6 +261,8 @@ export class ProjectsCards {
       measure();
       const resize = new ResizeObserver(measure);
       resize.observe(mat);
+      const io = new IntersectionObserver(([entry]) => this.offscreen.set(!entry?.isIntersecting));
+      io.observe(mat);
 
       // --- Pointer: pack tilt + card holo tilt (native, no change detection per move) ---
       let lastCard: HTMLElement | null = null;
@@ -429,6 +433,7 @@ export class ProjectsCards {
 
       cleanup = () => {
         resize.disconnect();
+        io.disconnect();
         mat.removeEventListener('pointermove', onPointerMove);
         mat.removeEventListener('pointerleave', onLeave);
         mat.removeEventListener('pointerdown', onDown);

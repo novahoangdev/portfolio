@@ -6,6 +6,7 @@
   [class]="'phase-' + phase()"
   [class.is-mobile]="mobile()"
   [class.is-reduced]="reduced()"
+  [class.is-offscreen]="offscreen()"
   [class.has-selection]="sel !== null"
   [style.height]="mobile() ? m().h + 'px' : null"
   [style.--cw]="m().cardW + 'px'"

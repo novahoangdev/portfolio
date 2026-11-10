@@ -111,6 +111,13 @@
   position: absolute;
   top: calc(50% - var(--cr) / 2);
   width: var(--cr);
+}
+
+/*
+ * Capsules get their own layers only while the physics loop runs. Resting layers clipped by
+ * the round globe cost the GPU on every frame the page draws (the marquee below never stops).
+ */
+.globe.is-rolling .ball {
   will-change: transform;
 }
 

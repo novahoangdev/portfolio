@@ -5,6 +5,7 @@
     role="group"
     aria-label="Polaroid desk — drag the prints around, press F to flip one, Enter to open it"
     [class.is-landed]="landed()"
+    [class.is-away]="!inView()"
   >
     <div class="desk-light" aria-hidden="true"></div>
     <div class="desk-stain" aria-hidden="true"></div>

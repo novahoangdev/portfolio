@@ -99,7 +99,7 @@ export class ProjectsWall {
     withViewTransition(this.document, () => {
       this.filter.set(filter);
       this.changes.detectChanges();
-    });
+    }, 'filter');
   }
 
   protected open(index: number, tile: HTMLElement): void {

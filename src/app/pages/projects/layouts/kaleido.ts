@@ -4,11 +4,13 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { SideProject } from '../../../data/projects';
@@ -21,6 +23,13 @@ const RING_R = 428;
 
 /** Magnification: the lens radius shows 1/ZOOM of the source's short side. */
 const ZOOM = 3.1;
+
+/** Frame gaps (ms): full rate while the ring moves, video cadence (~30fps) while it rests. */
+const MOVING_GAP = 15.5;
+const RESTING_GAP = 32;
+
+/** How long the mirrors take to fade out under Peek (matches `.is-peek .mandala`). */
+const PEEK_FADE = 750;
 
 interface Source {
   readonly img: HTMLImageElement;
@@ -130,12 +139,18 @@ export class ProjectsKaleido {
 
   /** Imperative hooks set up after render. */
   private turn: (dir: number) => void = () => {};
+  private onPeek: (peek: boolean) => void = () => {};
   private peekTimer = 0;
   private reopenWatch = false;
 
   constructor() {
     const view = this.document.defaultView;
     let cleanup = () => {};
+
+    effect(() => {
+      const peek = this.peek();
+      untracked(() => this.onPeek(peek));
+    });
 
     afterNextRender(() => {
       if (!view) return;
@@ -210,12 +225,15 @@ export class ProjectsKaleido {
       let tx = 0;
       let ty = 0;
       let onScreen = false;
+      let peeking = false;
+      let peekAt = 0;
       let size = 0;
       const t0 = performance.now();
 
       const playing = new Set<number>();
       const syncPlayback = () => {
-        const live = onScreen && this.document.visibilityState === 'visible' && !reduced;
+        // Under Peek the mirrors are hidden: only the plain video plays.
+        const live = onScreen && this.document.visibilityState === 'visible' && !reduced && !peeking;
         const want = new Set<number>(live ? (mix < 1 ? [from, to] : [to]) : []);
         sources.forEach((s, i) => {
           if (!s.video) return;
@@ -329,7 +347,9 @@ export class ProjectsKaleido {
       const tick = (now: number) => {
         frame = 0;
         if (!running()) return;
-        if (now - last < 15.5) {
+        // Resting (no turn, morph or pointer drift to catch up): redraw at the video's cadence.
+        const resting = mode === 'idle' && mix >= 1 && Math.abs(tx - px) < 0.002 && Math.abs(ty - py) < 0.002;
+        if (now - last < (resting ? RESTING_GAP : MOVING_GAP)) {
           frame = requestAnimationFrame(tick);
           return;
         }
@@ -363,7 +383,8 @@ export class ProjectsKaleido {
           mix = Math.min(1, (now - morphStart) / 1000);
           if (mix >= 1) syncPlayback();
         }
-        render(now);
+        // Nothing to draw once Peek has faded the mirrors out.
+        if (!peeking || now - peekAt < PEEK_FADE) render(now);
         frame = requestAnimationFrame(tick);
       };
       const start = () => {
@@ -527,6 +548,14 @@ export class ProjectsKaleido {
         start();
       };
       this.document.addEventListener('visibilitychange', onVisibility);
+      this.onPeek = (peek) => {
+        if (peek === peeking) return;
+        peeking = peek;
+        peekAt = performance.now();
+        syncPlayback();
+        start();
+      };
+      this.onPeek(this.peek());
       const ro = new ResizeObserver(resize);
       ro.observe(canvas);
 
@@ -554,6 +583,7 @@ export class ProjectsKaleido {
         ro.disconnect();
         this.document.removeEventListener('visibilitychange', onVisibility);
         this.host.removeEventListener('focusin', onFocusIn);
+        this.onPeek = () => {};
         scope.removeEventListener('pointerdown', onDown);
         scope.removeEventListener('pointermove', onMove);
         scope.removeEventListener('pointerup', onUp);

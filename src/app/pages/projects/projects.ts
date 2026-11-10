@@ -1,44 +1,25 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectorRef,
   Component,
   computed,
   DestroyRef,
   ElementRef,
   inject,
+  inputBinding,
+  outputBinding,
   signal,
+  Type,
   viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import { sideProjects } from '../../data/projects';
 import { contact } from '../../data/profile';
 import { Reveal } from '../../directives/reveal';
-import { ProjectsCanvas } from './layouts/canvas';
-import { ProjectsCinema } from './layouts/cinema';
-import { ProjectsDeck } from './layouts/deck';
-import { ProjectsDesk } from './layouts/desk';
-import { ProjectsFlashlight } from './layouts/flashlight';
-import { ProjectsGallery } from './layouts/gallery';
-import { ProjectsIde } from './layouts/ide';
-import { ProjectsIndex } from './layouts/index-list';
-import { ProjectsMagazine } from './layouts/magazine';
-import { ProjectsOrbit } from './layouts/orbit';
-import { ProjectsPit } from './layouts/pit';
+import { loadLayout } from './layouts/loaders';
 import { isLayoutId, LayoutId, layoutOptions } from './layouts/registry';
 import { kindLabel, OpenCase, pad, withViewTransition } from './layouts/shared';
-import { ProjectsStrip } from './layouts/strip';
-import { ProjectsTv } from './layouts/tv';
-import { ProjectsVinyl } from './layouts/vinyl';
-import { ProjectsWall } from './layouts/wall';
-import { ProjectsMetro } from './layouts/metro';
-import { ProjectsStars } from './layouts/stars';
-import { ProjectsDarkroom } from './layouts/darkroom';
-import { ProjectsRetro } from './layouts/retro';
-import { ProjectsType } from './layouts/type';
-import { ProjectsCards } from './layouts/cards';
-import { ProjectsKaleido } from './layouts/kaleido';
-import { ProjectsCalder } from './layouts/calder';
-import { ProjectsGacha } from './layouts/gacha';
-import { ProjectsTower } from './layouts/tower';
 import { ProjectMediaView } from './project-media';
 
 const LAYOUT_KEY = 'portfolio-projects-layout';
@@ -49,35 +30,7 @@ const LAYOUT_KEY = 'portfolio-projects-layout';
  */
 @Component({
   selector: 'app-projects',
-  imports: [
-    ProjectMediaView,
-    ProjectsCanvas,
-    ProjectsCinema,
-    ProjectsDeck,
-    ProjectsDesk,
-    ProjectsFlashlight,
-    ProjectsGallery,
-    ProjectsIde,
-    ProjectsIndex,
-    ProjectsMagazine,
-    ProjectsOrbit,
-    ProjectsPit,
-    ProjectsStrip,
-    ProjectsTv,
-    ProjectsVinyl,
-    ProjectsWall,
-    ProjectsMetro,
-    ProjectsStars,
-    ProjectsDarkroom,
-    ProjectsRetro,
-    ProjectsType,
-    ProjectsCards,
-    ProjectsKaleido,
-    ProjectsCalder,
-    ProjectsGacha,
-    ProjectsTower,
-    Reveal,
-  ],
+  imports: [ProjectMediaView, Reveal],
   templateUrl: './projects.html',
   styleUrl: './projects.css',
 })
@@ -101,11 +54,13 @@ export class Projects {
   protected readonly labOpen = signal(false);
 
   protected readonly layout = signal<LayoutId>(this.initialLayout());
+  /** The switcher shows where it is heading right away, even while that layout loads. */
+  private readonly shown = computed(() => this.pendingLayout() ?? this.layout());
   protected readonly current = computed(
-    () => this.layouts.find((l) => l.id === this.layout()) ?? this.layouts[0],
+    () => this.layouts.find((l) => l.id === this.shown()) ?? this.layouts[0],
   );
   protected readonly currentPosition = computed(
-    () => this.layouts.findIndex((l) => l.id === this.layout()) + 1,
+    () => this.layouts.findIndex((l) => l.id === this.shown()) + 1,
   );
   protected readonly technologies = [...new Set(sideProjects.flatMap((p) => p.technologies))];
 
@@ -115,11 +70,29 @@ export class Projects {
     return index === null ? null : this.projects[index];
   });
 
+  /** The layout the switcher is heading to while its chunk loads. */
+  protected readonly pendingLayout = signal<LayoutId | null>(null);
+  protected readonly mounted = signal(false);
+
   private readonly changes = inject(ChangeDetectorRef);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('caseDialog');
+  private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
+  private readonly switcher = viewChild.required<ElementRef<HTMLElement>>('switcher');
+  private switchToken = 0;
+  /** Layout videos paused while a case is open (resumed on close). */
+  private pausedVideos: HTMLVideoElement[] = [];
 
   constructor() {
+    afterNextRender(() => {
+      const layout = this.layout();
+      loadLayout(layout).then((component) => {
+        if (this.layout() !== layout || this.mounted()) return;
+        this.mount(component);
+        this.changes.detectChanges();
+        this.prefetchAround(layout);
+      });
+    });
     inject(DestroyRef).onDestroy(() =>
       this.document.documentElement.classList.remove('case-open'),
     );
@@ -127,8 +100,8 @@ export class Projects {
 
   protected cycleLayout(delta: number): void {
     const n = this.layouts.length;
-    const next = (this.currentPosition() - 1 + delta + n) % n;
-    this.setLayout(this.layouts[next].id);
+    const from = this.layouts.findIndex((l) => l.id === (this.pendingLayout() ?? this.layout()));
+    this.setLayout(this.layouts[(from + delta + n) % n].id);
   }
 
   protected chooseLayout(layout: LayoutId): void {
@@ -136,12 +109,42 @@ export class Projects {
     this.setLayout(layout);
   }
 
-  protected setLayout(layout: LayoutId): void {
-    if (layout === this.layout()) return;
-    withViewTransition(this.document, () => {
-      this.layout.set(layout);
-      this.changes.detectChanges();
+  /** Warm a layout's chunk (lab option hover / focus). */
+  protected prefetch(layout: LayoutId): void {
+    loadLayout(layout).catch(() => {
+      // Loaded again (and reported) when actually chosen.
     });
+  }
+
+  protected async setLayout(layout: LayoutId): Promise<void> {
+    if (layout === (this.pendingLayout() ?? this.layout())) return;
+    const token = ++this.switchToken;
+    this.pendingLayout.set(layout);
+    let component: Type<unknown>;
+    try {
+      component = await loadLayout(layout);
+    } catch {
+      if (token === this.switchToken) this.pendingLayout.set(null);
+      return;
+    }
+    if (token !== this.switchToken) return;
+
+    // Keep the switcher where it is on screen while the layout below changes height.
+    const anchor = this.switcher().nativeElement;
+    const before = anchor.getBoundingClientRect().top;
+    withViewTransition(
+      this.document,
+      () => {
+        this.pendingLayout.set(null);
+        this.layout.set(layout);
+        this.mount(component);
+        this.changes.detectChanges();
+        const drift = anchor.getBoundingClientRect().top - before;
+        if (Math.abs(drift) > 1) this.document.defaultView?.scrollBy({ top: drift, behavior: 'instant' });
+      },
+      'layout',
+    );
+    this.prefetchAround(layout);
     try {
       localStorage.setItem(LAYOUT_KEY, layout);
     } catch {
@@ -149,17 +152,24 @@ export class Projects {
     }
   }
 
-  protected open({ index, media }: OpenCase): void {
+  protected async open({ index, media }: OpenCase): Promise<void> {
     const dialog = this.dialog()?.nativeElement;
-    if (!dialog) return;
+    if (!dialog || dialog.open) return;
+    // Decode the case poster first so the morph lands on a picture, not an empty frame.
+    await decoded(this.projects[index].media.image, 250);
+    this.pauseLayoutVideos();
     if (media) media.style.viewTransitionName = 'case-media';
-    withViewTransition(this.document, () => {
-      if (media) media.style.viewTransitionName = '';
-      this.openIndex.set(index);
-      this.changes.detectChanges();
-      if (!dialog.open) dialog.showModal();
-      this.document.documentElement.classList.add('case-open');
-    });
+    withViewTransition(
+      this.document,
+      () => {
+        if (media) media.style.viewTransitionName = '';
+        this.openIndex.set(index);
+        this.changes.detectChanges();
+        if (!dialog.open) dialog.showModal();
+        this.document.documentElement.classList.add('case-open');
+      },
+      'case',
+    );
   }
 
   protected close(): void {
@@ -167,31 +177,44 @@ export class Projects {
     const index = this.openIndex();
     if (!dialog || index === null) return;
     const media = this.mediaInLayout(index);
-    const transition = withViewTransition(this.document, () => {
-      dialog.close();
-      this.document.documentElement.classList.remove('case-open');
-      if (media) media.style.viewTransitionName = 'case-media';
-      this.openIndex.set(null);
-      this.changes.detectChanges();
-      // After dialog.close(): closing restores focus to whatever was focused
-      // before showModal (often a <video>), so return it to the project here.
-      this.host
-        .querySelector<HTMLElement>(`.layout [data-project="${index}"] button, .layout button[data-project="${index}"]`)
-        ?.focus({ preventScroll: true });
-    });
-    const clear = () => media && (media.style.viewTransitionName = '');
-    if (transition) transition.finished.finally(clear);
-    else clear();
+    const transition = withViewTransition(
+      this.document,
+      () => {
+        dialog.close();
+        this.document.documentElement.classList.remove('case-open');
+        if (media) media.style.viewTransitionName = 'case-media';
+        this.openIndex.set(null);
+        this.changes.detectChanges();
+        // After dialog.close(): closing restores focus to whatever was focused
+        // before showModal (often a <video>), so return it to the project here.
+        this.host
+          .querySelector<HTMLElement>(`.layout [data-project="${index}"] button, .layout button[data-project="${index}"]`)
+          ?.focus({ preventScroll: true });
+      },
+      'case',
+    );
+    const done = () => {
+      if (media) media.style.viewTransitionName = '';
+      this.resumeLayoutVideos();
+    };
+    if (transition) transition.finished.finally(done);
+    else done();
   }
 
-  protected step(delta: number): void {
+  protected async step(delta: number): Promise<void> {
     const index = this.openIndex();
     if (index === null) return;
     const next = (index + delta + this.projects.length) % this.projects.length;
-    withViewTransition(this.document, () => {
-      this.openIndex.set(next);
-      this.changes.detectChanges();
-    });
+    await decoded(this.projects[next].media.image, 200);
+    if (this.openIndex() !== index) return;
+    withViewTransition(
+      this.document,
+      () => {
+        this.openIndex.set(next);
+        this.changes.detectChanges();
+      },
+      'case',
+    );
   }
 
   protected onCancel(event: Event): void {
@@ -202,6 +225,50 @@ export class Projects {
   protected onDialogClick(event: MouseEvent): void {
     // A click on the backdrop lands on the <dialog> element itself.
     if (event.target === this.dialog()?.nativeElement) this.close();
+  }
+
+  private mount(component: Type<unknown>): void {
+    const outlet = this.outlet();
+    outlet.clear();
+    outlet.createComponent(component, {
+      bindings: [
+        inputBinding('projects', () => this.projects),
+        outputBinding<OpenCase>('openCase', (event) => void this.open(event)),
+      ],
+    });
+    this.mounted.set(true);
+  }
+
+  /** Warm the neighbours so Prev / Next switch without waiting for the network. */
+  private prefetchAround(layout: LayoutId): void {
+    const view = this.document.defaultView;
+    const n = this.layouts.length;
+    const at = this.layouts.findIndex((l) => l.id === layout);
+    const warm = () => {
+      this.prefetch(this.layouts[(at + 1) % n].id);
+      this.prefetch(this.layouts[(at - 1 + n) % n].id);
+    };
+    if (view && 'requestIdleCallback' in view) view.requestIdleCallback(warm, { timeout: 3000 });
+    else setTimeout(warm, 1200);
+  }
+
+  /** The dimmed page behind the case stays still: cheaper backdrop blur, calmer eye. */
+  private pauseLayoutVideos(): void {
+    this.pausedVideos = [...this.host.querySelectorAll<HTMLVideoElement>('.layout video')].filter(
+      (video) => !video.paused,
+    );
+    this.pausedVideos.forEach((video) => video.pause());
+  }
+
+  private resumeLayoutVideos(): void {
+    for (const video of this.pausedVideos) {
+      if (video.isConnected) {
+        video.play().catch(() => {
+          // Autoplay can be blocked; the frame stays visible.
+        });
+      }
+    }
+    this.pausedVideos = [];
   }
 
   /** The media element of project `index` in the current layout (to morph back into). */
@@ -230,4 +297,14 @@ export class Projects {
     }
     return 'wall';
   }
+}
+
+/** Resolve once `src` is decoded (or after `timeout` ms, whichever comes first). */
+function decoded(src: string, timeout: number): Promise<void> {
+  const image = new Image();
+  image.src = src;
+  return Promise.race([
+    image.decode().catch(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, timeout)),
+  ]);
 }

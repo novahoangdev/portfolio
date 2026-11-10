@@ -155,12 +155,6 @@
 .lens app-project-media {
   --media-zoom: 1.18;
   --phone-tilt: -6deg;
-  filter: saturate(0.85) brightness(0.92);
-  transition: filter 600ms var(--glide);
-}
-
-.bubble.is-playing .lens app-project-media {
-  filter: none;
 }
 
 .bubble.is-active .lens app-project-media {
@@ -178,9 +172,37 @@
   position: absolute;
 }
 
-/* Thin-film colours swirling around the rim, like a soap bubble. */
+/*
+ * Resting bubbles look a touch muted. A plain tint instead of a CSS filter on the media:
+ * a filter over (paused) video makes every bubble its own render pass on every frame.
+ */
+.shade::before {
+  background: rgba(40, 46, 50, 0.11);
+  content: '';
+  inset: 0;
+  position: absolute;
+  transition: opacity 600ms var(--glide);
+}
+
+.bubble.is-playing .shade::before {
+  opacity: 0;
+}
+
+/*
+ * Thin-film colours swirling around the rim, like a soap bubble. Normal blending (a
+ * screen blend re-composites the video under it every frame); the ring mask lives on a
+ * child so it is painted once and the compositor only rotates the finished layer.
+ */
 .film {
   animation: swirl 14s linear infinite;
+  border-radius: 50%;
+  inset: 0;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+}
+
+.film::before {
   background: conic-gradient(
     from 0deg,
     #ff8ad8,
@@ -192,11 +214,9 @@
     #ff8ad8
   );
   border-radius: 50%;
+  content: '';
   inset: 0;
   mask-image: radial-gradient(circle, transparent 66%, #000 71%, #000 74%, transparent 76%, transparent 100%);
-  mix-blend-mode: screen;
-  opacity: 0.55;
-  pointer-events: none;
   position: absolute;
 }
 
@@ -463,6 +483,7 @@
   }
 
   .shell,
+  .shade::before,
   .spec::before,
   .pit-btn {
     transition-duration: 1ms;

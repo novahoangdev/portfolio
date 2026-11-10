@@ -88,6 +88,14 @@ function hexToRgb(hex: string): [number, number, number] {
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+/** [width in canvas px, alpha factor] of the strokes that stand in for the figure glow's 10px shadow blur. */
+const GLOW_HALO: readonly (readonly [number, number])[] = [
+  [26, 0.0069],
+  [20, 0.0185],
+  [14, 0.026],
+  [9, 0.0277],
+  [5, 0.0231],
+];
 const TINTS = ['255,255,255', '200,215,255', '255,236,210', '215,225,255', '255,220,200'];
 
 /**
@@ -138,6 +146,8 @@ export class ProjectsStars {
   private readonly document = inject(DOCUMENT);
   private readonly sky = viewChild.required<ElementRef<HTMLElement>>('sky');
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  /** Static sky (Milky Way, dust, faint figures): repainted only when the view moves. */
+  private readonly backCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('back');
   private readonly starButtons = viewChildren<ElementRef<HTMLElement>>('star');
   private readonly names = viewChildren<ElementRef<HTMLElement>>('conName');
   private readonly reduced = prefersReducedMotion(this.document.defaultView);
@@ -159,8 +169,10 @@ export class ProjectsStars {
       if (!view) return;
       const sky = this.sky().nativeElement;
       const canvas = this.canvas().nativeElement;
+      const backCanvas = this.backCanvas().nativeElement;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      const bctx = backCanvas.getContext('2d', { alpha: false });
+      if (!ctx || !bctx) return;
       const reduced = this.reduced;
       const projects = this.projects();
       const rand = rng(hash(projects.map((p) => p.name).join('|')));
@@ -175,6 +187,10 @@ export class ProjectsStars {
       let nextMeteor = performance.now() + 3500;
       const glow = new Map<ProjectKind, number>();
       const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+      /** Whether the next frame must run at full rate (camera, parallax, glow or a meteor in motion). */
+      let busy = true;
+      /** The static sky layer must be repainted (size changed). */
+      let viewDirty = true;
 
       const makeSprite = (hex: string) => {
         const size = 128;
@@ -193,6 +209,49 @@ export class ProjectsStars {
         return c;
       };
       sprites = projects.map((p) => makeSprite(p.accent));
+
+      /** Diffraction spikes (normal and focused), drawn once and scaled by the twinkle when blitted. */
+      const SPIKE_RES = 2;
+      const makeSpikes = (hex: string, spike: number) => {
+        const half = Math.ceil(spike + 2);
+        const c = this.document.createElement('canvas');
+        c.width = c.height = half * 2 * SPIKE_RES;
+        const g = c.getContext('2d')!;
+        g.scale(SPIKE_RES, SPIKE_RES);
+        g.translate(half, half);
+        g.globalCompositeOperation = 'lighter';
+        const [r, gg, b] = hexToRgb(hex);
+        const drawSpike = (dx: number, dy: number, len: number, alpha: number) => {
+          const grad = g.createLinearGradient(0, 0, dx * len, dy * len);
+          grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+          grad.addColorStop(0.25, `rgba(${r},${gg},${b},${alpha * 0.6})`);
+          grad.addColorStop(1, `rgba(${r},${gg},${b},0)`);
+          g.strokeStyle = grad;
+          g.beginPath();
+          g.moveTo(0, 0);
+          g.lineTo(dx * len, dy * len);
+          g.stroke();
+        };
+        g.lineWidth = 1.1;
+        for (const [dx, dy] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ] as const)
+          drawSpike(dx, dy, spike, 0.85);
+        g.lineWidth = 0.8;
+        const d = Math.SQRT1_2;
+        for (const [dx, dy] of [
+          [d, d],
+          [-d, d],
+          [d, -d],
+          [-d, -d],
+        ] as const)
+          drawSpike(dx, dy, spike * 0.38, 0.45);
+        return { canvas: c, half };
+      };
+      const spikes = projects.map((p) => [makeSpikes(p.accent, 30), makeSpikes(p.accent, 46)] as const);
 
       /** Milky Way band + faint dust of stars, rendered once per size. */
       const paintFar = () => {
@@ -258,6 +317,8 @@ export class ProjectsStars {
         }
         g.globalCompositeOperation = 'source-over';
       };
+
+      const byTint = (stars: FieldStar[]) => stars.sort((a, b) => (a.tint < b.tint ? -1 : a.tint > b.tint ? 1 : 0));
 
       const makeField = (count: number, minR: number, maxR: number, seed: number): FieldStar[] => {
         const r = rng(seed);
@@ -382,11 +443,11 @@ export class ProjectsStars {
         this.w = box.width;
         this.h = box.height;
         dpr = Math.min(view.devicePixelRatio || 1, 1.75);
-        canvas.width = Math.round(this.w * dpr);
-        canvas.height = Math.round(this.h * dpr);
+        canvas.width = backCanvas.width = Math.round(this.w * dpr);
+        canvas.height = backCanvas.height = Math.round(this.h * dpr);
         const area = this.w * this.h;
-        mid = makeField(Math.round(area / 5200), 0.5, 1.5, 11);
-        twinkle = makeField(Math.round(area / 15000), 0.8, 1.9, 23);
+        mid = byTint(makeField(Math.round(area / 5200), 0.5, 1.5, 11));
+        twinkle = byTint(makeField(Math.round(area / 15000), 0.8, 1.9, 23));
         paintFar();
         place();
         this.lens = lensFor(this.w, this.h);
@@ -399,6 +460,8 @@ export class ProjectsStars {
         this.tween = null;
         pending?.done?.();
         this.cam = this.selected() >= 0 ? focusOn(this.selected()) : overview();
+        viewDirty = true;
+        busy = true;
         this.request();
       };
 
@@ -417,41 +480,83 @@ export class ProjectsStars {
 
       const tmp: Vec = { x: 0, y: 0 };
       const tmp2: Vec = { x: 0, y: 0 };
+      const src: Vec = { x: 0, y: 0 };
 
-      const drawField = (stars: FieldStar[], depth: number, t: number, twinkling: boolean) => {
+      const drawField = (g: CanvasRenderingContext2D, stars: FieldStar[], depth: number, t: number, twinkling: boolean) => {
         const W = this.w + 40;
         const H = this.h + 40;
+        // Fields are sorted by tint: set the colour once per run and vary only the alpha.
+        let tint = '';
         for (const star of stars) {
-          project({ x: star.x * W - 20, y: star.y * H - 20 }, depth, tmp);
+          src.x = star.x * W - 20;
+          src.y = star.y * H - 20;
+          project(src, depth, tmp);
           const x = ((((tmp.x + 20) % W) + W) % W) - 20;
           const y = ((((tmp.y + 20) % H) + H) % H) - 20;
           let a = star.a;
           if (twinkling && !reduced) a *= 0.55 + 0.45 * Math.sin(t * 0.001 * star.speed + star.phase);
-          ctx.fillStyle = `rgba(${star.tint},${a.toFixed(3)})`;
+          if (star.tint !== tint) {
+            tint = star.tint;
+            g.fillStyle = `rgb(${tint})`;
+          }
+          g.globalAlpha = a;
           if (star.r > 1.2) {
-            ctx.beginPath();
-            ctx.arc(x, y, star.r, 0, Math.PI * 2);
-            ctx.fill();
+            g.beginPath();
+            g.arc(x, y, star.r, 0, Math.PI * 2);
+            g.fill();
             if (twinkling) {
-              ctx.fillStyle = `rgba(${star.tint},${(a * 0.12).toFixed(3)})`;
-              ctx.beginPath();
-              ctx.arc(x, y, star.r * 3.2, 0, Math.PI * 2);
-              ctx.fill();
+              g.globalAlpha = a * 0.12;
+              g.beginPath();
+              g.arc(x, y, star.r * 3.2, 0, Math.PI * 2);
+              g.fill();
             }
-          } else ctx.fillRect(x - star.r / 2, y - star.r / 2, star.r, star.r);
+          } else g.fillRect(x - star.r / 2, y - star.r / 2, star.r, star.r);
+        }
+        g.globalAlpha = 1;
+      };
+
+      /** Ends of a figure segment, kept clear of the two stars it joins. */
+      const segment = (a: number, b: number) => {
+        const pa = project(this.pos[a]!, 1, tmp);
+        const ax = pa.x;
+        const ay = pa.y;
+        const pb = project(this.pos[b]!, 1, tmp2);
+        const dx = pb.x - ax;
+        const dy = pb.y - ay;
+        const len = Math.hypot(dx, dy) || 1;
+        const gap = 14;
+        return { sx: ax + (dx / len) * gap, sy: ay + (dy / len) * gap, ex: pb.x - (dx / len) * gap, ey: pb.y - (dy / len) * gap };
+      };
+
+      /** The faint, always-visible constellation figures (static sky layer). */
+      const drawFigures = (g: CanvasRenderingContext2D) => {
+        g.lineWidth = 1;
+        g.strokeStyle = 'rgba(180,200,255,0.13)';
+        for (const edges of this.edges) {
+          for (const [a, b] of edges) {
+            const { sx, sy, ex, ey } = segment(a, b);
+            g.beginPath();
+            g.moveTo(sx, sy);
+            g.lineTo(ex, ey);
+            g.stroke();
+          }
         }
       };
 
-      const drawConstellations = (dt: number) => {
+      /** Traces the lit figures outward from the star being looked at. Returns whether a glow is still fading. */
+      const drawGlow = (dt: number): boolean => {
         const lit = this.lit();
         const root = this.hovered() >= 0 ? this.hovered() : this.selected();
+        let fading = false;
         this.constellations().forEach((c, k) => {
           const target = lit.has(c.kind) ? 1 : 0;
           let g = glow.get(c.kind) ?? 0;
           g = reduced ? target : g + (target - g) * Math.min(1, dt / (target ? 520 : 260));
+          if (Math.abs(target - g) < 0.002) g = target;
+          else fading = true;
           glow.set(c.kind, g);
           const edges = this.edges[k] ?? [];
-          if (!edges.length) return;
+          if (!edges.length || g <= 0) return;
           // Order the figure outward from the star being looked at.
           const start = c.stars.includes(root) ? root : c.stars[0]!;
           const depthOf = new Map<number, number>([[start, 0]]);
@@ -469,38 +574,33 @@ export class ProjectsStars {
           }
           const levels = Math.max(1, ...ordered.map((o) => o.level + 1));
           for (const { a, b, level } of ordered) {
-            const pa = project(this.pos[a]!, 1, tmp);
-            const ax = pa.x;
-            const ay = pa.y;
-            const pb = project(this.pos[b]!, 1, tmp2);
-            const dx = pb.x - ax;
-            const dy = pb.y - ay;
-            const len = Math.hypot(dx, dy) || 1;
-            const gap = 14;
-            const sx = ax + (dx / len) * gap;
-            const sy = ay + (dy / len) * gap;
-            const ex = pb.x - (dx / len) * gap;
-            const ey = pb.y - (dy / len) * gap;
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(180,200,255,0.13)';
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(ex, ey);
-            ctx.stroke();
             const f = clamp(g * levels - level, 0, 1);
             if (f <= 0) continue;
-            ctx.save();
-            ctx.shadowColor = 'rgba(150,185,255,0.9)';
-            ctx.shadowBlur = 10;
+            const { sx, sy, ex, ey } = segment(a, b);
+            const alpha = 0.85 * Math.min(1, g * 1.5);
+            const tx = sx + (ex - sx) * f;
+            const ty = sy + (ey - sy) * f;
+            // The glow was a 10px canvas shadow blur, re-blurred every frame (the costliest draw here).
+            // Stacked translucent strokes trace the same falloff (within ~3/255) at a fraction of the cost.
+            ctx.lineCap = 'round';
+            for (const [width, k] of GLOW_HALO) {
+              ctx.lineWidth = width / dpr;
+              ctx.strokeStyle = `rgba(150,185,255,${(alpha * k * dpr).toFixed(4)})`;
+              ctx.beginPath();
+              ctx.moveTo(sx, sy);
+              ctx.lineTo(tx, ty);
+              ctx.stroke();
+            }
+            ctx.lineCap = 'butt';
             ctx.lineWidth = 1.4;
-            ctx.strokeStyle = `rgba(215,228,255,${(0.85 * Math.min(1, g * 1.5)).toFixed(3)})`;
+            ctx.strokeStyle = `rgba(215,228,255,${alpha.toFixed(3)})`;
             ctx.beginPath();
             ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + (ex - sx) * f, sy + (ey - sy) * f);
+            ctx.lineTo(tx, ty);
             ctx.stroke();
-            ctx.restore();
           }
         });
+        return fading;
       };
 
       const drawNamed = (t: number) => {
@@ -513,36 +613,9 @@ export class ProjectsStars {
           const size = (focus ? 92 : 64) * tw * (0.9 + 0.1 * this.cam.s);
           ctx.globalCompositeOperation = 'lighter';
           ctx.drawImage(sprites[i]!, pt.x - size / 2, pt.y - size / 2, size, size);
-          const [r, g, b] = hexToRgb(p.accent);
-          const spike = (focus ? 46 : 30) * tw;
-          const drawSpike = (dx: number, dy: number, len: number, alpha: number) => {
-            const grad = ctx.createLinearGradient(pt.x, pt.y, pt.x + dx * len, pt.y + dy * len);
-            grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
-            grad.addColorStop(0.25, `rgba(${r},${g},${b},${alpha * 0.6})`);
-            grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-            ctx.strokeStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(pt.x, pt.y);
-            ctx.lineTo(pt.x + dx * len, pt.y + dy * len);
-            ctx.stroke();
-          };
-          ctx.lineWidth = 1.1;
-          for (const [dx, dy] of [
-            [1, 0],
-            [-1, 0],
-            [0, 1],
-            [0, -1],
-          ] as const)
-            drawSpike(dx, dy, spike, 0.85);
-          ctx.lineWidth = 0.8;
-          const d = Math.SQRT1_2;
-          for (const [dx, dy] of [
-            [d, d],
-            [-d, d],
-            [d, -d],
-            [-d, -d],
-          ] as const)
-            drawSpike(dx, dy, spike * 0.38, 0.45);
+          const spike = spikes[i]![focus ? 1 : 0]!;
+          const reach = spike.half * tw;
+          ctx.drawImage(spike.canvas, pt.x - reach, pt.y - reach, reach * 2, reach * 2);
           ctx.globalCompositeOperation = 'source-over';
           ctx.fillStyle = '#fff';
           ctx.beginPath();
@@ -617,9 +690,49 @@ export class ProjectsStars {
         });
       };
 
+      /**
+       * The named stars glow additively ('lighter') over the sky. Copy the static sky under each of them
+       * (pixel-exact, device space) so the glow adds onto the real background, exactly as when everything
+       * was one canvas; elsewhere the front layer stays transparent.
+       */
+      const underlayNamed = () => {
+        const R = Math.ceil(52 * dpr);
+        const cw = canvas.width;
+        const ch = canvas.height;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        for (let i = 0; i < projects.length; i++) {
+          project(this.pos[i]!, 1, tmp);
+          const x0 = Math.max(0, Math.floor(tmp.x * dpr) - R);
+          const y0 = Math.max(0, Math.floor(tmp.y * dpr) - R);
+          const x1 = Math.min(cw, Math.floor(tmp.x * dpr) + R);
+          const y1 = Math.min(ch, Math.floor(tmp.y * dpr) + R);
+          if (x1 > x0 && y1 > y0) ctx.drawImage(backCanvas, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
+        }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+
+      /** The static sky: background, Milky Way, mid-depth stars and the faint figures. */
+      const drawBack = (g: CanvasRenderingContext2D) => {
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.fillStyle = '#03050d';
+        g.fillRect(0, 0, this.w, this.h);
+        if (far) {
+          project({ x: -FAR_M, y: -FAR_M }, 0.1, tmp);
+          const s = 1 + (this.cam.s - 1) * 0.1;
+          g.drawImage(far, tmp.x, tmp.y, (this.w + FAR_M * 2) * s, (this.h + FAR_M * 2) * s);
+        }
+        drawField(g, mid, 0.35, 0, false);
+        drawFigures(g);
+      };
+      /** Whether the static layer holds the current view (and is shown). */
+      let backFresh = false;
+
       let frame = 0;
       let last = performance.now();
+      let lastPaint = 0;
       let onScreen = false;
+      /** View the static layer and the overlays were last drawn for. */
+      const drawnView = { x: NaN, y: NaN, s: NaN, fx: NaN, fy: NaN, px: NaN, py: NaN };
 
       const render = (now: number) => {
         const dt = Math.min(64, now - last);
@@ -645,29 +758,62 @@ export class ProjectsStars {
         const lerpP = reduced ? 1 : Math.min(1, dt / 500);
         pointer.x += (pointer.tx - pointer.x) * lerpP;
         pointer.y += (pointer.ty - pointer.y) * lerpP;
+        // Snap the last sub-pixel of parallax so the static layer can come to rest.
+        if (Math.abs(pointer.tx - pointer.x) < 0.004) pointer.x = pointer.tx;
+        if (Math.abs(pointer.ty - pointer.y) < 0.004) pointer.y = pointer.ty;
 
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, this.w, this.h);
-        if (far) {
-          project({ x: -FAR_M, y: -FAR_M }, 0.1, tmp);
-          const s = 1 + (this.cam.s - 1) * 0.1;
-          ctx.drawImage(far, tmp.x, tmp.y, (this.w + FAR_M * 2) * s, (this.h + FAR_M * 2) * s);
+        const c = this.cam;
+        const d = drawnView;
+        const moved =
+          viewDirty ||
+          c.x !== d.x ||
+          c.y !== d.y ||
+          c.s !== d.s ||
+          c.fx !== d.fx ||
+          c.fy !== d.fy ||
+          pointer.x !== d.px ||
+          pointer.y !== d.py;
+        if (moved) {
+          viewDirty = false;
+          Object.assign(d, { x: c.x, y: c.y, s: c.s, fx: c.fx, fy: c.fy, px: pointer.x, py: pointer.y });
+          placeOverlays();
+          // In motion: paint the whole sky into the one canvas, as before; the static layer waits until it settles.
+          if (backFresh) {
+            backFresh = false;
+            backCanvas.style.visibility = 'hidden';
+          }
+          drawBack(ctx);
+        } else {
+          // At rest: the static sky lives on its own canvas, this one only carries what changes.
+          if (!backFresh) {
+            drawBack(bctx);
+            backFresh = true;
+            backCanvas.style.visibility = '';
+          }
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, this.w, this.h);
+          underlayNamed();
         }
-        drawField(mid, 0.35, now, false);
-        drawField(twinkle, 0.6, now, true);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawField(ctx, twinkle, 0.6, now, true);
         drawMeteors(now, dt);
-        drawConstellations(dt);
+        const fading = drawGlow(dt);
         drawNamed(now);
-        placeOverlays();
+        busy = moved || fading || !!this.tween || meteors.length > 0 || pointer.x !== pointer.tx || pointer.y !== pointer.ty;
       };
 
       const loop = (now: number) => {
         frame = 0;
-        render(now);
+        // At rest only the slow twinkle changes: 30 fps is plenty for it.
+        if (busy || now - lastPaint > 30) {
+          lastPaint = now;
+          render(now);
+        }
         if (onScreen && !reduced && this.document.visibilityState === 'visible') frame = requestAnimationFrame(loop);
       };
       // Reduced motion: no loop; repaint on demand (tween resolves instantly).
       this.request = () => {
+        busy = true;
         if (frame) return;
         if (reduced) {
           frame = requestAnimationFrame((now) => {
@@ -691,12 +837,14 @@ export class ProjectsStars {
         const box = sky.getBoundingClientRect();
         pointer.tx = ((event.clientX - box.left) / box.width) * 2 - 1;
         pointer.ty = ((event.clientY - box.top) / box.height) * 2 - 1;
+        busy = true;
         if (reduced) {
           pointer.tx = pointer.ty = 0;
         }
       };
       const onLeave = () => {
         pointer.tx = pointer.ty = 0;
+        busy = true;
       };
       sky.addEventListener('pointermove', onPointer);
       sky.addEventListener('pointerleave', onLeave);

@@ -35,6 +35,12 @@ interface Ball {
   y0: number;
   el: HTMLElement | null;
   spin: HTMLElement | null;
+  /** Position (px) and angle last written; NaN = never. */
+  drawnX: number;
+  drawnY: number;
+  drawnA: number;
+  /** Frames since the capsule last visibly moved. */
+  still: number;
 }
 
 const GRAVITY = 9;
@@ -373,6 +379,10 @@ export class ProjectsGacha {
       y0: 0,
       el: elements[index] ?? null,
       spin: elements[index]?.querySelector<HTMLElement>('.ball-spin') ?? null,
+      drawnX: NaN,
+      drawnY: NaN,
+      drawnA: NaN,
+      still: 0,
     }));
     if (!rain) {
       this.settle();
@@ -412,23 +422,28 @@ export class ProjectsGacha {
     if (!view || this.running || !this.visible) return;
     this.running = true;
     this.calm = 0;
+    const globe = this.globeEl().nativeElement;
+    globe.classList.add('is-rolling');
+    const stop = () => {
+      this.running = false;
+      globe.classList.remove('is-rolling');
+    };
     let last = view.performance.now();
     const loop = (now: number) => {
       if (!this.visible) {
-        this.running = false;
+        stop();
         return;
       }
       const dt = Math.min(0.034, (now - last) / 1000);
       last = now;
       this.step(dt / 2);
       this.step(dt / 2);
-      this.render();
-      const moving = this.balls.some(
-        (b) => b.state === 'exit' || (b.state === 'in' && Math.hypot(b.vx, b.vy) > 0.03),
-      );
+      // Resting capsules keep a little contact jitter in their velocities: judge motion by what
+      // reaches the screen, so the loop (and the capsule layers) stop once nothing visibly moves.
+      const moving = this.render() || this.balls.some((b) => b.state === 'exit');
       this.calm = moving || now < this.stirUntil ? 0 : this.calm + 1;
       if (this.calm > 30) {
-        this.running = false;
+        stop();
         return;
       }
       this.frame = view.requestAnimationFrame(loop);
@@ -535,13 +550,35 @@ export class ProjectsGacha {
     }
   }
 
-  private render(): void {
+  /** Write the capsules that visibly moved; returns whether any did. */
+  private render(): boolean {
     const R = this.radiusPx;
+    let changed = false;
     for (const b of this.balls) {
       if (!b.el || !b.spin) continue;
-      b.el.style.transform = `translate(${(b.x * R).toFixed(1)}px, ${(b.y * R).toFixed(1)}px)`;
-      b.spin.style.transform = `rotate(${b.a.toFixed(3)}rad)`;
+      const x = b.x * R;
+      const y = b.y * R;
+      // Sub-0.2px contact jitter is invisible; skipping it lets the pile come to rest.
+      if (!(Math.abs(x - b.drawnX) < 0.2 && Math.abs(y - b.drawnY) < 0.2)) {
+        b.drawnX = x;
+        b.drawnY = y;
+        b.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+        b.still = 0;
+        changed = true;
+      } else if (b.state === 'in' && ++b.still > 12 && !Number.isNaN(b.drawnA)) {
+        // Contact jitter in a resting pile keeps feeding the "rolling" spin, so a capsule that
+        // has stopped moving would turn on the spot forever and the loop never settle: once it
+        // has been still for a moment, hold its angle.
+        b.a = b.drawnA;
+        b.va = 0;
+      }
+      if (!(Math.abs(b.a - b.drawnA) < 0.002)) {
+        b.drawnA = b.a;
+        b.spin.style.transform = `rotate(${b.a.toFixed(3)}rad)`;
+        if (Math.abs(b.va) > 0.3) changed = true;
+      }
     }
+    return changed;
   }
 
   private syncGlobe(): void {
