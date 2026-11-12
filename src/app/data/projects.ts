@@ -61,7 +61,7 @@ export const sideProjects: readonly SideProject[] = [
     media: {
       video: '/images/projects/pastel-studio-web.mp4',
       image: '/images/projects/pastel-studio-web.webp',
-      alt: 'Pastel Studio web app: a photo of a dog painted in oil pastel through sketch, underpainting, form, color and details',
+      alt: 'Pastel Studio web app: from the home page, a sample photo of a man sitting in a movie poster is painted in oil pastel through sketch, underpainting, form, blend, color and details',
       shape: 'wide',
     },
     featured: true,
