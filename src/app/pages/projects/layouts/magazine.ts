@@ -321,9 +321,21 @@ export class ProjectsMagazine {
         if (tweens.size) frame = requestAnimationFrame(tick);
         else root.classList.remove('is-turning');
       };
+      /** One rAF loop for drags and tweens: a separate paint-only frame could swallow a tween's first tick. */
+      const schedule = () => {
+        if (!frame) frame = requestAnimationFrame(tick);
+      };
       const run = () => {
         root.classList.add('is-turning');
-        if (!frame) frame = requestAnimationFrame(tick);
+        schedule();
+      };
+      /** Send every leaf that is neither tweening nor being dragged back to rest. */
+      const settle = () => {
+        const t = this.turned();
+        angles.forEach((a, k) => {
+          const rest = k < t ? 180 : 0;
+          if (k !== dragLeaf && k !== peeled && !tweens.has(k) && a !== rest) tweenLeaf(k, rest, 450, 0, glide);
+        });
       };
       const tweenLeaf = (k: number, to: number, duration: number, delay = 0, ease = turnEase) => {
         tweens.set(k, { from: angles[k] ?? 0, to, start: performance.now() + delay, duration, ease });
@@ -449,8 +461,11 @@ export class ProjectsMagazine {
         else dir = startX >= spine ? 1 : -1;
         const leaf = dir === 1 ? t : t - 1;
         if (leaf < 0 || leaf >= angles.length || (dir === 1 && t >= this.maxTurn())) return false;
-        // Don't fight a turn already in flight on another leaf.
-        tweens.clear();
+        // Take this leaf over; turns in flight on other leaves finish on their own.
+        tweens.delete(leaf);
+        if (peeled !== null && peeled !== leaf) tweenLeaf(peeled, peeled < t ? 180 : 0, 520, 0, glide);
+        peeled = null;
+        root.classList.remove('is-peeling');
         dragLeaf = leaf;
         grab = clamp(Math.abs(startX - spine) / pw, 0.35, 1);
         const rect = book.getBoundingClientRect();
@@ -471,6 +486,11 @@ export class ProjectsMagazine {
           return;
         }
         if (e.pointerId !== pointerId) return;
+        // The button is up but the pointerup never reached us: release now.
+        if (e.pointerType === 'mouse' && e.buttons === 0) {
+          onUp(e);
+          return;
+        }
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
         if (!dragging) {
@@ -499,10 +519,7 @@ export class ProjectsMagazine {
         }
         if (reduced) return;
         angles[dragLeaf] = clamp(a, 0, 180);
-        if (!frame) frame = requestAnimationFrame(() => {
-          frame = 0;
-          paint();
-        });
+        schedule();
       };
 
       const onUp = (e: PointerEvent) => {
@@ -512,8 +529,8 @@ export class ProjectsMagazine {
         view.setTimeout(() => (this.suppressClick = false), 0);
         root.classList.remove('is-dragging');
         if (!dragging) {
-          // A tap on the page edge turns the page.
-          if (downInEdge && downInEdge === zoneAt(e.clientX)) {
+          // A tap on the page edge turns the page (a cancelled or lost pointer is not a tap).
+          if (e.type === 'pointerup' && downInEdge && downInEdge === zoneAt(e.clientX)) {
             this.suppressClick = true;
             const t = this.turned();
             go(downInEdge === 'next' ? t + 1 : t - 1);
@@ -540,6 +557,12 @@ export class ProjectsMagazine {
         tweenLeaf(k, to, 260 + remaining * 620, 0, glide);
         const next = forward ? k + 1 : k;
         if (next !== t) this.turned.set(next);
+        settle();
+      };
+
+      // Capture taken away from the book without a pointerup (it bubbles: ignore a child handing capture to the book).
+      const onLostCapture = (e: PointerEvent) => {
+        if (e.target === book) onUp(e);
       };
 
       // Swallow the click that follows a drag or an edge tap.
@@ -602,6 +625,7 @@ export class ProjectsMagazine {
       book.addEventListener('pointermove', onMove);
       book.addEventListener('pointerup', onUp);
       book.addEventListener('pointercancel', onUp);
+      book.addEventListener('lostpointercapture', onLostCapture);
       book.addEventListener('pointerleave', onLeave);
       book.addEventListener('click', onClickCapture, true);
 
@@ -613,6 +637,7 @@ export class ProjectsMagazine {
         book.removeEventListener('pointermove', onMove);
         book.removeEventListener('pointerup', onUp);
         book.removeEventListener('pointercancel', onUp);
+        book.removeEventListener('lostpointercapture', onLostCapture);
         book.removeEventListener('pointerleave', onLeave);
         book.removeEventListener('click', onClickCapture, true);
       };

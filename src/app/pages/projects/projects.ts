@@ -23,6 +23,8 @@ import { kindLabel, OpenCase, pad, withViewTransition } from './layouts/shared';
 import { ProjectMediaView } from './project-media';
 
 const LAYOUT_KEY = 'portfolio-projects-layout';
+/** Shown until a visitor picks another layout. */
+const DEFAULT_LAYOUT: LayoutId = 'ide';
 
 /**
  * Side projects with interchangeable layouts (see `layouts/registry.ts`) and one shared case-study dialog. The chosen layout is remembered
@@ -295,7 +297,7 @@ export class Projects {
     } catch {
       // Fall back to the default layout when storage is unavailable.
     }
-    return 'wall';
+    return DEFAULT_LAYOUT;
   }
 }
 

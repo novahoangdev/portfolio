@@ -18,9 +18,15 @@ import { kindLabel, OpenCase, pad } from './shared';
 
 /** Scroll dwell (in floors) above the top floor and below the bottom one. */
 const DWELL = 0.3;
+/** Lift drive: top speed (floors/s) and acceleration (floors/s²). */
+const LIFT_SPEED = 2.6;
+const LIFT_ACCEL = 3.2;
+/** Stiffness of the follower that rounds off starts and stops. */
+const SMOOTH = 12;
+/** Doors take this long to close before the car moves (matches the CSS close). */
+const DOOR_CLOSE_MS = 480;
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
-const smoother = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
 
 interface Building {
   readonly left: number;
@@ -86,8 +92,8 @@ function skyline(seed: number, count: number, minH: number, maxH: number, twinkl
 /**
  * Layout — Night Tower: a cross-section of a slender apartment tower. Each floor
  * is one project, its room lit by lamps and a big window playing its film. A
- * glass lift rides the shaft with scroll (spring-eased, swaying on its cable),
- * stops at each floor, opens its doors and warms the lights. Lift buttons ride
+ * glass lift rides the shaft like a real one: scroll picks a floor, the doors
+ * close, it rides there on its rails, levels, opens its doors and warms the lights. Lift buttons ride
  * straight to a floor. Reduced motion gets a static stack of floor buttons.
  */
 @Component({
@@ -199,7 +205,11 @@ export class ProjectsTower {
     view?.requestAnimationFrame(() => this.rideTo?.(index));
   }
 
-  /** The pinned ride: scroll drives a spring-damped lift; the camera follows it. */
+  /**
+   * The pinned ride. Scroll picks a floor; the car then rides there like a real lift:
+   * doors close, it speeds up, cruises, slows to a level stop, and the doors open.
+   * Lift buttons call it straight to a floor while the page scrolls along.
+   */
   private setupRide(run: HTMLElement, view: Window): () => void {
     const stage = run.querySelector<HTMLElement>('.stage')!;
     const tower = stage.querySelector<HTMLElement>('.tower')!;
@@ -221,11 +231,18 @@ export class ProjectsTower {
     let roof = 300;
     let anchor = 0.5;
     let stickyTop = 72;
+    /** Drive: trapezoid velocity profile (floors, floors/s). */
+    let drive = 0;
+    let driveV = 0;
+    /** The car as drawn: the drive smoothed by a critically damped follower (soft starts and stops). */
     let pos = 0;
     let vel = 0;
     let cam = 0;
-    let sway = 0;
-    let swayV = 0;
+    /** Floor picked by scroll (with hysteresis), and a floor called with a lift button. */
+    let scrollFloor = 0;
+    let called: number | null = null;
+    let doorsOpen = false;
+    let closedAt = -Infinity;
     let frame = 0;
     let last = 0;
     let inView = false;
@@ -254,16 +271,14 @@ export class ProjectsTower {
       render(true);
     };
 
-    const scrollTarget = () => {
+    /** The floor the scroll position asks for; it only changes once well past the halfway point. */
+    const readScroll = () => {
       const rect = run.getBoundingClientRect();
       const travel = Math.max(1, run.offsetHeight - stage.offsetHeight);
       const progress = clamp((stickyTop - rect.top) / travel, 0, 1);
       const x = clamp(progress * span - DWELL, 0, n - 1);
-      const j = Math.min(Math.floor(x), n - 1);
-      const f = x - j;
-      // Dwell at each floor, then a smooth ride to the next.
-      const eased = j >= n - 1 ? j : j + smoother(clamp((f - 0.25) / 0.5, 0, 1));
-      return { eased, rect, ride: Math.round(x) };
+      if (Math.abs(x - scrollFloor) > 0.58) scrollFloor = clamp(Math.round(x), 0, n - 1);
+      return x;
     };
 
     const setPlaying = () => {
@@ -281,36 +296,50 @@ export class ProjectsTower {
       frame = 0;
       if (!alive || !w) return;
       const now = performance.now();
-      let dt = Math.min(0.064, (now - (last || now)) / 1000);
+      const dt = Math.min(0.064, (now - (last || now)) / 1000);
       last = now;
-      const t = scrollTarget();
+      readScroll();
+      if (called !== null && called === scrollFloor) called = null;
+      const goal = called ?? scrollFloor;
 
       if (snap) {
-        pos = t.eased;
-        vel = 0;
-        cam = pos;
+        drive = pos = cam = goal;
+        driveV = vel = 0;
+        doorsOpen = true;
       } else {
-        // Critically damped spring for the car; an under-damped one for its sway.
-        const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+        // Doors: open once level at the goal; close (and wait for them) before riding off.
+        const level = driveV === 0 && drive === Math.round(drive) && Math.abs(pos - drive) < 0.0015 && Math.abs(vel) < 0.02;
+        if (level && drive === goal) {
+          doorsOpen = true;
+        } else if (doorsOpen) {
+          doorsOpen = false;
+          closedAt = now;
+        }
+        const target = !doorsOpen && now - closedAt >= DOOR_CLOSE_MS ? goal : drive;
+
+        const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
         const sdt = dt / steps;
-        const omega = 6.5;
         for (let s = 0; s < steps; s++) {
-          const acc = omega * omega * (t.eased - pos) - 2 * omega * vel;
+          const d = target - drive;
+          // Cruise at most LIFT_SPEED, and never faster than a stop at LIFT_ACCEL allows.
+          const want = Math.sign(d) * Math.min(LIFT_SPEED, Math.sqrt(2 * LIFT_ACCEL * Math.abs(d)));
+          driveV += clamp(want - driveV, -LIFT_ACCEL * sdt, LIFT_ACCEL * sdt);
+          drive += driveV * sdt;
+          if (Math.abs(target - drive) < 1e-4 && Math.abs(driveV) < 0.02) {
+            drive = target;
+            driveV = 0;
+          }
+          const acc = SMOOTH * SMOOTH * (drive - pos) - 2 * SMOOTH * vel;
           vel += acc * sdt;
           pos += vel * sdt;
-          const swayTarget = clamp(-vel * 0.9, -2.6, 2.6);
-          const swayAcc = 38 * (swayTarget - sway) - 2.2 * swayV;
-          swayV += swayAcc * sdt;
-          sway += swayV * sdt;
           cam += (pos - cam) * (1 - Math.exp(-sdt * 7));
         }
-        dt = 0;
       }
 
       const camY = h * anchor - (roof + cam * fh + fh * 0.5);
       tower.style.transform = `translate3d(0, ${camY.toFixed(2)}px, 0)`;
       const carTop = roof + pos * fh + fh * 0.32;
-      car.style.transform = `translate3d(0, ${carTop.toFixed(2)}px, 0) rotate(${sway.toFixed(3)}deg)`;
+      car.style.transform = `translate3d(0, ${carTop.toFixed(2)}px, 0)`;
       if (cable) cable.style.transform = `scaleY(${(carTop - roof * 0.42).toFixed(1)})`;
       const cwTop = roof + (n - 1 - pos) * fh + fh * 0.3;
       if (counter) counter.style.transform = `translate3d(0, ${cwTop.toFixed(2)}px, 0)`;
@@ -323,26 +352,27 @@ export class ProjectsTower {
       for (const layer of layers) {
         const depth = Number(layer.dataset['depth']);
         const y = depth >= 1 ? 0 : ground * depth + horizon * (1 - depth) - h;
-        const lift = depth >= 1 ? camY * (depth - 1) : y;
-        layer.style.transform = `translate3d(0, ${lift.toFixed(2)}px, 0)`;
+        const shift = depth >= 1 ? camY * (depth - 1) : y;
+        layer.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0)`;
       }
       if (fore) fore.style.transform = `translate3d(0, ${((camY * 1.35) % (fh * 2.4)).toFixed(2)}px, 0)`;
 
       const nearest = clamp(Math.round(pos), 0, n - 1);
-      const stopped = Math.abs(pos - nearest) < 0.015 && Math.abs(vel) < 0.08 && Math.abs(t.eased - nearest) < 0.002;
-      const stopAt = stopped ? nearest : -1;
+      const stopAt = doorsOpen ? drive : -1;
       if (stopAt !== this.stop()) this.stop.set(stopAt);
       if (nearest !== this.near()) this.near.set(nearest);
       const d = Math.abs(vel) < 0.05 ? '' : vel > 0 ? 'down' : 'up';
       if (d !== this.dir()) this.dir.set(d);
-      const goal = clamp(Math.round(t.eased + Math.sign(t.eased - pos) * 0.49), 0, n - 1);
-      const tgt = stopped ? nearest : goal;
-      if (tgt !== this.target()) this.target.set(tgt);
+      if (goal !== this.target()) this.target.set(goal);
       setPlaying();
 
-      const moving =
-        Math.abs(t.eased - pos) > 0.0005 || Math.abs(vel) > 0.002 || Math.abs(sway) > 0.01 || Math.abs(swayV) > 0.01 || Math.abs(pos - cam) > 0.0005;
-      if (moving) frame = view.requestAnimationFrame(() => render());
+      const busy =
+        !doorsOpen ||
+        driveV !== 0 ||
+        Math.abs(drive - pos) > 0.0005 ||
+        Math.abs(vel) > 0.002 ||
+        Math.abs(pos - cam) > 0.0005;
+      if (busy) frame = view.requestAnimationFrame(() => render());
       else last = 0;
     };
 
@@ -351,9 +381,18 @@ export class ProjectsTower {
     };
 
     this.rideTo = (index: number) => {
+      // The car leaves right away; the page scrolls along to that floor.
+      called = index;
       const travel = Math.max(1, run.offsetHeight - stage.offsetHeight);
       const top = run.getBoundingClientRect().top + view.scrollY - stickyTop + ((index + DWELL) / span) * travel;
       view.scrollTo({ top, behavior: 'smooth' });
+      kick();
+    };
+    // Scrolling by hand takes over from a lift-button call.
+    const takeOver = () => {
+      if (called === null) return;
+      called = null;
+      kick();
     };
 
     const io = new IntersectionObserver(([entry]) => {
@@ -366,6 +405,10 @@ export class ProjectsTower {
     const resize = new ResizeObserver(() => measure());
     resize.observe(stage);
     view.addEventListener('scroll', kick, { passive: true });
+    view.addEventListener('wheel', takeOver, { passive: true });
+    view.addEventListener('touchstart', takeOver, { passive: true });
+    view.addEventListener('keydown', takeOver);
+    scrollFloor = clamp(Math.round(readScroll()), 0, n - 1);
     measure();
 
     return () => {
@@ -375,6 +418,9 @@ export class ProjectsTower {
       io.disconnect();
       resize.disconnect();
       view.removeEventListener('scroll', kick);
+      view.removeEventListener('wheel', takeOver);
+      view.removeEventListener('touchstart', takeOver);
+      view.removeEventListener('keydown', takeOver);
     };
   }
 }
